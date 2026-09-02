@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium Flow Matrix Tracker</title>
+    <title>Premium Dynamic Flow Matrix Tracker</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="app-layout">
         
-        <!-- LEFT SIDEBAR: Ledger Entry Form & Backend Configuration -->
+        <!-- LEFT SIDEBAR: Dynamic Ledger Input Sidebar -->
         <div class="sidebar">
             <div class="sidebar-header">DATABASE SETUP</div>
             <div class="form-block">
@@ -17,48 +17,57 @@
                 <small class="help-text">Deploy your Google Sheet script to get an unlimited backend link.</small>
             </div>
 
-            <div class="sidebar-header">ADD INCOME ENTRY</div>
+            <div class="sidebar-header">TRANSACTION LOG ENTRY</div>
             <div class="form-grid">
                 <div class="input-group">
                     <label>Date</label>
                     <input type="date" id="formDate">
                 </div>
                 <div class="input-group">
-                    <label>Client Name</label>
-                    <input type="text" id="formClient" placeholder="e.g., Acme Corp">
+                    <label>Description / Client</label>
+                    <input type="text" id="formClient" placeholder="e.g., Design Contract, Internet Bill">
                 </div>
                 <div class="input-group">
-                    <label>Invoice Amount</label>
+                    <label>Amount</label>
                     <input type="number" id="formAmount" placeholder="0.00">
                 </div>
                 <div class="input-group">
-                    <label>Currency Received</label>
-                    <select id="formCurrency">
-                        <option value="USD">USD ($)</option>
-                        <option value="GBP">GBP (£)</option>
-                        <option value="EUR">EUR (€)</option>
-                        <option value="UGX">UGX (USh)</option>
-                        <option value="KES">KES (KSh)</option>
+                    <label>Main Category</label>
+                    <select id="formMainCategory" onchange="handleMainCategoryChange()">
+                        <option value="income">Gross Income</option>
+                        <option value="expense">Business Expense</option>
+                        <option value="tax">Tax Reserve</option>
                     </select>
                 </div>
+
+                <!-- DYNAMIC TOGGLE SUB-CATEGORY BLOCK -->
                 <div class="input-group">
+                    <div class="toggle-header">
+                        <label>Sub-Category Breakdown</label>
+                        <button type="button" class="mini-toggle-btn" onclick="toggleSubCategoryInput()">[+] New Custom</button>
+                    </div>
+                    
+                    <!-- Standard Selector -->
+                    <select id="formSubCategorySelect">
+                        <!-- Options populated dynamically based on Main Category selection -->
+                    </select>
+                    
+                    <!-- Hidden input box triggered via the custom toggle button -->
+                    <input type="text" id="formSubCategoryNew" placeholder="Type new sub-category name..." class="hidden">
+                </div>
+
+                <!-- Configuration Parameters Block -->
+                <div id="incomeExtraFields" class="input-group">
                     <label>Platform Fees (%)</label>
                     <input type="number" id="formFees" placeholder="e.g., 5" value="0">
                 </div>
-                <div class="input-group">
-                    <label>Business Expenses</label>
-                    <input type="number" id="formExpenses" placeholder="0.00" value="0">
-                </div>
-                <div class="input-group">
-                    <label>Withholding Tax Deducted?</label>
+
+                <div id="taxExtraFields" class="input-group hidden">
+                    <label>Is Withholding Tax?</label>
                     <select id="formWithholdingToggle">
                         <option value="No">No</option>
                         <option value="Yes">Yes</option>
                     </select>
-                </div>
-                <div class="input-group">
-                    <label>Withholding Amount</label>
-                    <input type="number" id="formWithholdingAmt" placeholder="0.00" value="0">
                 </div>
                 
                 <button id="btnSubmit" onclick="sendToGoogleSheets()">STREAM TO SHEET</button>
@@ -99,27 +108,15 @@
                     </div>
                 </div>
 
-                <!-- Upgraded Legend Layout Section -->
+                <!-- DYNAMIC BREAKDOWN SCROLL MARQUEE AREA -->
                 <div class="dashboard-breakdowns">
-                    <div class="breakdown-box">
-                        <span class="breakdown-title">INCOME BREAKDOWN:</span>
-                        <span class="dot dot-active"></span> Active Invoice: <strong id="incActive">$0.00</strong>
-                        <span class="dot dot-retainer"></span> Client Retainers: <strong id="incRetainer">$0.00</strong>
-                    </div>
-                    <div class="breakdown-box">
-                        <span class="breakdown-title">EXPENSE BREAKDOWN:</span>
-                        <span class="dot dot-software"></span> Software & Tools: <strong id="expSoftware">$0.00</strong>
-                        <span class="dot dot-marketing"></span> Marketing & Ads: <strong id="expMarketing">$0.00</strong>
-                        <span class="dot dot-hardware"></span> Hardware & Office: <strong id="expHardware">$0.00</strong>
-                    </div>
-                    <div class="breakdown-box">
-                        <span class="breakdown-title">TAX VAULT BREAKDOWN:</span>
-                        <span class="dot dot-income-tax"></span> Income Tax Reserve: <strong id="taxIncome">$0.00</strong>
-                        <span class="dot dot-withholding"></span> Withholding Balance: <strong id="taxWithholding">$0.00</strong>
+                    <div class="matrix-subsection-title">DYNAMIC MATRIX LEGEND BREAKDOWN</div>
+                    <div id="dynamicBreakdownContainer" class="dynamic-container-list">
+                        <!-- Custom Sub-Category progress bars will generate here instantly via JavaScript -->
                     </div>
                 </div>
 
-                <!-- UPGRADED: 1 Billion Full-Width Marquee Slider Panel -->
+                <!-- 1 Billion Full-Width Slider Marquee Panel -->
                 <div class="full-width-control">
                     <div class="control-header">
                         <span>ANNUAL REVENUE CONFIGURATION (UP TO 1 BILLION)</span>
@@ -164,10 +161,7 @@
 
     </div>
 
-    <!-- Import the graphic matrix rendering engine first -->
     <script src="matrix-engine.js"></script>
-    
-    <!-- Import the data sheet streaming connector second -->
     <script src="sheets-sync.js"></script>
 </body>
 </html>
