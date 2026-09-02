@@ -1,26 +1,37 @@
 let currentCurrency = '$';
+let isLiveTrackingMode = true;
+
+// Shared data pool accessed by sheets-sync.js
+window.localHistoryTotals = {
+    gross: 0,
+    expenses: 0,
+    taxWithheld: 0
+};
 
 const inputRevenue = document.getElementById('inputRevenue');
 const inputRatio = document.getElementById('inputRatio');
 const inputTaxRate = document.getElementById('inputTaxRate');
 const canvas = document.getElementById('flowChart');
-const apiInput = document.getElementById('apiEndpoint');
+const btnToggle = document.getElementById('btnToggleMode');
 
-// Remember user API configurations across refreshes
-window.onload = () => {
-    if (localStorage.getItem('userSheetDB')) {
-        apiInput.value = localStorage.getItem('userSheetDB');
+function toggleDatabaseMode() {
+    isLiveTrackingMode = !isLiveTrackingMode;
+    if (isLiveTrackingMode) {
+        btnToggle.innerText = "MODE: LIVE TRACKING";
+        btnToggle.style.backgroundColor = "#1e293b";
+        btnToggle.style.color = "#38bdf8";
+        btnToggle.style.borderColor = "#334155";
+    } else {
+        btnToggle.innerText = "MODE: LIVE + PREDICTIVE MARGINS";
+        btnToggle.style.backgroundColor = "rgba(168, 85, 247, 0.15)";
+        btnToggle.style.color = "#a855f7";
+        btnToggle.style.borderColor = "#a855f7";
     }
-    document.getElementById('formDate').valueAsDate = new Date();
-    resizeCanvas();
     updateMatrixData();
-};
-
-apiInput.addEventListener('input', (e) => {
-    localStorage.setItem('userSheetDB', e.target.value);
-});
+}
 
 function resizeCanvas() {
+    if (!canvas) return;
     const rect = canvas.parentElement.getBoundingClientRect();
     canvas.width = rect.width;
     canvas.height = rect.height;
@@ -50,15 +61,13 @@ function drawFlowLines(expRatio, taxRate, netProfit, gross) {
     const endY_Tax = startY;
     const endY_TakeHome = startY + ((1 - expRatio - taxFactor) * (h * 0.35));
 
-    const expPercent = Math.round(expRatio * 100);
-    const taxPercent = Math.round(taxRate * 100);
-    const homePercent = Math.round((1 - expRatio - taxFactor) * 100);
+    const expPercent = Math.round(expRatio * 100) || 0;
+    const taxPercent = Math.round(taxRate * 100) || 0;
+    const homePercent = Math.round((1 - expRatio - taxFactor) * 100) || 0;
 
-    // Gross Entry Baseline Flow Track
     ctx.beginPath(); ctx.moveTo(0, startY); ctx.lineTo(startX, startY);
     ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 4; ctx.stroke();
 
-    // FIXED: Adjusted visual position label slightly upwards to clear grid overlap clutter
     ctx.font = 'bold 11px "Plus Jakarta Sans", sans-serif';
     ctx.fillStyle = '#38bdf8'; 
     ctx.fillText("GROSS INPUT", 20, startY - 14);
@@ -87,34 +96,51 @@ function drawFlowLines(expRatio, taxRate, netProfit, gross) {
 }
 
 function updateMatrixData() {
-    const gross = parseFloat(inputRevenue.value) || 0;
-    const expRatio = (parseFloat(inputRatio.value) || 0) / 100;
-    const taxRate = (parseFloat(inputTaxRate.value) || 0) / 100;
+    let gross, expRatio, taxRate;
+    const totals = window.localHistoryTotals;
+
+    if (isLiveTrackingMode) {
+        gross = totals.gross;
+        const totalExpenses = totals.expenses;
+        expRatio = gross > 0 ? (totalExpenses / gross) : 0;
+        taxRate = parseFloat(inputTaxRate.value) / 100;
+        
+        inputRevenue.value = gross || 0;
+        inputRatio.value = Math.round(expRatio * 100) || 0;
+    } else {
+        const sliderGrossVal = parseFloat(inputRevenue.value) || 0;
+        if (sliderGrossVal < totals.gross) {
+            gross = totals.gross;
+            inputRevenue.value = gross;
+        } else {
+            gross = sliderGrossVal;
+        }
+
+        const simulatedGrossFuture = gross - totals.gross;
+        const sliderExpRatio = (parseFloat(inputRatio.value) || 0) / 100;
+        const calculatedTotalExpenses = totals.expenses + (simulatedGrossFuture * sliderExpRatio);
+        expRatio = gross > 0 ? (calculatedTotalExpenses / gross) : 0;
+        taxRate = (parseFloat(inputTaxRate.value) || 0) / 100;
+    }
 
     const totalExpenses = gross * expRatio;
     const netProfit = gross - totalExpenses;
-    const taxReserve = netProfit > 0 ? netProfit * taxRate : 0;
-    const takeHome = netProfit - taxReserve;
+    const taxReserve = (netProfit > 0 ? netProfit * taxRate : 0) + totals.taxWithheld;
+    const takeHome = netProfit - (netProfit > 0 ? netProfit * taxRate : 0);
 
-    // Advanced dynamic sub-category calculation updates
-    const incActive = gross * 0.65;
-    const incRetainer = gross * 0.35;
-    const software = totalExpenses * 0.4;
-    const marketing = totalExpenses * 0.35;
-    const hardware = totalExpenses * 0.25;
-    const taxIncome = taxReserve * 0.8;
-    const taxWithholding = taxReserve * 0.2;
+    const incActive = gross * 0.65; const incRetainer = gross * 0.35;
+    const software = totalExpenses * 0.4; const marketing = totalExpenses * 0.35; const hardware = totalExpenses * 0.25;
+    const taxIncome = taxReserve * 0.8; const taxWithholding = taxReserve * 0.2;
 
     document.getElementById('valRevenue').innerText = `${currentCurrency}${gross.toLocaleString()}`;
-    document.getElementById('valRatio').innerText = `${inputRatio.value}%`;
+    document.getElementById('valRatio').innerText = `${Math.round(expRatio * 100)}%`;
     document.getElementById('valTaxRate').innerText = `${inputTaxRate.value}%`;
 
-    document.getElementById('grossDisplay').innerText = `${currentCurrency}${gross.toLocaleString()}`;
+    document.getElementById('grossDisplay').innerText = `${currentCurrency}${gross.toLocaleString(undefined, {maximumFractionDigits:0})}`;
     document.getElementById('expensesDisplay').innerText = `${currentCurrency}${totalExpenses.toLocaleString(undefined, {maximumFractionDigits:0})}`;
     document.getElementById('taxDisplay').innerText = `${currentCurrency}${taxReserve.toLocaleString(undefined, {maximumFractionDigits:0})}`;
     document.getElementById('takeHomeDisplay').innerText = `${currentCurrency}${takeHome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
 
-    // Map calculated numbers out to all three breakdown panel sections
     document.getElementById('incActive').innerText = `${currentCurrency}${incActive.toLocaleString(undefined, {maximumFractionDigits:0})}`;
     document.getElementById('incRetainer').innerText = `${currentCurrency}${incRetainer.toLocaleString(undefined, {maximumFractionDigits:0})}`;
     document.getElementById('expSoftware').innerText = `${currentCurrency}${software.toLocaleString(undefined, {maximumFractionDigits:0})}`;
@@ -129,69 +155,6 @@ function updateMatrixData() {
         document.getElementById('barTakeHome').style.width = `${(takeHome / gross) * 100}%`;
     }
     drawFlowLines(expRatio, taxRate, netProfit, gross);
-}
-
-// Free Google Apps Script execution stream pipeline
-async function sendToGoogleSheets() {
-    const endpoint = apiInput.value.trim();
-    const statusText = document.getElementById('syncStatus');
-    
-    if (!endpoint) {
-        statusText.style.color = '#f87171';
-        statusText.innerText = "Error: Paste your Google Web App URL first!";
-        return;
-    }
-
-    const date = document.getElementById('formDate').value;
-    const client = document.getElementById('formClient').value.trim();
-    const amount = parseFloat(document.getElementById('formAmount').value) || 0;
-    const currency = document.getElementById('formCurrency').value;
-    const fees = (parseFloat(document.getElementById('formFees').value) || 0) / 100;
-    const expenses = parseFloat(document.getElementById('formExpenses').value) || 0;
-    const withholding = document.getElementById('formWithholdingToggle').value;
-    const withholdingAmt = parseFloat(document.getElementById('formWithholdingAmt').value) || 0;
-
-    if (!client || amount <= 0) {
-        statusText.style.color = '#f87171';
-        statusText.innerText = "Error: Client Name & Invoice Amount are required!";
-        return;
-    }
-
-    statusText.style.color = '#eab308';
-    statusText.innerText = "Streaming to Google Cloud...";
-
-    const payload = {
-        data: {
-            "Date": date,
-            "Client Name": client,
-            "Invoice Amount": amount,
-            "Currency Recieved": currency,
-            "Platform Fees": fees,
-            "Business Expenses": expenses,
-            "Withholding Tax Deducted?": withholding,
-            "Withholding Amount": withholdingAmt
-        }
-    };
-
-    try {
-        const response = await fetch(endpoint, {
-            method: 'POST',
-            body: JSON.stringify(payload)
-        });
-        const result = await response.json();
-
-        if (result.status === "success") {
-            statusText.style.color = '#4ade80';
-            statusText.innerText = "✔ Success! Row logged into Google Sheets.";
-            document.getElementById('formClient').value = '';
-            document.getElementById('formAmount').value = '';
-        } else {
-            throw new Error(result.message);
-        }
-    } catch (err) {
-        statusText.style.color = '#f87171';
-        statusText.innerText = "Connection Failed. Check your Google Deployment Web App URL.";
-    }
 }
 
 inputRevenue.addEventListener('input', updateMatrixData);

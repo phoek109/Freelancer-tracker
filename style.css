@@ -10,13 +10,28 @@ body {
     overflow: hidden;
 }
 
+/* FIXED: Premium Custom Cyberpunk Scrollbar Configuration Styles */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #070a13;
+}
+::-webkit-scrollbar-thumb {
+    background: #1e293b;
+    border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #38bdf8;
+}
+
 .app-layout {
     display: flex;
     height: 100vh;
     width: 100vw;
 }
 
-/* LEFT SIDEBAR STYLING */
 .sidebar {
     width: 340px;
     background-color: #0f1626;
@@ -102,7 +117,6 @@ body {
     font-weight: 600;
 }
 
-/* RIGHT PANEL STYLING */
 .main-content {
     flex: 1;
     padding: 40px;
@@ -192,7 +206,6 @@ body {
 .text-yellow { color: #facc15; }
 .text-green { color: #4ade80; }
 
-/* Arrange the three category legend groups neatly */
 .dashboard-breakdowns {
     display: flex;
     flex-direction: column;
@@ -219,7 +232,6 @@ body {
     min-width: 150px;
 }
 
-/* Color Dot Indicators for Legend Panels */
 .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
 .dot-active { background: #38bdf8; }
 .dot-retainer { background: #a855f7; }
@@ -230,6 +242,18 @@ body {
 .dot-withholding { background: #64748b; }
 
 .breakdown-box strong { color: #f8fafc; font-family: 'JetBrains Mono', monospace; }
+
+/* FIXED: Dedicated layout panel space styling for the 1 Billion wide row slider */
+.full-width-control {
+    background: rgba(30, 41, 59, 0.15);
+    border: 1px solid #1e293b;
+    padding: 18px 24px;
+    border-radius: 14px;
+    margin-bottom: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
 
 .settings-grid {
     display: grid;
@@ -299,4 +323,21 @@ body {
 .curr-btn.active {
     background: #38bdf8;
     color: #070a13;
+}
+
+.toggle-mode-btn {
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: #38bdf8;
+    padding: 8px;
+    font-weight: 700;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    transition: all 0.2s;
+}
+.toggle-mode-btn:hover {
+    background: #2563eb;
+    color: #ffffff;
 }
