@@ -1,0 +1,30 @@
+@import url('https://googleapis.com');
+
+/* GLOBAL CORE SYSTEM DESIGN COLORS */
+:root {
+    --bg-dark: #070a13;
+    --panel-dark: #0f172a;
+    --border-color: #1e293b;
+    --text-primary: #f8fafc;
+    --text-secondary: #64748b;
+    --neon-blue: #38bdf8;
+    --neon-red: #f87171;
+    --neon-yellow: #facc15;
+    --neon-green: #4ade80;
+}
+
+/* CUSTOM HIGH-END TRANSPARENT PILL SCROLLBARS */
+::-webkit-scrollbar { 
+    width: 5px; 
+    height: 5px; 
+}
+::-webkit-scrollbar-track { 
+    background: var(--bg-dark); 
+}
+::-webkit-scrollbar-thumb { 
+    background: #1e293b; 
+    border-radius: 999px; 
+}
+::-webkit-scrollbar-thumb:hover { 
+    background: var(--neon-blue); 
+}
