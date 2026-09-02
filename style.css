@@ -54,6 +54,8 @@ body {
 }
 
 .sidebar input, .sidebar select {
+    width: 100%;
+    box-sizing: border-box;
     background-color: #070a13;
     border: 1px solid #1e293b;
     color: #f8fafc;
@@ -189,6 +191,45 @@ body {
 .text-red { color: #f87171; }
 .text-yellow { color: #facc15; }
 .text-green { color: #4ade80; }
+
+/* Arrange the three category legend groups neatly */
+.dashboard-breakdowns {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 28px;
+    background: rgba(30, 41, 59, 0.25);
+    padding: 16px 20px;
+    border-radius: 16px;
+    border: 1px solid rgba(30, 41, 59, 0.4);
+}
+
+.breakdown-box {
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.breakdown-title { 
+    font-family: 'JetBrains Mono', monospace;
+    color: #64748b; 
+    font-weight: 700; 
+    min-width: 150px;
+}
+
+/* Color Dot Indicators for Legend Panels */
+.dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+.dot-active { background: #38bdf8; }
+.dot-retainer { background: #a855f7; }
+.dot-software { background: #f87171; }
+.dot-marketing { background: #facc15; }
+.dot-hardware { background: #f472b6; }
+.dot-income-tax { background: #fb923c; }
+.dot-withholding { background: #64748b; }
+
+.breakdown-box strong { color: #f8fafc; font-family: 'JetBrains Mono', monospace; }
 
 .settings-grid {
     display: grid;
