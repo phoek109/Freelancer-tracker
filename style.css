@@ -37,41 +37,120 @@ body {
     color: #38bdf8;
     border-bottom: 1px solid rgba(56, 189, 248, 0.2);
     padding-bottom: 6px;
+    margin-top: 4px;
+}
+
+/* Upgraded Main Category Pill Selector Buttons Row */
+.category-pill-group {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+}
+.cat-pill {
+    flex: 1;
+    background: #070a13;
+    border: 1px solid #1e293b;
+    color: #64748b;
+    padding: 10px 4px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+}
+.cat-pill.active {
+    background: #38bdf8;
+    color: #070a13;
+    border-color: #38bdf8;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+}
+
+/* Dynamic Sub-Category Management Tool UI */
+.subcat-manager-box {
+    background: #070a13;
+    border: 1px solid #1e293b;
+    border-radius: 10px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-height: 24px;
+}
+.subcat-tag {
+    background: #1e293b;
+    color: #f8fafc;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.subcat-tag button {
+    background: transparent;
+    border: none;
+    color: #f87171;
+    cursor: pointer;
+    padding: 0;
+    font-size: 10px;
+    font-weight: bold;
+}
+.add-subcat-row {
+    display: flex;
+    gap: 8px;
+}
+.add-subcat-row input {
+    flex: 1 !important;
+}
+#btnSaveSubCat {
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: #38bdf8;
+    padding: 0 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+}
+#btnSaveSubCat:hover {
+    background: #38bdf8;
+    color: #070a13;
 }
 
 .input-group { display: flex; flex-direction: column; gap: 6px; }
 .input-group label { font-size: 12px; font-weight: 600; color: #64748b; }
 
-.toggle-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.mini-toggle-btn {
-    background: transparent;
-    border: none;
-    color: #38bdf8;
-    font-size: 11px;
-    font-weight: 700;
-    cursor: pointer;
-    font-family: inherit;
-    padding: 0;
-}
-
-.sidebar input, .sidebar select {
+/* FIXED: High-contrast bright layout formatting for calculation input text boxes */
+.sidebar input.bright-input, .sidebar select.bright-input {
     width: 100%;
     box-sizing: border-box;
-    background-color: #070a13;
-    border: 1px solid #1e293b;
-    color: #f8fafc;
-    padding: 10px;
+    background-color: #111827 !important;
+    border: 1px solid #374151 !important;
+    color: #f3f4f6 !important;
+    padding: 11px 14px;
     border-radius: 8px;
     font-family: inherit;
-    font-size: 13px;
+    font-size: 14px;
     outline: none;
 }
-.sidebar input:focus, .sidebar select:focus { border-color: #38bdf8; }
+.sidebar input.bright-input::placeholder {
+    color: #6b7280 !important;
+}
+.sidebar input.bright-input:focus, .sidebar select.bright-input:focus {
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.15);
+}
+.sidebar input.active-field {
+    border-color: #4b5563 !important;
+    font-weight: 700;
+}
 
 .hidden { display: none !important; }
 
@@ -132,7 +211,6 @@ body {
 .text-yellow { color: #facc15; }
 .text-green { color: #4ade80; }
 
-/* FIXED: Upgraded Dynamic Segment Layout Area for custom dynamic categories lists */
 .dashboard-breakdowns {
     background: rgba(7, 10, 19, 0.6);
     border: 1px solid #1e293b; border-radius: 16px; padding: 20px;
@@ -144,33 +222,16 @@ body {
     color: #64748b; font-weight: 700; margin-bottom: 12px; letter-spacing: 0.5px;
 }
 
-.dynamic-container-list {
-    display: flex; flex-direction: column; gap: 12px;
-}
+.dynamic-container-list { display: flex; flex-direction: column; gap: 12px; }
 
-/* Dynamic Row Element Blueprint Properties */
 .dynamic-bar-row {
-    display: grid;
-    grid-template-columns: 140px 1fr 90px;
-    align-items: center;
-    gap: 16px;
-    font-size: 12px;
+    display: grid; grid-template-columns: 140px 1fr 90px; align-items: center; gap: 16px; font-size: 12px;
 }
+.dynamic-bar-label { font-weight: 600; color: #94a3b8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dynamic-bar-track { height: 4px; background: #1e293b; border-radius: 2px; overflow: hidden; position: relative; }
+.dynamic-bar-fill { height: 100%; width: 0%; border-radius: 2px; transition: width 0.3s ease; }
+.dynamic-bar-value { text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #f8fafc; }
 
-.dynamic-bar-label {
-    font-weight: 600; color: #94a3b8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-.dynamic-bar-track {
-    height: 4px; background: #1e293b; border-radius: 2px; overflow: hidden; position: relative;
-}
-.dynamic-bar-fill {
-    height: 100%; width: 0%; border-radius: 2px; transition: width 0.3s ease;
-}
-.dynamic-bar-value {
-    text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #f8fafc;
-}
-
-/* Dynamic Sub-Category Colors based on parent branches */
 .fill-income { background-color: #38bdf8; box-shadow: 0 0 6px #38bdf8; }
 .fill-expense { background-color: #f87171; box-shadow: 0 0 6px #f87171; }
 .fill-tax { background-color: #facc15; box-shadow: 0 0 6px #facc15; }

@@ -9,62 +9,63 @@
 <body>
     <div class="app-layout">
         
-        <!-- LEFT SIDEBAR: Dynamic Ledger Input Sidebar -->
+        <!-- LEFT SIDEBAR: Upgraded Interactive Control Dock -->
         <div class="sidebar">
             <div class="sidebar-header">DATABASE SETUP</div>
             <div class="form-block">
-                <input type="text" id="apiEndpoint" placeholder="Paste Google Web App URL here..." value="">
+                <input type="text" id="apiEndpoint" placeholder="Paste Google Web App URL here..." class="bright-input">
                 <small class="help-text">Deploy your Google Sheet script to get an unlimited backend link.</small>
             </div>
 
-            <div class="sidebar-header">TRANSACTION LOG ENTRY</div>
+            <div class="sidebar-header">1. CHOOSE TRANSACTION TYPE</div>
+            <!-- Main category selection blocks displayed permanently on form -->
+            <div class="category-pill-group">
+                <button type="button" id="catBtn-income" class="cat-pill active" onclick="selectMainCategory('income')">INCOME</button>
+                <button type="button" id="catBtn-expense" class="cat-pill" onclick="selectMainCategory('expense')">EXPENSE</button>
+                <button type="button" id="catBtn-tax" class="cat-pill" onclick="selectMainCategory('tax')">TAX VAULT</button>
+            </div>
+
+            <div class="sidebar-header">2. MANAGE SUB-CATEGORIES</div>
+            <div class="subcat-manager-box">
+                <!-- Live tag cloud container where users can see and delete custom options -->
+                <div id="subCategoryTagsContainer" class="tag-cloud"></div>
+                <div class="add-subcat-row">
+                    <input type="text" id="newSubCatNameInput" placeholder="Add custom sub-category...">
+                    <button type="button" id="btnSaveSubCat" onclick="addNewSubCategoryFromSidebar()">+ SAVE</button>
+                </div>
+            </div>
+
+            <div class="sidebar-header">3. LOG DETAILS</div>
             <div class="form-grid">
                 <div class="input-group">
                     <label>Date</label>
-                    <input type="date" id="formDate">
+                    <input type="date" id="formDate" class="bright-input">
                 </div>
                 <div class="input-group">
                     <label>Description / Client</label>
-                    <input type="text" id="formClient" placeholder="e.g., Design Contract, Internet Bill">
+                    <input type="text" id="formClient" placeholder="e.g., Design Retainer, Hosting Bill" class="bright-input">
                 </div>
                 <div class="input-group">
-                    <label>Amount</label>
-                    <input type="number" id="formAmount" placeholder="0.00">
-                </div>
-                <div class="input-group">
-                    <label>Main Category</label>
-                    <select id="formMainCategory" onchange="handleMainCategoryChange()">
-                        <option value="income">Gross Income</option>
-                        <option value="expense">Business Expense</option>
-                        <option value="tax">Tax Reserve</option>
+                    <label>Transaction Sub-Category Target</label>
+                    <select id="formSubCategorySelect" class="bright-input">
+                        <!-- Options filled dynamically based on selection -->
                     </select>
                 </div>
-
-                <!-- DYNAMIC TOGGLE SUB-CATEGORY BLOCK -->
                 <div class="input-group">
-                    <div class="toggle-header">
-                        <label>Sub-Category Breakdown</label>
-                        <button type="button" class="mini-toggle-btn" onclick="toggleSubCategoryInput()">[+] New Custom</button>
-                    </div>
-                    
-                    <!-- Standard Selector -->
-                    <select id="formSubCategorySelect">
-                        <!-- Options populated dynamically based on Main Category selection -->
-                    </select>
-                    
-                    <!-- Hidden input box triggered via the custom toggle button -->
-                    <input type="text" id="formSubCategoryNew" placeholder="Type new sub-category name..." class="hidden">
+                    <label>Amount (Base Value)</label>
+                    <!-- High-contrast bright configuration input field -->
+                    <input type="number" id="formAmount" placeholder="Enter numerical value..." class="bright-input active-field" step="0.01">
                 </div>
 
-                <!-- Configuration Parameters Block -->
+                <!-- Dynamic parameter field logic cards -->
                 <div id="incomeExtraFields" class="input-group">
-                    <label>Platform Fees (%)</label>
-                    <input type="number" id="formFees" placeholder="e.g., 5" value="0">
+                    <label>Platform Fees Deducted (%)</label>
+                    <input type="number" id="formFees" placeholder="e.g., 5" value="0" class="bright-input">
                 </div>
 
                 <div id="taxExtraFields" class="input-group hidden">
                     <label>Is Withholding Tax?</label>
-                    <select id="formWithholdingToggle">
+                    <select id="formWithholdingToggle" class="bright-input">
                         <option value="No">No</option>
                         <option value="Yes">Yes</option>
                     </select>
@@ -111,9 +112,7 @@
                 <!-- DYNAMIC BREAKDOWN SCROLL MARQUEE AREA -->
                 <div class="dashboard-breakdowns">
                     <div class="matrix-subsection-title">DYNAMIC MATRIX LEGEND BREAKDOWN</div>
-                    <div id="dynamicBreakdownContainer" class="dynamic-container-list">
-                        <!-- Custom Sub-Category progress bars will generate here instantly via JavaScript -->
-                    </div>
+                    <div id="dynamicBreakdownContainer" class="dynamic-container-list"></div>
                 </div>
 
                 <!-- 1 Billion Full-Width Slider Marquee Panel -->

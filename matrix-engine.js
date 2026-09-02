@@ -1,7 +1,6 @@
 let currentCurrency = '$';
 let isLiveTrackingMode = true;
 
-// Dynamic categories system tracking pool arrays
 window.subCategoriesCache = {
     income: ['Active Invoice', 'Client Retainers'],
     expense: ['Software/Tools', 'Marketing/Ads', 'Hardware/Office'],
@@ -12,7 +11,7 @@ window.localHistoryTotals = {
     gross: 0,
     expenses: 0,
     taxWithheld: 0,
-    breakdownValues: {} // Key: subCategoryName, Value: accumulatedAmount
+    breakdownValues: {}
 };
 
 const inputRevenue = document.getElementById('inputRevenue');
@@ -101,17 +100,15 @@ function drawFlowLines(expRatio, taxRate, netProfit, gross) {
     ctx.fillText(currentCurrency, startX, startY + 4); ctx.textAlign = 'left';
 }
 
-// FIXED: Upgraded compilation function to render custom progress bars dynamically
 function renderDynamicLegendBars(gross, totalExpenses, taxReserve) {
     const container = document.getElementById('dynamicBreakdownContainer');
-    container.innerHTML = ''; // Wipe stale items
+    container.innerHTML = '';
     
     const bValues = window.localHistoryTotals.breakdownValues;
     const caches = window.subCategoriesCache;
 
-    // Helper builder script to output structural micro-bar layout modules
     function buildBarRow(name, amount, parentMaxAmount, colorClass) {
-        if (amount === 0) return; // Hide empty brackets to avoid dashboard clutter
+        if (amount === 0) return;
         const percentage = parentMaxAmount > 0 ? Math.round((amount / parentMaxAmount) * 100) : 0;
         
         const row = document.createElement('div');
@@ -126,14 +123,12 @@ function renderDynamicLegendBars(gross, totalExpenses, taxReserve) {
         container.appendChild(row);
     }
 
-    // Loop and draw active sub-items dynamically grouped by main branches
     caches.income.forEach(name => buildBarRow(name, bValues[name] || 0, gross, 'fill-income'));
     caches.expense.forEach(name => buildBarRow(name, bValues[name] || 0, totalExpenses, 'fill-expense'));
     caches.tax.forEach(name => buildBarRow(name, bValues[name] || 0, taxReserve, 'fill-tax'));
     
-    // Add baseline empty message card if no elements are logged yet
     if(container.innerHTML === '') {
-        container.innerHTML = `<span style="font-size:12px; color:#475569; text-align:center; display:block; width:100%;">No custom breakdowns logged yet. Stream transactions to build ledger elements.</span>`;
+        container.innerHTML = `<span style="font-size:11px; color:#475569; text-align:center; display:block; width:100%;">No active breakdown values to plot. Fill entries in the sidebar form to generate bars.</span>`;
     }
 }
 
@@ -169,7 +164,7 @@ function updateMatrixData() {
     const taxReserve = (netProfit > 0 ? netProfit * taxRate : 0) + totals.taxWithheld;
     const takeHome = netProfit - (netProfit > 0 ? netProfit * taxRate : 0);
 
-    // Dynamic predictive filler logic for default demo view states
+    // Injects default sandbox mock values ONLY if user hasn't logged real data entries yet
     if(gross > 0 && Object.keys(totals.breakdownValues).length === 0) {
         totals.breakdownValues['Active Invoice'] = gross * 0.65;
         totals.breakdownValues['Client Retainers'] = gross * 0.35;
