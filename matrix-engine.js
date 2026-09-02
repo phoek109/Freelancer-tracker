@@ -1,7 +1,8 @@
 let currentCurrency = '$';
 let isLiveTrackingMode = true;
 
-window.subCategoriesCache = {
+// Shared object tracking the dynamic user configuration keys across scripts
+window.ledgerFrameworkState = {
     income: ['Active Invoice', 'Client Retainers'],
     expense: ['Software/Tools', 'Marketing/Ads', 'Hardware/Office'],
     tax: ['Income Tax Reserve', 'Withholding Vault']
@@ -11,7 +12,7 @@ window.localHistoryTotals = {
     gross: 0,
     expenses: 0,
     taxWithheld: 0,
-    breakdownValues: {}
+    breakdownValues: {} // Populated live from the respective sidebar amount inputs
 };
 
 const inputRevenue = document.getElementById('inputRevenue');
@@ -105,7 +106,7 @@ function renderDynamicLegendBars(gross, totalExpenses, taxReserve) {
     container.innerHTML = '';
     
     const bValues = window.localHistoryTotals.breakdownValues;
-    const caches = window.subCategoriesCache;
+    const frameworks = window.ledgerFrameworkState;
 
     function buildBarRow(name, amount, parentMaxAmount, colorClass) {
         if (amount === 0) return;
@@ -123,18 +124,23 @@ function renderDynamicLegendBars(gross, totalExpenses, taxReserve) {
         container.appendChild(row);
     }
 
-    caches.income.forEach(name => buildBarRow(name, bValues[name] || 0, gross, 'fill-income'));
-    caches.expense.forEach(name => buildBarRow(name, bValues[name] || 0, totalExpenses, 'fill-expense'));
-    caches.tax.forEach(name => buildBarRow(name, bValues[name] || 0, taxReserve, 'fill-tax'));
+    frameworks.income.forEach(name => buildBarRow(name, bValues[name] || 0, gross, 'fill-income'));
+    frameworks.expense.forEach(name => buildBarRow(name, bValues[name] || 0, totalExpenses, 'fill-expense'));
+    frameworks.tax.forEach(name => buildBarRow(name, bValues[name] || 0, taxReserve, 'fill-tax'));
     
     if(container.innerHTML === '') {
-        container.innerHTML = `<span style="font-size:11px; color:#475569; text-align:center; display:block; width:100%;">No active breakdown values to plot. Fill entries in the sidebar form to generate bars.</span>`;
+        container.innerHTML = `<span style="font-size:11px; color:#475569; text-align:center; display:block; width:100%;">No active breakdown values to plot. Enter values in the sidebar rows above.</span>`;
     }
 }
 
 function updateMatrixData() {
     let gross, expRatio, taxRate;
     const totals = window.localHistoryTotals;
+
+    // Scan the sidebar live inputs to compute totals natively from individual amount boxes
+    if (typeof scanAndAggregateSidebarInputs === 'function') {
+        scanAndAggregateSidebarInputs();
+    }
 
     if (isLiveTrackingMode) {
         gross = totals.gross;
@@ -163,17 +169,6 @@ function updateMatrixData() {
     const netProfit = gross - totalExpenses;
     const taxReserve = (netProfit > 0 ? netProfit * taxRate : 0) + totals.taxWithheld;
     const takeHome = netProfit - (netProfit > 0 ? netProfit * taxRate : 0);
-
-    // Injects default sandbox mock values ONLY if user hasn't logged real data entries yet
-    if(gross > 0 && Object.keys(totals.breakdownValues).length === 0) {
-        totals.breakdownValues['Active Invoice'] = gross * 0.65;
-        totals.breakdownValues['Client Retainers'] = gross * 0.35;
-        totals.breakdownValues['Software/Tools'] = totalExpenses * 0.4;
-        totals.breakdownValues['Marketing/Ads'] = totalExpenses * 0.35;
-        totals.breakdownValues['Hardware/Office'] = totalExpenses * 0.25;
-        totals.breakdownValues['Income Tax Reserve'] = taxReserve * 0.8;
-        totals.breakdownValues['Withholding Vault'] = taxReserve * 0.2;
-    }
 
     document.getElementById('valRevenue').innerText = `${currentCurrency}${gross.toLocaleString()}`;
     document.getElementById('valRatio').innerText = `${inputRatio.value}%`;
