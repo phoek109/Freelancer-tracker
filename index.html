@@ -9,7 +9,7 @@
 <body>
     <div class="app-layout">
         
-        <!-- LEFT SIDEBAR: Upgraded Interactive Control Dock -->
+        <!-- LEFT SIDEBAR: Upgraded Dynamic Form Dock -->
         <div class="sidebar">
             <div class="sidebar-header">DATABASE SETUP</div>
             <div class="form-block">
@@ -18,7 +18,6 @@
             </div>
 
             <div class="sidebar-header">1. CHOOSE TRANSACTION TYPE</div>
-            <!-- Main category selection blocks displayed permanently on form -->
             <div class="category-pill-group">
                 <button type="button" id="catBtn-income" class="cat-pill active" onclick="selectMainCategory('income')">INCOME</button>
                 <button type="button" id="catBtn-expense" class="cat-pill" onclick="selectMainCategory('expense')">EXPENSE</button>
@@ -27,7 +26,6 @@
 
             <div class="sidebar-header">2. MANAGE SUB-CATEGORIES</div>
             <div class="subcat-manager-box">
-                <!-- Live tag cloud container where users can see and delete custom options -->
                 <div id="subCategoryTagsContainer" class="tag-cloud"></div>
                 <div class="add-subcat-row">
                     <input type="text" id="newSubCatNameInput" placeholder="Add custom sub-category...">
@@ -42,22 +40,23 @@
                     <input type="date" id="formDate" class="bright-input">
                 </div>
                 <div class="input-group">
-                    <label>Description / Client</label>
-                    <input type="text" id="formClient" placeholder="e.g., Design Retainer, Hosting Bill" class="bright-input">
+                    <label id="lblDescription">Description / Client</label>
+                    <input type="text" id="formClient" placeholder="e.g., Design Retainer" class="bright-input">
                 </div>
                 <div class="input-group">
-                    <label>Transaction Sub-Category Target</label>
+                    <label id="lblSubCategory">Transaction Sub-Category Target</label>
                     <select id="formSubCategorySelect" class="bright-input">
-                        <!-- Options filled dynamically based on selection -->
+                        <!-- Options filled dynamically -->
                     </select>
                 </div>
+                
+                <!-- FIXED DYNAMIC ADAPTIVE INPUT FIELD -->
                 <div class="input-group">
-                    <label>Amount (Base Value)</label>
-                    <!-- High-contrast bright configuration input field -->
+                    <label id="lblAmount">Invoice Amount</label>
                     <input type="number" id="formAmount" placeholder="Enter numerical value..." class="bright-input active-field" step="0.01">
                 </div>
 
-                <!-- Dynamic parameter field logic cards -->
+                <!-- Dynamic parameter field dependencies cards -->
                 <div id="incomeExtraFields" class="input-group">
                     <label>Platform Fees Deducted (%)</label>
                     <input type="number" id="formFees" placeholder="e.g., 5" value="0" class="bright-input">
@@ -109,13 +108,11 @@
                     </div>
                 </div>
 
-                <!-- DYNAMIC BREAKDOWN SCROLL MARQUEE AREA -->
                 <div class="dashboard-breakdowns">
                     <div class="matrix-subsection-title">DYNAMIC MATRIX LEGEND BREAKDOWN</div>
                     <div id="dynamicBreakdownContainer" class="dynamic-container-list"></div>
                 </div>
 
-                <!-- 1 Billion Full-Width Slider Marquee Panel -->
                 <div class="full-width-control">
                     <div class="control-header">
                         <span>ANNUAL REVENUE CONFIGURATION (UP TO 1 BILLION)</span>

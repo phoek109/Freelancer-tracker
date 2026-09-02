@@ -3,7 +3,6 @@ const subCatSelect = document.getElementById('formSubCategorySelect');
 const newSubInput = document.getElementById('newSubCatNameInput');
 const tagsContainer = document.getElementById('subCategoryTagsContainer');
 
-// Local tracking state configuration for active category pill button
 let activeMainCategory = 'income';
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -12,12 +11,12 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     document.getElementById('formDate').valueAsDate = new Date();
     
-    // Load custom sub-categories from memory pool if they exist
     if (localStorage.getItem('customSubCatsCache')) {
         window.subCategoriesCache = JSON.parse(localStorage.getItem('customSubCatsCache'));
     }
     
-    refreshSubCategoryUI(); // Build initial layout list options
+    refreshSubCategoryUI();
+    selectMainCategory('income'); // Lock baseline view on boot
     
     setTimeout(() => {
         if (typeof resizeCanvas === 'function') resizeCanvas();
@@ -29,26 +28,53 @@ apiInput.addEventListener('input', (e) => {
     localStorage.setItem('userSheetDB', e.target.value);
 });
 
-// FIXED: Handles switching category pill selectors displayed directly on form layout
+// FIXED: Form interface dynamically morphs labels to make clear they are distinct logs
 function selectMainCategory(categoryName) {
     activeMainCategory = categoryName;
     
-    // Update visual button active class highlights
     document.querySelectorAll('.cat-pill').forEach(btn => btn.classList.remove('active'));
     document.getElementById(`catBtn-${categoryName}`).classList.add('active');
     
-    // Toggle input field container dependencies
+    // Clear out the value in the amount box so stale data isn't left visible
+    document.getElementById('formAmount').value = '';
+    document.getElementById('formClient').value = '';
+
+    // Dynamically warp text tags based on chosen operation type
+    const lblDesc = document.getElementById('lblDescription');
+    const lblSub = document.getElementById('lblSubCategory');
+    const lblAmt = document.getElementById('lblAmount');
+    const txtClient = document.getElementById('formClient');
+    const txtAmount = document.getElementById('formAmount');
+
+    if (categoryName === 'income') {
+        lblDesc.innerText = "Description / Client";
+        txtClient.placeholder = "e.g., Website Project Retainer";
+        lblSub.innerText = "Income Sub-Category Target";
+        lblAmt.innerText = "Invoice Amount (Gross Earnings)";
+        txtAmount.placeholder = "Enter gross invoice value...";
+    } else if (categoryName === 'expense') {
+        lblDesc.innerText = "Expense / Vendor Item";
+        txtClient.placeholder = "e.g., Monthly Hosting Bill, Adobe License";
+        lblSub.innerText = "Expense Sub-Category Target";
+        lblAmt.innerText = "Expense Outflow Cost";
+        txtAmount.placeholder = "Enter expense cost numerical value...";
+    } else if (categoryName === 'tax') {
+        lblDesc.innerText = "Tax Event Notes";
+        txtClient.placeholder = "e.g., Q2 Estimated Payment";
+        lblSub.innerText = "Tax Vault Category Target";
+        lblAmt.innerText = "Tax Adjustment Amount";
+        txtAmount.placeholder = "Enter tax adjustment numerical value...";
+    }
+    
     document.getElementById('incomeExtraFields').classList.toggle('hidden', categoryName !== 'income');
     document.getElementById('taxExtraFields').classList.toggle('hidden', categoryName !== 'tax');
     
     refreshSubCategoryUI();
 }
 
-// FIXED: Re-compiles dropdown choices and matching edit tags inside the manager box
 function refreshSubCategoryUI() {
     const activeList = window.subCategoriesCache[activeMainCategory];
     
-    // 1. Rebuild standard selector options
     subCatSelect.innerHTML = '';
     activeList.forEach(name => {
         const opt = document.createElement('option');
@@ -57,7 +83,6 @@ function refreshSubCategoryUI() {
         subCatSelect.appendChild(opt);
     });
 
-    // 2. Rebuild editable delete tag cloud blocks
     tagsContainer.innerHTML = '';
     activeList.forEach((name, idx) => {
         const tag = document.createElement('div');
@@ -70,7 +95,6 @@ function refreshSubCategoryUI() {
     });
 }
 
-// FIXED: Saves a brand new custom sub-category value into configuration memory state
 function addNewSubCategoryFromSidebar() {
     const rawVal = newSubInput.value.trim();
     if (!rawVal) return;
@@ -83,14 +107,11 @@ function addNewSubCategoryFromSidebar() {
     }
 }
 
-// FIXED: Deletes a sub-category directly from the ledger management tag cluster
 function deleteSubCategoryByIndex(indexNumber) {
     const activeList = window.subCategoriesCache[activeMainCategory];
     activeList.splice(indexNumber, 1);
     localStorage.setItem('customSubCatsCache', JSON.stringify(window.subCategoriesCache));
     refreshSubCategoryUI();
-    
-    // Refresh right dashboard values immediately to update graphs
     if (typeof updateMatrixData === 'function') updateMatrixData();
 }
 
@@ -112,13 +133,12 @@ async function sendToGoogleSheets() {
     const withholdingAmt = parseFloat(document.getElementById('formWithholdingAmt').value) || 0;
 
     if (!client || amount <= 0 || !subCat) {
-        statusText.style.color = '#f87171'; statusText.innerText = "Error: Description, Amount & Sub-Category are required!"; return;
+        statusText.style.color = '#f87171'; statusText.innerText = "Error: All transaction details are required!"; return;
     }
 
     statusText.style.color = '#eab308'; statusText.innerText = "Streaming to Google Cloud...";
     const totals = window.localHistoryTotals;
 
-    // Reset fallback sandbox mock items upon first transaction logging sequence
     if (totals.gross === 0 && Object.keys(totals.breakdownValues).length <= 7) {
         totals.breakdownValues = {};
     }
