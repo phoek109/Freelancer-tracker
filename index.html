@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium Matrix Ledger App</title>
+    <title>Premium Dynamic Flow Matrix Tracker</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="app-layout">
         
-        <!-- LEFT SIDEBAR: Dynamic Ledger Form Builder -->
+        <!-- LEFT SIDEBAR: Independent Multi-Row Ledger Form Docks -->
         <div class="sidebar">
             <div class="sidebar-header">DATABASE SETUP</div>
             <div class="form-block">
@@ -17,6 +17,7 @@
                 <small class="help-text">Deploy your Google Sheet script to get an unlimited backend link.</small>
             </div>
 
+            <!-- CORE META DATA SPECIFICATIONS -->
             <div class="sidebar-header">GENERAL DETAILS</div>
             <div class="form-grid-row">
                 <div class="input-group-half">
@@ -25,46 +26,77 @@
                 </div>
                 <div class="input-group-half">
                     <label>Description / Client</label>
-                    <input type="text" id="formClient" placeholder="e.g., Monthly Aggregated Log" class="bright-input">
+                    <input type="text" id="formClient" placeholder="e.g., Q1 Milestone Deliverables" class="bright-input">
                 </div>
             </div>
 
-            <!-- SECTION A: INCOME -->
-            <div class="sidebar-header color-blue-title">💰 GROSS INCOME PIPELINES</div>
+            <!-- SECTION A: INCOME OUTLET (PERMANENT) -->
+            <div class="sidebar-header color-blue-title">💰 GROSS INCOME PIPELINE</div>
             <div class="custom-ledg-row border-blue">
-                <div id="income-rows-container" class="dynamic-entry-list">
-                    <!-- Dynamic Rows containing category names + amount inputs insert here -->
+                <div class="input-group">
+                    <label>Income Sub-Category</label>
+                    <div class="row-flex-input">
+                        <select id="select-income" class="bright-input"></select>
+                        <input type="text" id="new-income-txt" placeholder="Add custom..." class="bright-input mini-text">
+                        <button type="button" class="action-btn" onclick="addNewSubCategory('income')">+</button>
+                    </div>
                 </div>
-                <div class="add-subcat-row">
-                    <input type="text" id="new-income-name" placeholder="New Income Stream...">
-                    <button type="button" class="action-btn" onclick="createNewLedgerRow('income')">+</button>
+                <div class="input-group-grid">
+                    <div class="grid-cell">
+                        <label>Invoice Amount ($)</label>
+                        <input type="number" id="amt-income" placeholder="0.00" class="bright-input input-highlight-blue" step="0.01">
+                    </div>
+                    <div class="grid-cell">
+                        <label>Platform Fees (%)</label>
+                        <input type="number" id="fee-income" placeholder="0" value="0" class="bright-input">
+                    </div>
                 </div>
             </div>
 
-            <!-- SECTION B: EXPENSES -->
-            <div class="sidebar-header color-red-title">📉 BUSINESS EXPENSES PIPELINES</div>
+            <!-- SECTION B: BUSINESS EXPENSES OUTLET (PERMANENT) -->
+            <div class="sidebar-header color-red-title">📉 Business Expenses Pipeline</div>
             <div class="custom-ledg-row border-red">
-                <div id="expense-rows-container" class="dynamic-entry-list">
-                    <!-- Dynamic Rows containing category names + amount inputs insert here -->
+                <div class="input-group">
+                    <label>Expense Sub-Category</label>
+                    <div class="row-flex-input">
+                        <select id="select-expense" class="bright-input"></select>
+                        <input type="text" id="new-expense-txt" placeholder="Add custom..." class="bright-input mini-text">
+                        <button type="button" class="action-btn" onclick="addNewSubCategory('expense')">+</button>
+                    </div>
                 </div>
-                <div class="add-subcat-row">
-                    <input type="text" id="new-expense-name" placeholder="New Expense Category...">
-                    <button type="button" class="action-btn" onclick="createNewLedgerRow('expense')">+</button>
+                <div class="input-group">
+                    <label>Expense Cost ($)</label>
+                    <input type="number" id="amt-expense" placeholder="0.00" class="bright-input input-highlight-red" step="0.01">
                 </div>
             </div>
 
-            <!-- SECTION C: TAX ADJUSTMENTS -->
+            <!-- SECTION C: TAX ADJUSTMENTS OUTLET (PERMANENT) -->
             <div class="sidebar-header color-yellow-title">⚖️ TAX VAULT ADJUSTMENTS</div>
             <div class="custom-ledg-row border-yellow">
-                <div id="tax-rows-container" class="dynamic-entry-list">
-                    <!-- Dynamic Rows containing category names + amount inputs insert here -->
+                <div class="input-group">
+                    <label>Tax Sub-Category</label>
+                    <div class="row-flex-input">
+                        <select id="select-tax" class="bright-input"></select>
+                        <input type="text" id="new-tax-txt" placeholder="Add custom..." class="bright-input mini-text">
+                        <button type="button" class="action-btn" onclick="addNewSubCategory('tax')">+</button>
+                    </div>
                 </div>
-                <div class="add-subcat-row">
-                    <input type="text" id="new-tax-name" placeholder="New Tax Category...">
-                    <button type="button" class="action-btn" onclick="createNewLedgerRow('tax')">+</button>
+                <div class="input-group-grid">
+                    <div class="grid-cell">
+                        <label>Tax Value ($)</label>
+                        <input type="number" id="amt-tax" placeholder="0.00" class="bright-input input-highlight-yellow" step="0.01">
+                    </div>
+                    <div class="grid-cell">
+                        <label>Is Withholding?</label>
+                        <select id="toggle-tax" class="bright-input">
+                            <option value="No">No</option>
+                            <option value="Yes">Yes</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
+            <!-- DISPATCH SYSTEM CONTROLS -->
             <button id="btnSubmit" onclick="dispatchLedgerTransactionBundle()">STREAM RECORD TO SHEET</button>
             <p id="syncStatus" class="status-text"></p>
         </div>

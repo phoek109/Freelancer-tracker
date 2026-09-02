@@ -1,4 +1,16 @@
 const apiInput = document.getElementById('apiEndpoint');
+const subCatSelect = document.getElementById('formSubCategorySelect');
+const newSubInput = document.getElementById('newSubCatNameInput');
+const tagsContainer = document.getElementById('subCategoryTagsContainer');
+
+let activeMainCategory = 'income';
+
+// NEW: Temporary memory bank to hold your inputs when you switch tabs
+let formValueMemory = {
+    income: { description: '', amount: '', fees: '0' },
+    expense: { description: '', amount: '' },
+    tax: { description: '', amount: '', withholding: 'No' }
+};
 
 window.addEventListener('DOMContentLoaded', () => {
     if (localStorage.getItem('userSheetDB')) {
@@ -6,19 +18,12 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     document.getElementById('formDate').valueAsDate = new Date();
     
-    // Load custom sub-categories from memory cache if they exist
     if (localStorage.getItem('customSubCatsCache')) {
         window.subCategoriesCache = JSON.parse(localStorage.getItem('customSubCatsCache'));
-    } else {
-        // Initialize fallback default categories if cache is empty
-        window.subCategoriesCache = {
-            income: ['Active Invoice', 'Client Retainers'],
-            expense: ['Software/Tools', 'Marketing/Ads', 'Hardware/Office'],
-            tax: ['Income Tax Reserve', 'Withholding Vault']
-        };
     }
     
-    refreshAllDropdowns();
+    refreshSubCategoryUI();
+    selectMainCategory('income'); // Set default tab to Income on load
     
     setTimeout(() => {
         if (typeof resizeCanvas === 'function') resizeCanvas();
@@ -30,58 +35,111 @@ apiInput.addEventListener('input', (e) => {
     localStorage.setItem('userSheetDB', e.target.value);
 });
 
-// FIXED: Re-compiles all three sub-category dropdown fields simultaneously in parallel
-function refreshAllDropdowns() {
-    ['income', 'expense', 'tax'].forEach(type => {
-        const selectElement = document.getElementById(`select-${type}`);
-        if (!selectElement) return;
+// FIXED: Remembers your numbers perfectly when switching back and forth
+function selectMainCategory(categoryName) {
+    // 1. SAVE the current inputs into memory before leaving the active tab
+    const currentClient = document.getElementById('formClient').value;
+    const currentAmount = document.getElementById('formAmount').value;
+    
+    formValueMemory[activeMainCategory].description = currentClient;
+    formValueMemory[activeMainCategory].amount = currentAmount;
+    
+    if (activeMainCategory === 'income') {
+        formValueMemory.income.fees = document.getElementById('formFees').value;
+    } else if (activeMainCategory === 'tax') {
+        formValueMemory.tax.withholding = document.getElementById('formWithholdingToggle').value;
+    }
+
+    // 2. SWITCH the active tab selection
+    activeMainCategory = categoryName;
+    document.querySelectorAll('.cat-pill').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(`catBtn-${categoryName}`).classList.add('active');
+    
+    // 3. LOAD the saved numbers back into the input fields instantly
+    document.getElementById('formClient').value = formValueMemory[categoryName].description;
+    document.getElementById('formAmount').value = formValueMemory[categoryName].amount;
+
+    // 4. Update the visual text labels and suggestions dynamically
+    const lblDesc = document.getElementById('lblDescription');
+    const lblSub = document.getElementById('lblSubCategory');
+    const lblAmt = document.getElementById('lblAmount');
+    const txtClient = document.getElementById('formClient');
+    const txtAmount = document.getElementById('formAmount');
+
+    if (categoryName === 'income') {
+        lblDesc.innerText = "Description / Client";
+        txtClient.placeholder = "e.g., Website Project Retainer";
+        lblSub.innerText = "Income Sub-Category Target";
+        lblAmt.innerText = "Invoice Amount (Gross Earnings)";
+        txtAmount.placeholder = "Enter gross invoice value...";
         
-        const activeList = window.subCategoriesCache[type];
+        document.getElementById('formFees').value = formValueMemory.income.fees;
+    } else if (categoryName === 'expense') {
+        lblDesc.innerText = "Expense / Vendor Item";
+        txtClient.placeholder = "e.g., Monthly Hosting Bill, Adobe License";
+        lblSub.innerText = "Expense Sub-Category Target";
+        lblAmt.innerText = "Expense Outflow Cost";
+        txtAmount.placeholder = "Enter expense cost...";
+    } else if (categoryName === 'tax') {
+        lblDesc.innerText = "Tax Event Notes";
+        txtClient.placeholder = "e.g., Q2 Estimated Payment";
+        lblSub.innerText = "Tax Vault Category Target";
+        lblAmt.innerText = "Tax Adjustment Amount";
+        txtAmount.placeholder = "Enter tax adjustment...";
         
-        // Save the current selection state before wiping the choices
-        const previousSelection = selectElement.value;
-        
-        selectElement.innerHTML = '';
-        activeList.forEach(name => {
-            const opt = document.createElement('option');
-            opt.value = name;
-            opt.innerText = name;
-            selectElement.appendChild(opt);
-        });
-        
-        // Restore their selection if that item still exists in the array list
-        if (activeList.includes(previousSelection)) {
-            selectElement.value = previousSelection;
-        }
+        document.getElementById('formWithholdingToggle').value = formValueMemory.tax.withholding;
+    }
+    
+    document.getElementById('incomeExtraFields').classList.toggle('hidden', categoryName !== 'income');
+    document.getElementById('taxExtraFields').classList.toggle('hidden', categoryName !== 'tax');
+    
+    refreshSubCategoryUI();
+}
+
+function refreshSubCategoryUI() {
+    const activeList = window.subCategoriesCache[activeMainCategory];
+    
+    subCatSelect.innerHTML = '';
+    activeList.forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.innerText = name;
+        subCatSelect.appendChild(opt);
+    });
+
+    tagsContainer.innerHTML = '';
+    activeList.forEach((name, idx) => {
+        const tag = document.createElement('div');
+        tag.className = 'subcat-tag';
+        tag.innerHTML = `
+            <span>${name}</span>
+            <button type="button" onclick="deleteSubCategoryByIndex(${idx})">×</button>
+        `;
+        tagsContainer.appendChild(tag);
     });
 }
 
-// FIXED: Saves a new sub-category inline directly from its specific layout row text box
-function addNewSubCategory(type) {
-    const textInput = document.getElementById(`new-${type}-txt`);
-    if (!textInput) return;
-    
-    const rawVal = textInput.value.trim();
+function addNewSubCategoryFromSidebar() {
+    const rawVal = newSubInput.value.trim();
     if (!rawVal) return;
 
-    if (!window.subCategoriesCache[type].includes(rawVal)) {
-        window.subCategoriesCache[type].push(rawVal);
+    if (!window.subCategoriesCache[activeMainCategory].includes(rawVal)) {
+        window.subCategoriesCache[activeMainCategory].push(rawVal);
         localStorage.setItem('customSubCatsCache', JSON.stringify(window.subCategoriesCache));
-        
-        // Clear only this specific text box so other values remain visible
-        textInput.value = '';
-        
-        refreshAllDropdowns();
-        
-        // Instantly force select the brand new sub-category they just created for a clean UX
-        document.getElementById(`select-${type}`).value = rawVal;
-        
-        if (typeof updateMatrixData === 'function') updateMatrixData();
+        newSubInput.value = '';
+        refreshSubCategoryUI();
     }
 }
 
-// Stream the bundled row inputs out to the Google Apps Script Web App
-async function dispatchLedgerTransactionBundle() {
+function deleteSubCategoryByIndex(indexNumber) {
+    const activeList = window.subCategoriesCache[activeMainCategory];
+    activeList.splice(indexNumber, 1);
+    localStorage.setItem('customSubCatsCache', JSON.stringify(window.subCategoriesCache));
+    refreshSubCategoryUI();
+    if (typeof updateMatrixData === 'function') updateMatrixData();
+}
+
+async function sendToGoogleSheets() {
     const endpoint = apiInput.value.trim();
     const statusText = document.getElementById('syncStatus');
     
@@ -90,61 +148,40 @@ async function dispatchLedgerTransactionBundle() {
     }
 
     const date = document.getElementById('formDate').value;
-    const client = document.getElementById('formClient').value.trim() || "Ledger Entry";
-    
-    // Read amounts from all three permanent fields safely
-    const amtIncome = parseFloat(document.getElementById('amt-income').value) || 0;
-    const feeIncome = (parseFloat(document.getElementById('fee-income').value) || 0) / 100;
-    const subIncome = document.getElementById('select-income').value;
+    const client = document.getElementById('formClient').value.trim();
+    const amount = parseFloat(document.getElementById('formAmount').value) || 0;
+    const subCat = subCatSelect.value;
 
-    const amtExpense = parseFloat(document.getElementById('amt-expense').value) || 0;
-    const subExpense = document.getElementById('select-expense').value;
+    const fees = (parseFloat(document.getElementById('formFees').value) || 0) / 100;
+    const withholding = document.getElementById('formWithholdingToggle').value;
+    const withholdingAmt = parseFloat(document.getElementById('formWithholdingAmt').value) || 0;
 
-    const amtTax = parseFloat(document.getElementById('amt-tax').value) || 0;
-    const subTax = document.getElementById('select-tax').value;
-    const isWithholding = document.getElementById('toggle-tax').value;
-
-    // Validation check: ensure at least one numerical amount field is logged
-    if (amtIncome === 0 && amtExpense === 0 && amtTax === 0) {
-        statusText.style.color = '#f87171'; statusText.innerText = "Error: Input an amount in at least one category pipeline!"; return;
+    if (!client || amount <= 0 || !subCat) {
+        statusText.style.color = '#f87171'; statusText.innerText = "Error: All transaction details are required!"; return;
     }
 
-    statusText.style.color = '#eab308'; statusText.innerText = "Streaming records to Google Cloud...";
+    statusText.style.color = '#eab308'; statusText.innerText = "Streaming to Google Cloud...";
     const totals = window.localHistoryTotals;
 
-    // Reset fallback mock demo records upon first true user log stream
     if (totals.gross === 0 && Object.keys(totals.breakdownValues).length <= 7) {
         totals.breakdownValues = {};
     }
 
-    // Process calculations for all active channels in parallel without mutual overwriting crashes
-    if (amtIncome > 0) {
-        totals.gross += amtIncome * (1 - feeIncome);
-        if (!totals.breakdownValues[subIncome]) totals.breakdownValues[subIncome] = 0;
-        totals.breakdownValues[subIncome] += amtIncome;
-    }
-    if (amtExpense > 0) {
-        totals.expenses += amtExpense;
-        if (!totals.breakdownValues[subExpense]) totals.breakdownValues[subExpense] = 0;
-        totals.breakdownValues[subExpense] += amtExpense;
-    }
-    if (amtTax > 0) {
-        if (isWithholding === "Yes") totals.taxWithheld += amtTax;
-        if (!totals.breakdownValues[subTax]) totals.breakdownValues[subTax] = 0;
-        totals.breakdownValues[subTax] += amtTax;
+    if (!totals.breakdownValues[subCat]) totals.breakdownValues[subCat] = 0;
+    totals.breakdownValues[subCat] += amount;
+
+    if (activeMainCategory === 'income') {
+        totals.gross += amount * (1 - fees);
+    } else if (activeMainCategory === 'expense') {
+        totals.expenses += amount;
+    } else if (activeMainCategory === 'tax') {
+        totals.taxWithheld += withholdingAmt;
     }
 
-    // Map a single robust ledger block payload package to push to the spreadsheet receiver
     const payload = {
         data: {
-            "Date": date,
-            "Client Name": client,
-            "Invoice Amount": amtIncome,
-            "Currency Recieved": currentCurrency === '$' ? 'USD' : (currentCurrency === '€' ? 'EUR' : 'GBP'),
-            "Platform Fees": feeIncome,
-            "Business Expenses": amtExpense,
-            "Withholding Tax Deducted?": isWithholding,
-            "Withholding Amount": isWithholding === "Yes" ? amtTax : 0
+            "Date": date, "Client Name": client, "Invoice Amount": amount, "Category": activeMainCategory,
+            "Sub Category": subCat, "Platform Fees": fees, "Withholding Tax Deducted?": withholding, "Withholding Amount": withholdingAmt
         }
     };
 
@@ -154,14 +191,14 @@ async function dispatchLedgerTransactionBundle() {
 
         if (result.status === "success") {
             statusText.style.color = '#4ade80';
-            statusText.innerText = "✔ Success! Row entry streamed to Google Sheets.";
+            statusText.innerText = "✔ Success! Row logged to Google Sheets.";
             
-            // Clear text numerical cells safely while leaving configurations intact
-            document.getElementById('amt-income').value = '';
-            document.getElementById('amt-expense').value = '';
-            document.getElementById('amt-tax').value = '';
+            // Clear memory cache for this specific category upon successful push
+            formValueMemory[activeMainCategory].description = '';
+            formValueMemory[activeMainCategory].amount = '';
+            
             document.getElementById('formClient').value = '';
-            
+            document.getElementById('formAmount').value = '';
             if (typeof updateMatrixData === 'function') updateMatrixData(); 
         } else {
             throw new Error(result.message);
