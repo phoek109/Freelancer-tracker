@@ -10,7 +10,7 @@ body {
     overflow: hidden;
 }
 
-::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: #070a13; }
 ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 9999px; }
 ::-webkit-scrollbar-thumb:hover { background: #38bdf8; }
@@ -18,150 +18,108 @@ body {
 .app-layout { display: flex; height: 100vh; width: 100vw; }
 
 .sidebar {
-    width: 340px;
+    width: 380px; /* Expanded slightly to perfectly frame side-by-side selectors */
     background-color: #0f1626;
     border-right: 1px solid #1e293b;
-    padding: 24px;
+    padding: 20px;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 14px;
     overflow-y: auto;
 }
 
 .sidebar-header {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
     letter-spacing: 1.5px;
-    color: #38bdf8;
-    border-bottom: 1px solid rgba(56, 189, 248, 0.2);
-    padding-bottom: 6px;
-    margin-top: 4px;
-}
-
-/* Upgraded Main Category Pill Selector Buttons Row */
-.category-pill-group {
-    display: flex;
-    gap: 8px;
-    width: 100%;
-}
-.cat-pill {
-    flex: 1;
-    background: #070a13;
-    border: 1px solid #1e293b;
     color: #64748b;
-    padding: 10px 4px;
-    border-radius: 8px;
-    font-size: 11px;
-    font-weight: 700;
-    cursor: pointer;
-    font-family: inherit;
-    transition: all 0.2s;
+    border-bottom: 1px solid rgba(51, 65, 85, 0.4);
+    padding-bottom: 4px;
+    margin-top: 6px;
 }
-.cat-pill.active {
-    background: #38bdf8;
-    color: #070a13;
-    border-color: #38bdf8;
-    box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
-}
+.color-blue-title { color: #38bdf8 !important; }
+.color-red-title { color: #f87171 !important; }
+.color-yellow-title { color: #facc15 !important; }
 
-/* Dynamic Sub-Category Management Tool UI */
-.subcat-manager-box {
+/* Structural containment loops for the distinct entry pipelines */
+.custom-ledg-row {
     background: #070a13;
     border: 1px solid #1e293b;
-    border-radius: 10px;
-    padding: 12px;
+    border-radius: 12px;
+    padding: 14px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
 }
-.tag-cloud {
+.border-blue { border-color: rgba(56, 189, 248, 0.25); }
+.border-red { border-color: rgba(248, 113, 113, 0.25); }
+.border-yellow { border-color: rgba(250, 204, 21, 0.25); }
+
+.form-grid_row, .input-group-grid {
     display: flex;
-    flex-wrap: wrap;
+    gap: 12px;
+    width: 100%;
+}
+.input-group-half, .grid-cell {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
     gap: 6px;
-    min-height: 24px;
-}
-.subcat-tag {
-    background: #1e293b;
-    color: #f8fafc;
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-.subcat-tag button {
-    background: transparent;
-    border: none;
-    color: #f87171;
-    cursor: pointer;
-    padding: 0;
-    font-size: 10px;
-    font-weight: bold;
-}
-.add-subcat-row {
-    display: flex;
-    gap: 8px;
-}
-.add-subcat-row input {
-    flex: 1 !important;
-}
-#btnSaveSubCat {
-    background: #1e293b;
-    border: 1px solid #334155;
-    color: #38bdf8;
-    padding: 0 12px;
-    border-radius: 8px;
-    font-size: 11px;
-    font-weight: 700;
-    cursor: pointer;
-}
-#btnSaveSubCat:hover {
-    background: #38bdf8;
-    color: #070a13;
 }
 
 .input-group { display: flex; flex-direction: column; gap: 6px; }
-.input-group label { font-size: 12px; font-weight: 600; color: #64748b; }
+.input-group label, .input-group-half label, .grid-cell label { 
+    font-size: 11px; font-weight: 600; color: #475569; text-transform: uppercase;
+}
 
-/* FIXED: High-contrast bright layout formatting for calculation input text boxes */
+.row-flex-input {
+    display: flex;
+    gap: 6px;
+    width: 100%;
+}
+.mini-text { flex: 1 !important; min-width: 60px; padding: 8px !important; font-size: 12px !important; }
+
+.action-btn {
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: #38bdf8;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+}
+.action-btn:hover { background: #38bdf8; color: #070a13; }
+
 .sidebar input.bright-input, .sidebar select.bright-input {
     width: 100%;
     box-sizing: border-box;
     background-color: #111827 !important;
     border: 1px solid #374151 !important;
     color: #f3f4f6 !important;
-    padding: 11px 14px;
+    padding: 8px 12px;
     border-radius: 8px;
     font-family: inherit;
-    font-size: 14px;
+    font-size: 13px;
     outline: none;
-}
-.sidebar input.bright-input::placeholder {
-    color: #6b7280 !important;
 }
 .sidebar input.bright-input:focus, .sidebar select.bright-input:focus {
     border-color: #38bdf8 !important;
-    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.15);
-}
-.sidebar input.active-field {
-    border-color: #4b5563 !important;
-    font-weight: 700;
 }
 
-.hidden { display: none !important; }
-
-.help-text { font-size: 11px; color: #475569; margin-top: 4px; }
+/* Focused neon text rings signaling separate input values */
+.input-highlight-blue { border-color: rgba(56, 189, 248, 0.5) !important; color: #38bdf8 !important; }
+.input-highlight-red { border-color: rgba(248, 113, 113, 0.5) !important; color: #f87171 !important; }
+.input-highlight-yellow { border-color: rgba(250, 204, 21, 0.5) !important; color: #facc15 !important; }
 
 #btnSubmit {
-    background: #38bdf8; color: #070a13; border: none; padding: 12px;
-    border-radius: 8px; font-weight: 700; cursor: pointer; font-family: inherit;
-    transition: all 0.2s; margin-top: 8px;
+    background: #38bdf8; color: #070a13; border: none; padding: 14px;
+    border-radius: 10px; font-weight: 700; cursor: pointer; font-family: inherit;
+    transition: all 0.2s; margin-top: 14px; font-size: 13px; letter-spacing: 0.5px;
 }
-#btnSubmit:hover { background: #0ea5e9; box-shadow: 0 0 12px rgba(56, 189, 248, 0.4); }
+#btnSubmit:hover { background: #0ea5e9; box-shadow: 0 0 14px rgba(56, 189, 248, 0.4); }
 
 .status-text { font-size: 12px; text-align: center; margin-top: 4px; font-weight: 600; }
 
