@@ -5,14 +5,117 @@ body {
     background-color: #0b0f19;
     color: #94a3b8;
     margin: 0;
-    padding: 40px 20px;
+    padding: 0;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.app-layout {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* LEFT SIDEBAR STYLING */
+.sidebar {
+    width: 340px;
+    background-color: #0f1626;
+    border-right: 1px solid #1e293b;
+    padding: 24px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+}
+
+.sidebar-header {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: #38bdf8;
+    border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+    padding-bottom: 6px;
+    margin-top: 10px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.input-group label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.sidebar input, .sidebar select {
+    width: 100%;
+    box-sizing: border-box;
+    background-color: #070a13;
+    border: 1px solid #1e293b;
+    color: #f8fafc;
+    padding: 10px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    outline: none;
+}
+
+.sidebar input:focus, .sidebar select:focus {
+    border-color: #38bdf8;
+}
+
+.help-text {
+    font-size: 11px;
+    color: #475569;
+    margin-top: 4px;
+    display: block;
+}
+
+#btnSubmit {
+    background: #38bdf8;
+    color: #070a13;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+    margin-top: 10px;
+}
+
+#btnSubmit:hover {
+    background: #0ea5e9;
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+}
+
+.status-text {
+    font-size: 12px;
+    text-align: center;
+    margin-top: 8px;
+    font-weight: 600;
+}
+
+/* RIGHT PANEL STYLING */
+.main-content {
+    flex: 1;
+    padding: 40px;
     display: flex;
     justify-content: center;
+    align-items: center;
+    overflow-y: auto;
+    box-sizing: border-box;
 }
 
 .matrix-container {
     width: 100%;
-    max-width: 900px;
+    max-width: 860px;
     background: linear-gradient(145deg, #131b2e, #0f1626);
     border: 1px solid #1e293b;
     border-radius: 24px;
@@ -31,7 +134,7 @@ body {
 
 .flow-chart-wrapper {
     position: relative;
-    height: 260px;
+    height: 240px;
     width: 100%;
     background: #070a13;
     border: 1px solid #1e293b;
@@ -40,7 +143,6 @@ body {
     margin-bottom: 24px;
 }
 
-/* Horizontal Metrics Progress Bar Strip */
 .split-progress-bar {
     display: flex;
     height: 6px;
@@ -50,12 +152,12 @@ body {
     margin-bottom: 28px;
     background: #1e293b;
 }
-.progress-segment { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-.expenses-seg { background-color: #f87171; box-shadow: 0 0 10px rgba(248, 113, 113, 0.5); }
-.tax-seg { background-color: #facc15; box-shadow: 0 0 10px rgba(250, 204, 21, 0.5); }
-.takehome-seg { background-color: #4ade80; box-shadow: 0 0 10px rgba(74, 222, 128, 0.5); }
 
-/* Financial Data Metrics Grid (Upgraded to 4 columns) */
+.progress-segment { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+.expenses-seg { background-color: #f87171; }
+.tax-seg { background-color: #facc15; }
+.takehome-seg { background-color: #4ade80; }
+
 .metric-row {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -66,63 +168,81 @@ body {
     gap: 12px;
 }
 
-.text-green { 
-    color: #4ade80; 
-    text-shadow: 0 0 12px rgba(74, 222, 128, 0.2); 
-}
-
 .metric-item {
     display: flex;
     flex-direction: column;
     align-items: center;
 }
+
 .metric-item .label {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
     color: #64748b;
 }
+
 .metric-item .value {
-    font-size: 28px;
+    font-size: 24px;
     font-weight: 800;
     margin-top: 8px;
-    letter-spacing: -0.5px;
 }
-.text-white { color: #f8fafc; }
-.text-red { color: #f87171; text-shadow: 0 0 12px rgba(248, 113, 113, 0.2); }
-.text-yellow { color: #facc15; text-shadow: 0 0 12px rgba(250, 204, 21, 0.2); }
 
-/* Expense Detail Legend Block */
-.breakdown-row {
-    font-size: 13px;
+.text-white { color: #f8fafc; }
+.text-red { color: #f87171; }
+.text-yellow { color: #facc15; }
+.text-green { color: #4ade80; }
+
+/* Arrange the three category legend groups neatly */
+.dashboard-breakdowns {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 28px;
+    background: rgba(30, 41, 59, 0.25);
+    padding: 16px 20px;
+    border-radius: 16px;
+    border: 1px solid rgba(30, 41, 59, 0.4);
+}
+
+.breakdown-box {
+    font-size: 12px;
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 12px;
-    margin-bottom: 36px;
-    background: rgba(30, 41, 59, 0.3);
-    padding: 12px 20px;
-    border-radius: 12px;
-    border: 1px solid rgba(30, 41, 59, 0.5);
+    gap: 10px;
 }
-.breakdown-title { color: #64748b; font-weight: 700; margin-right: 4px; }
-.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+.breakdown-title { 
+    font-family: 'JetBrains Mono', monospace;
+    color: #64748b; 
+    font-weight: 700; 
+    min-width: 150px;
+}
+
+/* Color Dot Indicators for Legend Panels */
+.dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+.dot-active { background: #38bdf8; }
+.dot-retainer { background: #a855f7; }
 .dot-software { background: #f87171; }
 .dot-marketing { background: #facc15; }
 .dot-hardware { background: #f472b6; }
-.breakdown-row strong { color: #f8fafc; }
+.dot-income-tax { background: #fb923c; }
+.dot-withholding { background: #64748b; }
 
-/* Control Sliders System Grid Configuration */
+.breakdown-box strong { color: #f8fafc; font-family: 'JetBrains Mono', monospace; }
+
 .settings-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 28px 44px;
+    gap: 24px 40px;
 }
+
 .control-block {
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
+
 .control-header {
     display: flex;
     justify-content: space-between;
@@ -132,7 +252,6 @@ body {
     color: #64748b;
 }
 
-/* Premium Custom Range Sliders */
 .slider {
     -webkit-appearance: none;
     appearance: none;
@@ -141,8 +260,8 @@ body {
     border-radius: 9999px;
     background: #1e293b;
     outline: none;
-    transition: background 0.2s;
 }
+
 .slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
@@ -150,15 +269,12 @@ body {
     height: 18px;
     border-radius: 50%;
     cursor: pointer;
-    box-shadow: 0 0 10px rgba(0,0,0,0.5);
-    transition: transform 0.1s, box-shadow 0.1s;
 }
-.slider::-webkit-slider-thumb:hover { transform: scale(1.15); }
-.slider-blue::-webkit-slider-thumb { background: #38bdf8; box-shadow: 0 0 12px #38bdf8; }
-.slider-red::-webkit-slider-thumb { background: #f87171; box-shadow: 0 0 12px #f87171; }
-.slider-yellow::-webkit-slider-thumb { background: #facc15; box-shadow: 0 0 12px #facc15; }
 
-/* Multi-Currency Selection Toggle Group */
+.slider-blue::-webkit-slider-thumb { background: #38bdf8; box-shadow: 0 0 10px #38bdf8; }
+.slider-red::-webkit-slider-thumb { background: #f87171; box-shadow: 0 0 10px #f87171; }
+.slider-yellow::-webkit-slider-thumb { background: #facc15; box-shadow: 0 0 10px #facc15; }
+
 .currency-btn-group {
     display: flex;
     background: #070a13;
@@ -166,21 +282,21 @@ body {
     border-radius: 10px;
     border: 1px solid #1e293b;
 }
+
 .curr-btn {
     flex: 1;
     background: transparent;
     border: none;
     color: #64748b;
-    padding: 10px;
-    font-size: 13px;
+    padding: 8px;
+    font-size: 12px;
     font-weight: 700;
     border-radius: 8px;
     cursor: pointer;
     font-family: inherit;
-    transition: all 0.2s;
 }
+
 .curr-btn.active {
     background: #38bdf8;
     color: #070a13;
-    box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
 }
