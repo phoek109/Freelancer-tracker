@@ -101,22 +101,17 @@
 
                 <!-- Upgraded Legend Layout Section -->
                 <div class="dashboard-breakdowns">
-                    <!-- 1. Income Category Summary Panel -->
                     <div class="breakdown-box">
                         <span class="breakdown-title">INCOME BREAKDOWN:</span>
                         <span class="dot dot-active"></span> Active Invoice: <strong id="incActive">$0.00</strong>
                         <span class="dot dot-retainer"></span> Client Retainers: <strong id="incRetainer">$0.00</strong>
                     </div>
-
-                    <!-- 2. Expenses Category Summary Panel -->
                     <div class="breakdown-box">
                         <span class="breakdown-title">EXPENSE BREAKDOWN:</span>
                         <span class="dot dot-software"></span> Software & Tools: <strong id="expSoftware">$0.00</strong>
                         <span class="dot dot-marketing"></span> Marketing & Ads: <strong id="expMarketing">$0.00</strong>
                         <span class="dot dot-hardware"></span> Hardware & Office: <strong id="expHardware">$0.00</strong>
                     </div>
-
-                    <!-- 3. Tax Category Summary Panel -->
                     <div class="breakdown-box">
                         <span class="breakdown-title">TAX VAULT BREAKDOWN:</span>
                         <span class="dot dot-income-tax"></span> Income Tax Reserve: <strong id="taxIncome">$0.00</strong>
@@ -124,15 +119,16 @@
                     </div>
                 </div>
 
-                <div class="settings-grid">
-                    <div class="control-block">
-                        <div class="control-header">
-                            <span>SIMULATION ANNUAL REVENUE</span>
-                            <span id="valRevenue" class="text-white">$95,000</span>
-                        </div>
-                        <input type="range" id="inputRevenue" min="10000" max="250000" step="5000" value="95000" class="slider slider-blue">
+                <!-- UPGRADED: 1 Billion Full-Width Marquee Slider Panel -->
+                <div class="full-width-control">
+                    <div class="control-header">
+                        <span>ANNUAL REVENUE CONFIGURATION (UP TO 1 BILLION)</span>
+                        <span id="valRevenue" class="text-white">$0</span>
                     </div>
+                    <input type="range" id="inputRevenue" min="1" max="1000000000" step="10000" value="100000" class="slider slider-blue">
+                </div>
 
+                <div class="settings-grid">
                     <div class="control-block">
                         <div class="control-header">
                             <span>EXPENSES RATIO</span>
@@ -157,12 +153,22 @@
                             <button class="curr-btn" data-symbol="£">GBP (£)</button>
                         </div>
                     </div>
+                    
+                    <div class="control-block">
+                        <div class="control-header">LEDGER INTEGRATION</div>
+                        <button id="btnToggleMode" onclick="toggleDatabaseMode()" class="toggle-mode-btn">MODE: LIVE TRACKING</button>
+                    </div>
                 </div>
             </div>
         </div>
 
     </div>
+    
 
-    <script src="script.js"></script>
+    <script src="https://jsdelivr.net"></script>
+
+    <script src="matrix-engine.js"></script>
+    
+    <script src="sheets-sync.js"></script>
 </body>
 </html>
