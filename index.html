@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Flow Matrix Tracker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="matrix-container">
+        <!-- Live Flow Chart Section -->
+        <div class="chart-header">LIVE FLOW MATRIX</div>
+        <div class="flow-chart-wrapper">
+            <canvas id="flowChart"></canvas>
+        </div>
+
+        <!-- Colored Status Bar Component -->
+        <div class="split-progress-bar">
+            <div id="barExpenses" class="progress-segment expenses-seg"></div>
+            <div id="barTax" class="progress-segment tax-seg"></div>
+            <div id="barTakeHome" class="progress-segment takehome-seg"></div>
+        </div>
+
+        <!-- Metric Numbers Readout Grid (Upgraded to 4 Columns) -->
+        <div class="metric-row">
+            <div class="metric-item">
+                <span class="label">GROSS INCOME</span>
+                <span id="grossDisplay" class="value text-white">$95,000</span>
+            </div>
+            <div class="metric-item">
+                <span class="label">TOTAL EXPENSES</span>
+                <span id="expensesDisplay" class="value text-red">$28,500</span>
+            </div>
+            <div class="metric-item">
+                <span class="label">TAX RESERVE</span>
+                <span id="taxDisplay" class="value text-yellow">$16,625</span>
+            </div>
+            <div class="metric-item">
+                <span class="label">TAKE-HOME PAY</span>
+                <span id="takeHomeDisplay" class="value text-green">$49,875</span>
+            </div>
+        </div>
+
+        <!-- Expense Category Breakdown List -->
+        <div class="breakdown-row">
+            <span class="breakdown-title">Expense Breakdown:</span>
+            <span class="dot dot-software"></span> Software & Tools: <strong id="expSoftware">$11,400</strong>
+            <span class="dot dot-marketing"></span> Marketing & Ads: <strong id="expMarketing">$9,975</strong>
+            <span class="dot dot-hardware"></span> Hardware & Office: <strong id="expHardware">$7,125</strong>
+        </div>
+
+        <!-- Control Inputs & Interactive Sliders -->
+        <div class="settings-grid">
+            <div class="control-block">
+                <div class="control-header">
+                    <span>ANNUAL REVENUE</span>
+                    <span id="valRevenue" class="text-white">$95,000</span>
+                </div>
+                <input type="range" id="inputRevenue" min="10000" max="250000" step="5000" value="95000" class="slider slider-blue">
+            </div>
+
+            <div class="control-block">
+                <div class="control-header">
+                    <span>EXPENSES RATIO</span>
+                    <span id="valRatio" class="text-red">30%</span>
+                </div>
+                <input type="range" id="inputRatio" min="0" max="80" step="5" value="30" class="slider slider-red">
+            </div>
+
+            <div class="control-block">
+                <div class="control-header">
+                    <span>CUSTOM TAX RATE</span>
+                    <span id="valTaxRate" class="text-yellow">25%</span>
+                </div>
+                <input type="range" id="inputTaxRate" min="0" max="50" step="1" value="25" class="slider slider-yellow">
+            </div>
+
+            <div class="control-block">
+                <div class="control-header">CURRENCY SETUP</div>
+                <div class="currency-btn-group">
+                    <button class="curr-btn active" data-symbol="$">USD ($)</button>
+                    <button class="curr-btn" data-symbol="€">EUR (€)</button>
+                    <button class="curr-btn" data-symbol="£">GBP (£)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- The single official library import loaded directly before your custom engine -->
+    <script src="https://jsdelivr.net"></script>
+    <script src="script.js"></script>
+</body>
+</html>
