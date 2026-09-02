@@ -13,8 +13,8 @@
         <div class="sidebar">
             <div class="sidebar-header">DATABASE SETUP</div>
             <div class="form-block">
-                <input type="text" id="apiEndpoint" placeholder="Paste SheetDB API URL here..." value="">
-                <small class="help-text">Turn your sheet into a backend link using SheetDB.io</small>
+                <input type="text" id="apiEndpoint" placeholder="Paste Google Web App URL here..." value="">
+                <small class="help-text">Deploy your Google Sheet script to get an unlimited backend link.</small>
             </div>
 
             <div class="sidebar-header">ADD INCOME ENTRY</div>
@@ -96,6 +96,31 @@
                     <div class="metric-item">
                         <span class="label">TAKE-HOME PAY</span>
                         <span id="takeHomeDisplay" class="value text-green">$0.00</span>
+                    </div>
+                </div>
+
+                <!-- Upgraded Legend Layout Section -->
+                <div class="dashboard-breakdowns">
+                    <!-- 1. Income Category Summary Panel -->
+                    <div class="breakdown-box">
+                        <span class="breakdown-title">INCOME BREAKDOWN:</span>
+                        <span class="dot dot-active"></span> Active Invoice: <strong id="incActive">$0.00</strong>
+                        <span class="dot dot-retainer"></span> Client Retainers: <strong id="incRetainer">$0.00</strong>
+                    </div>
+
+                    <!-- 2. Expenses Category Summary Panel -->
+                    <div class="breakdown-box">
+                        <span class="breakdown-title">EXPENSE BREAKDOWN:</span>
+                        <span class="dot dot-software"></span> Software & Tools: <strong id="expSoftware">$0.00</strong>
+                        <span class="dot dot-marketing"></span> Marketing & Ads: <strong id="expMarketing">$0.00</strong>
+                        <span class="dot dot-hardware"></span> Hardware & Office: <strong id="expHardware">$0.00</strong>
+                    </div>
+
+                    <!-- 3. Tax Category Summary Panel -->
+                    <div class="breakdown-box">
+                        <span class="breakdown-title">TAX VAULT BREAKDOWN:</span>
+                        <span class="dot dot-income-tax"></span> Income Tax Reserve: <strong id="taxIncome">$0.00</strong>
+                        <span class="dot dot-withholding"></span> Withholding Balance: <strong id="taxWithholding">$0.00</strong>
                     </div>
                 </div>
 
