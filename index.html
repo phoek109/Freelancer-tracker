@@ -4,169 +4,90 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Premium Flow Matrix Tracker</title>
-    <link rel="stylesheet" href="theme-variable.css">
-    <link rel="stylesheet" href="layout-components.css">
-
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="app-layout">
-        
-        <!-- LEFT SIDEBAR: Premium Single Form Control Dock -->
-        <div class="sidebar">
-            <div class="sidebar-header">DATABASE SETUP</div>
-            <div class="form-block">
-                <input type="text" id="apiEndpoint" placeholder="Paste Google Web App URL here..." class="bright-input">
-                <small class="help-text">Deploy your Google Sheet script to get an unlimited backend link.</small>
+    <div class="matrix-container">
+        <!-- Live Flow Chart Section -->
+        <div class="chart-header">LIVE FLOW MATRIX</div>
+        <div class="flow-chart-wrapper">
+            <canvas id="flowChart"></canvas>
+        </div>
+
+        <!-- Colored Status Bar Component -->
+        <div class="split-progress-bar">
+            <div id="barExpenses" class="progress-segment expenses-seg"></div>
+            <div id="barTax" class="progress-segment tax-seg"></div>
+            <div id="barTakeHome" class="progress-segment takehome-seg"></div>
+        </div>
+
+        <!-- Metric Numbers Readout Grid (Upgraded to 4 Columns) -->
+        <div class="metric-row">
+            <div class="metric-item">
+                <span class="label">GROSS INCOME</span>
+                <span id="grossDisplay" class="value text-white">$95,000</span>
             </div>
-
-            <div class="sidebar-header">1. CHOOSE TRANSACTION TYPE</div>
-            <div class="category-pill-group">
-                <button type="button" id="catBtn-income" class="cat-pill active" onclick="selectMainCategory('income')">INCOME</button>
-                <button type="button" id="catBtn-expense" class="cat-pill" onclick="selectMainCategory('expense')">EXPENSE</button>
-                <button type="button" id="catBtn-tax" class="cat-pill" onclick="selectMainCategory('tax')">TAX VAULT</button>
+            <div class="metric-item">
+                <span class="label">TOTAL EXPENSES</span>
+                <span id="expensesDisplay" class="value text-red">$28,500</span>
             </div>
-
-            <div class="sidebar-header">2. MANAGE SUB-CATEGORIES</div>
-            <div class="subcat-manager-box">
-                <div id="subCategoryTagsContainer" class="tag-cloud"></div>
-                <div class="add-subcat-row">
-                    <input type="text" id="newSubCatNameInput" placeholder="Add custom sub-category...">
-                    <button type="button" id="btnSaveSubCat" onclick="addNewSubCategoryFromSidebar()">+ SAVE</button>
-                </div>
+            <div class="metric-item">
+                <span class="label">TAX RESERVE</span>
+                <span id="taxDisplay" class="value text-yellow">$16,625</span>
             </div>
-
-            <div class="sidebar-header">3. LOG DETAILS</div>
-            <div class="form-grid">
-                <div class="input-group">
-                    <label>Date</label>
-                    <input type="date" id="formDate" class="bright-input">
-                </div>
-                <div class="input-group">
-                    <label id="lblDescription">Client Name</label>
-                    <input type="text" id="formClient" placeholder="e.g., Acme Corp" class="bright-input">
-                </div>
-                <div class="input-group">
-                    <label id="lblSubCategory">Transaction Sub-Category Target</label>
-                    <select id="formSubCategorySelect" class="bright-input">
-                        <!-- Options populated dynamically -->
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label id="lblAmount">Invoice Amount</label>
-                    <input type="number" id="formAmount" placeholder="0.00" class="bright-input active-field" step="0.01">
-                </div>
-
-                <!-- DYNAMIC FIELD GROUPS MATCHING SPREADSHEET HEADERS -->
-                <div id="incomeExtraFields" class="dynamic-field-section">
-                    <div class="input-group">
-                        <label>Platform Fees Deducted (%)</label>
-                        <input type="number" id="formFees" placeholder="e.g., 5" value="0" class="bright-input">
-                    </div>
-                    <div class="input-group">
-                        <label>Withholding Tax Deducted?</label>
-                        <select id="formWithholdingToggle" class="bright-input" onchange="toggleWithholdingInput()">
-                            <option value="No">No</option>
-                            <option value="Yes">Yes</option>
-                        </select>
-                    </div>
-                    <div id="withholdingAmtGroup" class="input-group hidden">
-                        <label>Withholding Amount</label>
-                        <input type="number" id="formWithholdingAmt" placeholder="0.00" value="0" class="bright-input">
-                    </div>
-                    <div class="input-group">
-                        <label>Allocated Business Expenses</label>
-                        <input type="number" id="formExpenses" placeholder="0.00" value="0" class="bright-input">
-                    </div>
-                </div>
-                
-                <button id="btnSubmit" onclick="sendToGoogleSheets()">STREAM RECORD TO SHEET</button>
-                <p id="syncStatus" class="status-text"></p>
+            <div class="metric-item">
+                <span class="label">TAKE-HOME PAY</span>
+                <span id="takeHomeDisplay" class="value text-green">$49,875</span>
             </div>
         </div>
 
-        <!-- RIGHT PANEL: Matrix Simulation Dashboard -->
-        <div class="main-content">
-            <div class="matrix-container">
-                <div class="chart-header">LIVE FINANCIAL FLOW MATRIX</div>
-                <div class="flow-chart-wrapper">
-                    <canvas id="flowChart"></canvas>
+        <!-- Expense Category Breakdown List -->
+        <div class="breakdown-row">
+            <span class="breakdown-title">Expense Breakdown:</span>
+            <span class="dot dot-software"></span> Software & Tools: <strong id="expSoftware">$11,400</strong>
+            <span class="dot dot-marketing"></span> Marketing & Ads: <strong id="expMarketing">$9,975</strong>
+            <span class="dot dot-hardware"></span> Hardware & Office: <strong id="expHardware">$7,125</strong>
+        </div>
+
+        <!-- Control Inputs & Interactive Sliders -->
+        <div class="settings-grid">
+            <div class="control-block">
+                <div class="control-header">
+                    <span>ANNUAL REVENUE</span>
+                    <span id="valRevenue" class="text-white">$95,000</span>
                 </div>
+                <input type="range" id="inputRevenue" min="10000" max="250000" step="5000" value="95000" class="slider slider-blue">
+            </div>
 
-                <div class="split-progress-bar">
-                    <div id="barExpenses" class="progress-segment expenses-seg"></div>
-                    <div id="barTax" class="progress-segment tax-seg"></div>
-                    <div id="barTakeHome" class="progress-segment takehome-seg"></div>
+            <div class="control-block">
+                <div class="control-header">
+                    <span>EXPENSES RATIO</span>
+                    <span id="valRatio" class="text-red">30%</span>
                 </div>
+                <input type="range" id="inputRatio" min="0" max="80" step="5" value="30" class="slider slider-red">
+            </div>
 
-                <div class="metric-row">
-                    <div class="metric-item">
-                        <span class="label">GROSS INCOME</span>
-                        <span id="grossDisplay" class="value text-white">$0.00</span>
-                    </div>
-                    <div class="metric-item">
-                        <span class="label">TOTAL EXPENSES</span>
-                        <span id="expensesDisplay" class="value text-red">$0.00</span>
-                    </div>
-                    <div class="metric-item">
-                        <span class="label">TAX RESERVE</span>
-                        <span id="taxDisplay" class="value text-yellow">$0.00</span>
-                    </div>
-                    <div class="metric-item">
-                        <span class="label">TAKE-HOME PAY</span>
-                        <span id="takeHomeDisplay" class="value text-green">$0.00</span>
-                    </div>
+            <div class="control-block">
+                <div class="control-header">
+                    <span>CUSTOM TAX RATE</span>
+                    <span id="valTaxRate" class="text-yellow">25%</span>
                 </div>
+                <input type="range" id="inputTaxRate" min="0" max="50" step="1" value="25" class="slider slider-yellow">
+            </div>
 
-                <div class="dashboard-breakdowns">
-                    <div class="matrix-subsection-title">DYNAMIC MATRIX LEGEND BREAKDOWN</div>
-                    <div id="dynamicBreakdownContainer" class="dynamic-container-list"></div>
-                </div>
-
-                <div class="full-width-control">
-                    <div class="control-header">
-                        <span>ANNUAL REVENUE CONFIGURATION (UP TO 1 BILLION)</span>
-                        <span id="valRevenue" class="text-white">$0</span>
-                    </div>
-                    <input type="range" id="inputRevenue" min="1" max="1000000000" step="10000" value="100000" class="slider slider-blue">
-                </div>
-
-                <div class="settings-grid">
-                    <div class="control-block">
-                        <div class="control-header">
-                            <span>EXPENSES RATIO</span>
-                            <span id="valRatio" class="text-red">30%</span>
-                        </div>
-                        <input type="range" id="inputRatio" min="0" max="80" step="5" value="30" class="slider slider-red">
-                    </div>
-
-                    <div class="control-block">
-                        <div class="control-header">
-                            <span>BASE TARGET TAX RATE</span>
-                            <span id="valTaxRate" class="text-yellow">15%</span>
-                        </div>
-                        <input type="range" id="inputTaxRate" min="0" max="50" step="1" value="15" class="slider slider-yellow">
-                    </div>
-
-                    <div class="control-block">
-                        <div class="control-header">DISPLAY BASE CURRENCY</div>
-                        <div class="currency-btn-group">
-                            <button class="curr-btn active" data-symbol="$">USD ($)</button>
-                            <button class="curr-btn" data-symbol="€">EUR (€)</button>
-                            <button class="curr-btn" data-symbol="£">GBP (£)</button>
-                        </div>
-                    </div>
-                    
-                    <div class="control-block">
-                        <div class="control-header">LEDGER INTEGRATION</div>
-                        <button id="btnToggleMode" onclick="toggleDatabaseMode()" class="toggle-mode-btn">MODE: LIVE TRACKING</button>
-                    </div>
+            <div class="control-block">
+                <div class="control-header">CURRENCY SETUP</div>
+                <div class="currency-btn-group">
+                    <button class="curr-btn active" data-symbol="$">USD ($)</button>
+                    <button class="curr-btn" data-symbol="€">EUR (€)</button>
+                    <button class="curr-btn" data-symbol="£">GBP (£)</button>
                 </div>
             </div>
         </div>
-
     </div>
 
-    <script src="matrix-engine.js"></script>
-    <script src="sheets-sync.js"></script>
+    <!-- The single official library import loaded directly before your custom engine -->
+    <script src="https://jsdelivr.net"></script>
+    <script src="script.js"></script>
 </body>
 </html>

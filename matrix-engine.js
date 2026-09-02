@@ -1,17 +1,11 @@
 let currentCurrency = '$';
 let isLiveTrackingMode = true;
 
-window.subCategoriesCache = {
-    income: ['Active Invoice', 'Client Retainers'],
-    expense: ['Software/Tools', 'Marketing/Ads', 'Hardware/Office'],
-    tax: ['Income Tax Reserve', 'Withholding Vault']
-};
-
+// Shared data pool accessed by sheets-sync.js
 window.localHistoryTotals = {
     gross: 0,
     expenses: 0,
-    taxWithheld: 0,
-    breakdownValues: {}
+    taxWithheld: 0
 };
 
 const inputRevenue = document.getElementById('inputRevenue');
@@ -75,7 +69,8 @@ function drawFlowLines(expRatio, taxRate, netProfit, gross) {
     ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 4; ctx.stroke();
 
     ctx.font = 'bold 11px "Plus Jakarta Sans", sans-serif';
-    ctx.fillStyle = '#38bdf8'; ctx.fillText("GROSS INPUT", 20, startY - 14);
+    ctx.fillStyle = '#38bdf8'; 
+    ctx.fillText("GROSS INPUT", 20, startY - 14);
 
     function drawCurve(endY, color, baseText, percentValue) {
         ctx.beginPath(); ctx.moveTo(startX, startY);
@@ -100,38 +95,6 @@ function drawFlowLines(expRatio, taxRate, netProfit, gross) {
     ctx.fillText(currentCurrency, startX, startY + 4); ctx.textAlign = 'left';
 }
 
-function renderDynamicLegendBars(gross, totalExpenses, taxReserve) {
-    const container = document.getElementById('dynamicBreakdownContainer');
-    container.innerHTML = '';
-    
-    const bValues = window.localHistoryTotals.breakdownValues;
-    const caches = window.subCategoriesCache;
-
-    function buildBarRow(name, amount, parentMaxAmount, colorClass) {
-        if (amount === 0) return;
-        const percentage = parentMaxAmount > 0 ? Math.round((amount / parentMaxAmount) * 100) : 0;
-        
-        const row = document.createElement('div');
-        row.className = 'dynamic-bar-row';
-        row.innerHTML = `
-            <span class="dynamic-bar-label">${name.toUpperCase()}</span>
-            <div class="dynamic-bar-track">
-                <div class="dynamic-bar-fill ${colorClass}" style="width: ${percentage}%"></div>
-            </div>
-            <span class="dynamic-bar-value">${currentCurrency}${Math.round(amount).toLocaleString()} (${percentage}%)</span>
-        `;
-        container.appendChild(row);
-    }
-
-    caches.income.forEach(name => buildBarRow(name, bValues[name] || 0, gross, 'fill-income'));
-    caches.expense.forEach(name => buildBarRow(name, bValues[name] || 0, totalExpenses, 'fill-expense'));
-    caches.tax.forEach(name => buildBarRow(name, bValues[name] || 0, taxReserve, 'fill-tax'));
-    
-    if(container.innerHTML === '') {
-        container.innerHTML = `<span style="font-size:11px; color:#475569; text-align:center; display:block; width:100%;">No active breakdown values to plot. Fill entries in the sidebar form to generate bars.</span>`;
-    }
-}
-
 function updateMatrixData() {
     let gross, expRatio, taxRate;
     const totals = window.localHistoryTotals;
@@ -152,6 +115,7 @@ function updateMatrixData() {
         } else {
             gross = sliderGrossVal;
         }
+
         const simulatedGrossFuture = gross - totals.gross;
         const sliderExpRatio = (parseFloat(inputRatio.value) || 0) / 100;
         const calculatedTotalExpenses = totals.expenses + (simulatedGrossFuture * sliderExpRatio);
@@ -164,19 +128,12 @@ function updateMatrixData() {
     const taxReserve = (netProfit > 0 ? netProfit * taxRate : 0) + totals.taxWithheld;
     const takeHome = netProfit - (netProfit > 0 ? netProfit * taxRate : 0);
 
-    // Injects default sandbox mock values ONLY if user hasn't logged real data entries yet
-    if(gross > 0 && Object.keys(totals.breakdownValues).length === 0) {
-        totals.breakdownValues['Active Invoice'] = gross * 0.65;
-        totals.breakdownValues['Client Retainers'] = gross * 0.35;
-        totals.breakdownValues['Software/Tools'] = totalExpenses * 0.4;
-        totals.breakdownValues['Marketing/Ads'] = totalExpenses * 0.35;
-        totals.breakdownValues['Hardware/Office'] = totalExpenses * 0.25;
-        totals.breakdownValues['Income Tax Reserve'] = taxReserve * 0.8;
-        totals.breakdownValues['Withholding Vault'] = taxReserve * 0.2;
-    }
+    const incActive = gross * 0.65; const incRetainer = gross * 0.35;
+    const software = totalExpenses * 0.4; const marketing = totalExpenses * 0.35; const hardware = totalExpenses * 0.25;
+    const taxIncome = taxReserve * 0.8; const taxWithholding = taxReserve * 0.2;
 
     document.getElementById('valRevenue').innerText = `${currentCurrency}${gross.toLocaleString()}`;
-    document.getElementById('valRatio').innerText = `${inputRatio.value}%`;
+    document.getElementById('valRatio').innerText = `${Math.round(expRatio * 100)}%`;
     document.getElementById('valTaxRate').innerText = `${inputTaxRate.value}%`;
 
     document.getElementById('grossDisplay').innerText = `${currentCurrency}${gross.toLocaleString(undefined, {maximumFractionDigits:0})}`;
@@ -184,14 +141,20 @@ function updateMatrixData() {
     document.getElementById('taxDisplay').innerText = `${currentCurrency}${taxReserve.toLocaleString(undefined, {maximumFractionDigits:0})}`;
     document.getElementById('takeHomeDisplay').innerText = `${currentCurrency}${takeHome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
 
+    document.getElementById('incActive').innerText = `${currentCurrency}${incActive.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+    document.getElementById('incRetainer').innerText = `${currentCurrency}${incRetainer.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+    document.getElementById('expSoftware').innerText = `${currentCurrency}${software.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+    document.getElementById('expMarketing').innerText = `${currentCurrency}${marketing.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+    document.getElementById('expHardware').innerText = `${currentCurrency}${hardware.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+    document.getElementById('taxIncome').innerText = `${currentCurrency}${taxIncome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+    document.getElementById('taxWithholding').innerText = `${currentCurrency}${taxWithholding.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+
     if (gross > 0) {
         document.getElementById('barExpenses').style.width = `${(totalExpenses / gross) * 100}%`;
         document.getElementById('barTax').style.width = `${(taxReserve / gross) * 100}%`;
         document.getElementById('barTakeHome').style.width = `${(takeHome / gross) * 100}%`;
     }
-    
     drawFlowLines(expRatio, taxRate, netProfit, gross);
-    renderDynamicLegendBars(gross, totalExpenses, taxReserve);
 }
 
 inputRevenue.addEventListener('input', updateMatrixData);
@@ -206,3 +169,4 @@ document.querySelectorAll('.curr-btn').forEach(btn => {
         updateMatrixData();
     });
 });
+window.onresize = () => { resizeCanvas(); updateMatrixData(); };
