@@ -32,194 +32,27 @@
                     <label>Invoice Amount</label>
                     <input type="number" id="formAmount" placeholder="0.00">
                 </div>
-<!-- UPDATE: Comprehensive Global Dropdowns with Dynamic Forex Conversion Ticker -->
-            <div class="input-group">
-                <label>Currency Received</label>
-                <select id="formCurrency" class="bright-input">
-                    <option value="USD">USD ($)</option>
-                    <option value="GBP">GBP (£)</option>
-                    <option value="EUR">EUR (€)</option>
-                    <option value="CAD">CAD (CA$)</option>
-                    <option value="JPY">JPY (¥)</option>
-                    <option value="CNY">CNY (元)</option>
-                    <option value="CHF">CHF (Fr)</option>
-                    <option value="AUD">AUD (A$)</option>
-                    <option value="NZD">NZD (NZ$)</option>
-                    <option value="HKD">HKD (HK$)</option>
-                    <option value="SGD">SGD (S$)</option>
-                    <option value="KRW">KRW (₩)</option>
-                    <option value="SEK">SEK (kr)</option>
-                    <option value="NOK">NOK (kr)</option>
-                    <option value="DKK">DKK (kr)</option>
-                    <option value="INR">INR (₹)</option>
-                    <option value="MXN">MXN ($)</option>
-                    <option value="BRL">BRL (R$)</option>
-                    <option value="ZAR">ZAR (R)</option>
-                    <option value="TRY">TRY (₺)</option>
-                    <option value="PLN">PLN (zł)</option>
-                    <option value="THB">THB (฿)</option>
-                    <option value="IDR">IDR (Rp)</option>
-                    <option value="CZK">CZK (Kč)</option>
-                    <option value="COP">COP ($)</option>
-                    <option value="KWD">KWD (د.ك)</option>
-                    <option value="BHD">BHD (ب.د)</option>
-                    <option value="OMR">OMR (ر.ع.)</option>
-                    <option value="SAR">SAR (ر.س)</option>
-                    <option value="AED">AED (د.إ)</option>
-                    <option value="ILS">ILS (₪)</option>
-                    <option value="QAR">QAR (ر.ق)</option>
-                    <option value="EGP">EGP (E£)</option>
-                    <option value="DZD">DZD (د.ج)</option>
-                    <option value="MAD">MAD (د.م.)</option>
-                    <option value="TND">TND (د.ت)</option>
-                    <option value="JOD">JOD (د.ا)</option>
-                    <option value="IQD">IQD (ع.د)</option>
-                    <option value="LBP">LBP (ل.ل)</option>
-                    <option value="YER">YER (ر.ي)</option>
-                    <option value="XOF">XOF (CFA)</option>
-                    <option value="XAF">XAF (FCFA)</option>
-                    <option value="NGN">NGN (₦)</option>
-                    <option value="KES">KES (KSh)</option>
-                    <option value="AOA">AOA (Kz)</option>
-                    <option value="ETB">ETB (Br)</option>
-                    <option value="GHS">GHS (GH₵)</option>
-                    <option value="TZS">TZS (TSh)</option>
-                    <option value="UGX" selected>UGX (USh)</option>
-                    <option value="ZMW">ZMW (ZK)</option>
-                    <option value="BWP">BWP (P)</option>
-                    <option value="MUR">MUR (₨)</option>
-                    <option value="NAD">NAD (N$)</option>
-                    <option value="ZiG">ZiG (ZiG)</option>
-                    <option value="PKR">PKR (₨)</option>
-                    <option value="BDT">BDT (৳)</option>
-                    <option value="KZT">KZT (₸)</option>
-                    <option value="LKR">LKR (₨)</option>
-                    <option value="UZS">UZS (so'm)</option>
-                    <option value="NPR">NPR (₨)</option>
-                    <option value="TMT">TMT (T)</option>
-                    <option value="TWD">TWD (NT$)</option>
-                    <option value="PHP">PHP (₱)</option>
-                    <option value="VND">VND (₫)</option>
-                    <option value="MYR">MYR (RM)</option>
-                    <option value="MOP">MOP (MOP$)</option>
-                    <option value="FJD">FJD (FJ$)</option>
-                    <option value="PGK">PGK (K)</option>
-                    <option value="RUB">RUB (₽)</option>
-                    <option value="RON">RON (lei)</option>
-                    <option value="HUF">HUF (Ft)</option>
-                    <option value="UAH">UAH (₴)</option>
-                    <option value="BGN">BGN (лв)</option>
-                    <option value="RSD">RSD (дин.)</option>
-                    <option value="ISK">ISK (kr)</option>
-                    <option value="GEL">GEL (₾)</option>
-                    <option value="CLP">CLP (CLP$)</option>
-                    <option value="PEN">PEN (S/.)</option>
-                    <option value="UYU">UYU ($U)</option>
-                    <option value="CRC">CRC (₡)</option>
-                    <option value="DOP">DOP (RD$)</option>
-                    <option value="GTQ">GTQ (Q)</option>
-                    <option value="PAB">PAB (B/.)</option>
-                    <option value="JMD">JMD (J$)</option>
-                </select>
-            </div>
+                <!-- UPDATE: Dynamic Selection Inputs in index.html -->
+                <div class="input-group">
+                    <label>Currency Received</label>
+                    <select id="formCurrency" class="bright-input">
+                        <option value="">Loading live markets...</option>
+                    </select>
+                </div>
 
-            <!-- NEW: The Live Middle Exchange Rates Intercept Display Component -->
-            <div id="liveForexTicker" class="forex-ticker-container">
-                <div class="ticker-label">LIVE MARKET CONVERSION</div>
-                <div id="tickerRateText" class="ticker-rate">1 UGX = 1.0000 UGX</div>
-                <div class="ticker-source">via Google Cloud Feed</div>
-            </div>
+                <!-- Dynamic Middle Forex Conversion Status Ticker Element Panel -->
+                <div id="liveForexTicker" class="forex-ticker-container">
+                    <div class="ticker-label">LIVE MARKET CONVERSION</div>
+                    <div id="tickerRateText" class="ticker-rate">Initializing feed...</div>
+                    <div class="ticker-source">via Google Finance Feed</div>
+                </div>
 
-            <div class="input-group">
-                <label>Home Currency</label>
-                <select id="baseCurrencyConfig" class="bright-input" onchange="updateBaseCurrencySettingsInSheet()">
-                    <!-- Copy the exact same comprehensive list of option tags right here to maintain parity -->
-                    <option value="USD">USD ($)</option>
-                    <option value="GBP">GBP (£)</option>
-                    <option value="EUR">EUR (€)</option>
-                    <option value="CAD">CAD (CA$)</option>
-                    <option value="JPY">JPY (¥)</option>
-                    <option value="CNY">CNY (元)</option>
-                    <option value="CHF">CHF (Fr)</option>
-                    <option value="AUD">AUD (A$)</option>
-                    <option value="NZD">NZD (NZ$)</option>
-                    <option value="HKD">HKD (HK$)</option>
-                    <option value="SGD">SGD (S$)</option>
-                    <option value="KRW">KRW (₩)</option>
-                    <option value="SEK">SEK (kr)</option>
-                    <option value="NOK">NOK (kr)</option>
-                    <option value="DKK">DKK (kr)</option>
-                    <option value="INR">INR (₹)</option>
-                    <option value="MXN">MXN ($)</option>
-                    <option value="BRL">BRL (R$)</option>
-                    <option value="ZAR">ZAR (R)</option>
-                    <option value="TRY">TRY (₺)</option>
-                    <option value="PLN">PLN (zł)</option>
-                    <option value="THB">THB (฿)</option>
-                    <option value="IDR">IDR (Rp)</option>
-                    <option value="CZK">CZK (Kč)</option>
-                    <option value="COP">COP ($)</option>
-                    <option value="KWD">KWD (د.ك)</option>
-                    <option value="BHD">BHD (ب.د)</option>
-                    <option value="OMR">OMR (ر.ع.)</option>
-                    <option value="SAR">SAR (ر.س)</option>
-                    <option value="AED">AED (د.إ)</option>
-                    <option value="ILS">ILS (₪)</option>
-                    <option value="QAR">QAR (ر.ق)</option>
-                    <option value="EGP">EGP (E£)</option>
-                    <option value="DZD">DZD (د.ج)</option>
-                    <option value="MAD">MAD (د.م.)</option>
-                    <option value="TND">TND (د.ت)</option>
-                    <option value="JOD">JOD (د.ا)</option>
-                    <option value="IQD">IQD (ع.د)</option>
-                    <option value="LBP">LBP (ل.ل)</option>
-                    <option value="YER">YER (ر.ي)</option>
-                    <option value="XOF">XOF (CFA)</option>
-                    <option value="XAF">XAF (FCFA)</option>
-                    <option value="NGN">NGN (₦)</option>
-                    <option value="KES">KES (KSh)</option>
-                    <option value="AOA">AOA (Kz)</option>
-                    <option value="ETB">ETB (Br)</option>
-                    <option value="GHS">GHS (GH₵)</option>
-                    <option value="TZS">TZS (TSh)</option>
-                    <option value="UGX" selected>UGX (USh)</option>
-                    <option value="ZMW">ZMW (ZK)</option>
-                    <option value="BWP">BWP (P)</option>
-                    <option value="MUR">MUR (₨)</option>
-                    <option value="NAD">NAD (N$)</option>
-                    <option value="ZiG">ZiG (ZiG)</option>
-                    <option value="PKR">PKR (₨)</option>
-                    <option value="BDT">BDT (৳)</option>
-                    <option value="KZT">KZT (₸)</option>
-                    <option value="LKR">LKR (₨)</option>
-                    <option value="UZS">UZS (so'm)</option>
-                    <option value="NPR">NPR (₨)</option>
-                    <option value="TMT">TMT (T)</option>
-                    <option value="TWD">TWD (NT$)</option>
-                    <option value="PHP">PHP (₱)</option>
-                    <option value="VND">VND (₫)</option>
-                    <option value="MYR">MYR (RM)</option>
-                    <option value="MOP">MOP (MOP$)</option>
-                    <option value="FJD">FJD (FJ$)</option>
-                    <option value="PGK">PGK (K)</option>
-                    <option value="RUB">RUB (₽)</option>
-                    <option value="RON">RON (lei)</option>
-                    <option value="HUF">HUF (Ft)</option>
-                    <option value="UAH">UAH (₴)</option>
-                    <option value="BGN">BGN (лв)</option>
-                    <option value="RSD">RSD (дин.)</option>
-                    <option value="ISK">ISK (kr)</option>
-                    <option value="GEL">GEL (₾)</option>
-                    <option value="CLP">CLP (CLP$)</option>
-                    <option value="PEN">PEN (S/.)</option>
-                    <option value="UYU">UYU ($U)</option>
-                    <option value="CRC">CRC (₡)</option>
-                    <option value="DOP">DOP (RD$)</option>
-                    <option value="GTQ">GTQ (Q)</option>
-                    <option value="PAB">PAB (B/.)</option>
-                    <option value="JMD">JMD (J$)</option>
-                </select>
-            </div>
+                <div class="input-group">
+                    <label>Home Currency</label>
+                    <select id="baseCurrencyConfig" class="bright-input" onchange="updateBaseCurrencySettingsInSheet()">
+                        <option value="">Loading base targets...</option>
+                    </select>
+                </div>
 
            
             </div>

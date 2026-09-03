@@ -26,18 +26,20 @@ body {
     background: #38bdf8;
 }
 
+/* SEARCH AND REPLACE THESE TWO LAYOUT RULES IN STYLE.CSS */
+
 .app-layout {
     display: flex;
     height: 100vh;
     width: 100vw;
+    overflow: hidden; /* Prevents whole-screen layout breaking */
+    background-color: #0b0f19;
 }
 
-/* SEARCH AND REPLACE THIS EXACT BLOCK INSIDE STYLE.CSS */
-
 .sidebar {
-    width: 340px;
-    min-width: 340px;        /* FIX 1: Hard-locks sidebar size so text elements cannot expand it */
-    max-width: 340px;        /* FIX 2: Prevents massive dropdown lists from pushing out columns */
+    width: 340px !important;
+    min-width: 340px !important; /* Hard-locks the width profile */
+    max-width: 340px !important;
     background-color: #0f1626;
     border-right: 1px solid #1e293b;
     padding: 24px;
@@ -45,8 +47,9 @@ body {
     display: flex;
     flex-direction: column;
     gap: 20px;
-    overflow-y: auto;        /* FIX 3: Unlocks vertical scrolls inside the form cleanly if fields overflow */
-    height: 100vh;           /* FIX 4: Fits sidebar cleanly to exactly the screen layout boundaries */
+    overflow-y: auto;          /* Unlocks standard internal sidebar scrolling */
+    height: 100vh;
+    flex-shrink: 0;            /* CRUCIAL FIX: Blocks the main content from flattening the sidebar */
 }
 
 .sidebar-header {

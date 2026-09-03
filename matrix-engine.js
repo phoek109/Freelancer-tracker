@@ -359,3 +359,24 @@ document.querySelectorAll('.curr-btn').forEach(btn => {
     });
 });
 window.onresize = () => { resizeCanvas(); updateMatrixData(); };
+
+// ADD THIS PAIR TO YOUR DOM INITIALIZATION OR LOGIC BLOCK IN MATRIX-ENGINE.JS
+
+// Bind change tracking event listeners to both elements cleanly
+document.addEventListener('DOMContentLoaded', () => {
+    const receivedEl = document.getElementById('formCurrency');
+    const homeEl = document.getElementById('baseCurrencyConfig');
+    
+    if (receivedEl) {
+        receivedEl.addEventListener('change', () => {
+            if (typeof calculateActiveConversionRate === 'function') calculateActiveConversionRate();
+        });
+    }
+    
+    if (homeEl) {
+        homeEl.addEventListener('change', () => {
+            if (typeof updateBaseCurrencyConfigSymbols === 'function') updateBaseCurrencyConfigSymbols();
+            if (typeof calculateActiveConversionRate === 'function') calculateActiveConversionRate();
+        });
+    }
+});
