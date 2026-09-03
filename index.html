@@ -17,6 +17,7 @@
                 <small class="help-text">Deploy your Google Sheet script to get an unlimited backend link.</small>
             </div>
 
+    
             <div class="sidebar-header">ADD INCOME ENTRY</div>
             <div class="form-grid">
                 <div class="input-group">
@@ -41,6 +42,28 @@
                         <option value="KES">KES (KSh)</option>
                     </select>
                 </div>
+                            <!-- Dynamic Base Configuration Fields Matching Your Currency Settings Tab -->
+            <div class="form-grid-row">
+                <div class="input-group-half">
+                    <label>Home Currency</label>
+                    <select id="baseCurrencyConfig" class="bright-input" onchange="updateBaseCurrencySettingsInSheet()">
+                        <option value="USD">USD ($)</option>
+                        <option value="EUR">EUR (€)</option>
+                        <option value="GBP">GBP (£)</option>
+                        <option value="UGX">UGX (USh)</option>
+                        <option value="KES">KES (KSh)</option>
+                        <option value="NGN">NGN (₦)</option>
+                    </select>
+                </div>
+
+           
+            </div>
+
+                <div class="input-group-half">
+                    <label>Tax Rate (%)</label>
+                    <input type="number" id="baseTaxRateConfig" value="15" class="bright-input" oninput="updateBaseCurrencySettingsInSheet()">
+                </div>
+                
                 <div class="input-group">
                     <label>Platform Fees (%)</label>
                     <input type="number" id="formFees" placeholder="e.g., 5" value="0">
@@ -61,7 +84,7 @@
                     <input type="number" id="formWithholdingAmt" placeholder="0.00" value="0">
                 </div>
                 
-                <button id="btnSubmit" onclick="sendToGoogleSheets()">STREAM TO SHEET</button>
+                <button id="btnSubmit" onclick="dispatchLedgerTransactionBundle()">STREAM TO SHEET</button>
                 <p id="syncStatus" class="status-text"></p>
             </div>
         </div>
@@ -104,13 +127,12 @@
                     <div class="breakdown-box">
                         <span class="breakdown-title">INCOME BREAKDOWN:</span>
                         <span class="dot dot-active"></span> Active Invoice: <strong id="incActive">$0.00</strong>
-                        <span class="dot dot-retainer"></span> Client Retainers: <strong id="incRetainer">$0.00</strong>
+                        <span class="dot dot-retainer"></span> Others: <strong id="incOthers">$0.00</strong>
                     </div>
                     <div class="breakdown-box">
                         <span class="breakdown-title">EXPENSE BREAKDOWN:</span>
-                        <span class="dot dot-software"></span> Software & Tools: <strong id="expSoftware">$0.00</strong>
-                        <span class="dot dot-marketing"></span> Marketing & Ads: <strong id="expMarketing">$0.00</strong>
-                        <span class="dot dot-hardware"></span> Hardware & Office: <strong id="expHardware">$0.00</strong>
+                        <span class="dot dot-software"></span> Business Expenses: <strong id="expBusinessExpenses">$0.00</strong>
+                        <span class="dot dot-marketing"></span> Platform Fees: <strong id="expPlatformFees">$0.00</strong>
                     </div>
                     <div class="breakdown-box">
                         <span class="breakdown-title">TAX VAULT BREAKDOWN:</span>
@@ -121,28 +143,29 @@
 
                 <!-- UPGRADED: 1 Billion Full-Width Marquee Slider Panel -->
                 <div class="full-width-control">
-                    <div class="control-header">
-                        <span>ANNUAL REVENUE CONFIGURATION (UP TO 1 BILLION)</span>
-                        <span id="valRevenue" class="text-white">$0</span>
-                    </div>
-                    <input type="range" id="inputRevenue" min="1" max="1000000000" step="10000" value="100000" class="slider slider-blue">
-                </div>
-
-                <div class="settings-grid">
+                    <!-- Inside <div class="settings-grid"> in index.html -->
                     <div class="control-block">
                         <div class="control-header">
-                            <span>EXPENSES RATIO</span>
-                            <span id="valRatio" class="text-red">30%</span>
+                            <span>ACTIVE INVOICE RATIO</span>
+                            <span id="valActiveRatio" class="text-white">65%</span>
                         </div>
-                        <input type="range" id="inputRatio" min="0" max="80" step="5" value="30" class="slider slider-red">
+                        <input type="range" id="inputActiveRatio" min="0" max="100" step="5" value="65" class="slider slider-blue">
                     </div>
 
                     <div class="control-block">
                         <div class="control-header">
-                            <span>BASE TARGET TAX RATE</span>
-                            <span id="valTaxRate" class="text-yellow">15%</span>
+                            <span>BUSINESS EXPENSE RATIO</span>
+                            <span id="valBusinessExpRatio" class="text-red">50%</span>
                         </div>
-                        <input type="range" id="inputTaxRate" min="0" max="50" step="1" value="15" class="slider slider-yellow">
+                        <input type="range" id="inputBusinessExpRatio" min="0" max="100" step="5" value="50" class="slider slider-red">
+                    </div>
+
+                    <div class="control-block">
+                        <div class="control-header">
+                            <span>INCOME TAX VAULT RATIO</span>
+                            <span id="valIncomeTaxRatio" class="text-yellow">80%</span>
+                        </div>
+                        <input type="range" id="inputIncomeTaxRatio" min="0" max="100" step="5" value="80" class="slider slider-yellow">
                     </div>
 
                     <div class="control-block">

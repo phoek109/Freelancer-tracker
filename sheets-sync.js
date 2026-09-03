@@ -1,25 +1,21 @@
 const apiInput = document.getElementById('apiEndpoint');
-const subCatSelect = document.getElementById('formSubCategorySelect');
-const newSubInput = document.getElementById('newSubCatNameInput');
-const tagsContainer = document.getElementById('subCategoryTagsContainer');
-
-let activeMainCategory = 'income';
 
 window.addEventListener('DOMContentLoaded', () => {
     if (localStorage.getItem('userSheetDB')) {
         apiInput.value = localStorage.getItem('userSheetDB');
     }
-    document.getElementById('formDate').valueAsDate = new Date();
-    
-    if (localStorage.getItem('customSubCatsCache')) {
-        window.subCategoriesCache = JSON.parse(localStorage.getItem('customSubCatsCache'));
+    if (localStorage.getItem('userBaseCurrencyConfig')) {
+        document.getElementById('baseCurrencyConfig').value = localStorage.getItem('userBaseCurrencyConfig');
+    }
+    if (localStorage.getItem('userBaseTaxRateConfig')) {
+        document.getElementById('baseTaxRateConfig').value = localStorage.getItem('userBaseTaxRateConfig');
     }
     
-    refreshSubCategoryUI();
-    selectMainCategory('income'); // Lock baseline view on boot
+    document.getElementById('formDate').valueAsDate = new Date();
     
+    // Safety delay to make sure all your custom sidebar layout fields have loaded
     setTimeout(() => {
-        if (typeof resizeCanvas === 'function') resizeCanvas();
+        if (typeof refreshAllDropdowns === 'function') refreshAllDropdowns();
         if (typeof updateMatrixData === 'function') updateMatrixData();
     }, 150);
 });
@@ -28,153 +24,135 @@ apiInput.addEventListener('input', (e) => {
     localStorage.setItem('userSheetDB', e.target.value);
 });
 
-// FIXED: Form interface dynamically morphs labels to make clear they are distinct logs
-function selectMainCategory(categoryName) {
-    activeMainCategory = categoryName;
+async function updateBaseCurrencySettingsInSheet() {
+    if (typeof updateBaseCurrencyConfigSymbols === 'function') updateBaseCurrencyConfigSymbols();
     
-    document.querySelectorAll('.cat-pill').forEach(btn => btn.classList.remove('active'));
-    document.getElementById(`catBtn-${categoryName}`).classList.add('active');
-    
-    // Clear out the value in the amount box so stale data isn't left visible
-    document.getElementById('formAmount').value = '';
-    document.getElementById('formClient').value = '';
+    const endpoint = apiInput.value.trim();
+    if (!endpoint) return;
 
-    // Dynamically warp text tags based on chosen operation type
-    const lblDesc = document.getElementById('lblDescription');
-    const lblSub = document.getElementById('lblSubCategory');
-    const lblAmt = document.getElementById('lblAmount');
-    const txtClient = document.getElementById('formClient');
-    const txtAmount = document.getElementById('formAmount');
+    const baseCurrencyValue = document.getElementById('baseCurrencyConfig').value;
+    const targetTaxRateValue = (parseFloat(document.getElementById('baseTaxRateConfig').value) || 0) / 100;
 
-    if (categoryName === 'income') {
-        lblDesc.innerText = "Description / Client";
-        txtClient.placeholder = "e.g., Website Project Retainer";
-        lblSub.innerText = "Income Sub-Category Target";
-        lblAmt.innerText = "Invoice Amount (Gross Earnings)";
-        txtAmount.placeholder = "Enter gross invoice value...";
-    } else if (categoryName === 'expense') {
-        lblDesc.innerText = "Expense / Vendor Item";
-        txtClient.placeholder = "e.g., Monthly Hosting Bill, Adobe License";
-        lblSub.innerText = "Expense Sub-Category Target";
-        lblAmt.innerText = "Expense Outflow Cost";
-        txtAmount.placeholder = "Enter expense cost numerical value...";
-    } else if (categoryName === 'tax') {
-        lblDesc.innerText = "Tax Event Notes";
-        txtClient.placeholder = "e.g., Q2 Estimated Payment";
-        lblSub.innerText = "Tax Vault Category Target";
-        lblAmt.innerText = "Tax Adjustment Amount";
-        txtAmount.placeholder = "Enter tax adjustment numerical value...";
-    }
-    
-    document.getElementById('incomeExtraFields').classList.toggle('hidden', categoryName !== 'income');
-    document.getElementById('taxExtraFields').classList.toggle('hidden', categoryName !== 'tax');
-    
-    refreshSubCategoryUI();
-}
+    localStorage.setItem('userBaseCurrencyConfig', baseCurrencyValue);
+    localStorage.setItem('userBaseTaxRateConfig', document.getElementById('baseTaxRateConfig').value);
 
-function refreshSubCategoryUI() {
-    const activeList = window.subCategoriesCache[activeMainCategory];
-    
-    subCatSelect.innerHTML = '';
-    activeList.forEach(name => {
-        const opt = document.createElement('option');
-        opt.value = name;
-        opt.innerText = name;
-        subCatSelect.appendChild(opt);
-    });
+    const payload = {
+        configUpdate: true,
+        "Base Currency": baseCurrencyValue, // Target row cell cell B1
+        "Tax Rate": targetTaxRateValue       // Target row cell cell B2
+    };
 
-    tagsContainer.innerHTML = '';
-    activeList.forEach((name, idx) => {
-        const tag = document.createElement('div');
-        tag.className = 'subcat-tag';
-        tag.innerHTML = `
-            <span>${name}</span>
-            <button type="button" onclick="deleteSubCategoryByIndex(${idx})">×</button>
-        `;
-        tagsContainer.appendChild(tag);
-    });
-}
-
-function addNewSubCategoryFromSidebar() {
-    const rawVal = newSubInput.value.trim();
-    if (!rawVal) return;
-
-    if (!window.subCategoriesCache[activeMainCategory].includes(rawVal)) {
-        window.subCategoriesCache[activeMainCategory].push(rawVal);
-        localStorage.setItem('customSubCatsCache', JSON.stringify(window.subCategoriesCache));
-        newSubInput.value = '';
-        refreshSubCategoryUI();
+    try {
+        await fetch(endpoint, { method: 'POST', body: JSON.stringify(payload) });
+    } catch (e) {
+        console.log("Settings synchronization pipeline error.");
     }
 }
 
-function deleteSubCategoryByIndex(indexNumber) {
-    const activeList = window.subCategoriesCache[activeMainCategory];
-    activeList.splice(indexNumber, 1);
-    localStorage.setItem('customSubCatsCache', JSON.stringify(window.subCategoriesCache));
-    refreshSubCategoryUI();
-    if (typeof updateMatrixData === 'function') updateMatrixData();
-}
-
-async function sendToGoogleSheets() {
+async function dispatchLedgerTransactionBundle() {
     const endpoint = apiInput.value.trim();
     const statusText = document.getElementById('syncStatus');
     
     if (!endpoint) {
-        statusText.style.color = '#f87171'; statusText.innerText = "Error: Paste your Google Web App URL first!"; return;
+        statusText.style.color = '#f87171'; 
+        statusText.innerText = "Error: Paste your Google Web App URL first!"; 
+        return; 
     }
 
+    // ==========================================
+    // CRUCIAL ALIGNMENT AREA: REAL HTML TARGETS
+    // ==========================================
     const date = document.getElementById('formDate').value;
-    const client = document.getElementById('formClient').value.trim();
-    const amount = parseFloat(document.getElementById('formAmount').value) || 0;
-    const subCat = subCatSelect.value;
+    const client = document.getElementById('formClient').value.trim() || "Ledger Entry";
+    
+    // Core income input streams
+    const amtIncome = parseFloat(document.getElementById('formAmount').value) || 0;
+    const feeIncome = (parseFloat(document.getElementById('formFees').value) || 0) / 100;
+    const subIncome = document.getElementById('formCurrency').value; // Currency select dropdown
 
-    const fees = (parseFloat(document.getElementById('formFees').value) || 0) / 100;
-    const withholding = document.getElementById('formWithholdingToggle').value;
-    const withholdingAmt = parseFloat(document.getElementById('formWithholdingAmt').value) || 0;
+    // Expense and withholding streams
+    const amtExpense = parseFloat(document.getElementById('formExpenses').value) || 0;
+    const amtTax = parseFloat(document.getElementById('formWithholdingAmt').value) || 0;
+    const isWithholding = document.getElementById('formWithholdingToggle').value;
+    // ==========================================
 
-    if (!client || amount <= 0 || !subCat) {
-        statusText.style.color = '#f87171'; statusText.innerText = "Error: All transaction details are required!"; return;
+    // Validation check: ensure at least one numerical amount field has data
+    if (amtIncome === 0 && amtExpense === 0 && amtTax === 0) {
+        statusText.style.color = '#f87171'; 
+        statusText.innerText = "Error: Input an amount in at least one category pipeline!"; 
+        return; 
     }
 
-    statusText.style.color = '#eab308'; statusText.innerText = "Streaming to Google Cloud...";
+    statusText.style.color = '#eab308'; 
+    statusText.innerText = "Streaming records to Google Cloud...";
     const totals = window.localHistoryTotals;
 
+    // Reset fallback mock demo records upon first true user log stream
     if (totals.gross === 0 && Object.keys(totals.breakdownValues).length <= 7) {
+        totals.gross = 0; 
         totals.breakdownValues = {};
     }
 
-    if (!totals.breakdownValues[subCat]) totals.breakdownValues[subCat] = 0;
-    totals.breakdownValues[subCat] += amount;
-
-    if (activeMainCategory === 'income') {
-        totals.gross += amount * (1 - fees);
-    } else if (activeMainCategory === 'expense') {
-        totals.expenses += amount;
-    } else if (activeMainCategory === 'tax') {
-        totals.taxWithheld += withholdingAmt;
+    // Process local screen calculations for all active channels in parallel
+    if (amtIncome > 0) {
+        totals.gross += amtIncome * (1 - feeIncome);
+        if (!totals.breakdownValues[subIncome]) totals.breakdownValues[subIncome] = 0;
+        totals.breakdownValues[subIncome] += amtIncome;
+    }
+    if (amtExpense > 0) {
+        totals.expenses += amtExpense;
+    }
+    if (amtTax > 0 && isWithholding === "Yes") {
+        totals.taxWithheld += amtTax;
     }
 
+    // CRUCIAL DATA PAYLOAD ALIGNMENT: Standardized flat payload keys for Code.gs
     const payload = {
         data: {
-            "Date": date, "Client Name": client, "Invoice Amount": amount, "Category": activeMainCategory,
-            "Sub Category": subCat, "Platform Fees": fees, "Withholding Tax Deducted?": withholding, "Withholding Amount": withholdingAmt
+            "Date": date,                               // Matches rowData["Date"] in Apps Script
+            "Client Name": client,                      // Matches rowData["Client Name"]
+            "Invoice Amount": amtIncome,                // Matches rowData["Invoice Amount"]
+            "Currency Recieved": subIncome,             // Matches rowData["Currency Recieved"]
+            "Platform Fees": feeIncome,                 // Matches rowData["Platform Fees"]
+            "Withholding Tax Deducted?": isWithholding, // Matches rowData["Withholding Tax Deducted?"]
+            "Withholding Amount": isWithholding === "Yes" ? amtTax : 0, // Matches rowData["Withholding Amount"]
+            "Business Expenses": amtExpense             // Matches rowData["Business Expenses"]
         }
     };
 
     try {
-        const response = await fetch(endpoint, { method: 'POST', body: JSON.stringify(payload) });
+        const response = await fetch(endpoint, { 
+            method: 'POST', 
+            body: JSON.stringify(payload) 
+        });
         const result = await response.json();
 
         if (result.status === "success") {
-            statusText.style.color = '#4ade80';
-            statusText.innerText = "✔ Success! Row logged to Google Sheets.";
-            document.getElementById('formClient').value = '';
+            statusText.style.color = '#4ade80'; 
+            statusText.innerText = "✔ Success! Row entry streamed to Google Sheets.";
+            
+            // =========================================================================
+            // 🚀 INTERCEPT THE DYNAMIC BREAKDOWN PACKET FROM THE DATABASE BACKEND
+            // =========================================================================
+            if (result.summary) {
+                window.liveSheetMetrics = result.summary;
+                window.localHistoryTotals = result.summary.totals;
+            }
+            // =========================================================================
+
+            // Clear input fields cleanly matching our verified layout IDs
             document.getElementById('formAmount').value = '';
-            if (typeof updateMatrixData === 'function') updateMatrixData(); 
+            document.getElementById('formFees').value = '0';
+            document.getElementById('formExpenses').value = '0';
+            document.getElementById('formWithholdingAmt').value = '0';
+            document.getElementById('formClient').value = '';
+            
+            if (typeof updateMatrixData === 'function') updateMatrixData(); // Refresh matrix layout lines
         } else {
             throw new Error(result.message);
         }
     } catch (err) {
-        statusText.style.color = '#f87171'; statusText.innerText = "Connection Failed. Check your Deployment Web App URL.";
+        statusText.style.color = '#f87171'; 
+        statusText.innerText = "Connection Failed. Check your Deployment Web App URL.";
     }
 }
