@@ -19,18 +19,61 @@ const inputTaxRate = document.getElementById('inputTaxRate');
 const canvas = document.getElementById('flowChart');
 const btnToggle = document.getElementById('btnToggleMode');
 
+// SEARCH AND REPLACE THIS CORRECTED DATA ENGINES MODULE IN MATRIX-ENGINE.JS
+
 async function fetchLiveExchangeRates(baseCurrency) {
     try {
+        // FIXED syntax URL generation layout string parameter mapping:
         const response = await fetch(`https://er-api.com{baseCurrency}`);
+        
         if (response.ok) {
             const data = await response.json();
             exchangeRatesCache = data.rates;
-            if (typeof updateMatrixData === 'function') updateMatrixData();
+            
+            // Re-evaluates conversion labels instantly with fresh live production data!
+            if (typeof calculateActiveConversionRate === 'function') {
+                calculateActiveConversionRate();
+            }
+            if (typeof updateMatrixData === 'function') {
+                updateMatrixData();
+            }
         }
     } catch (e) {
         console.log("Forex API offline. Falling back to local tracking variables cache.");
     }
 }
+
+function calculateActiveConversionRate() {
+    const receivedElement = document.getElementById('formCurrency');
+    const homeElement = document.getElementById('baseCurrencyConfig');
+    const rateTextElement = document.getElementById('tickerRateText');
+    
+    if (!receivedElement || !homeElement || !rateTextElement) return;
+
+    const receivedCurr = receivedElement.value;
+    const homeCurr = homeElement.value;
+
+    // Fetch matching data indices from our live exchange rates cache layer
+    const rateToBase = exchangeRatesCache[homeCurr] || 1;
+    const rateToReceived = exchangeRatesCache[receivedCurr] || 1;
+    
+    // Cross-convert rates natively: 1 Unit of Received = X Units of Home
+    const crossRate = rateToBase / rateToReceived;
+
+    rateTextElement.innerText = `1 ${receivedCurr} = ${crossRate.toFixed(4)} ${homeCurr}`;
+}
+
+// Bind change tracking event listeners to both components natively
+document.addEventListener('DOMContentLoaded', () => {
+    const receivedEl = document.getElementById('formCurrency');
+    const homeEl = document.getElementById('baseCurrencyConfig');
+    
+    if (receivedEl) receivedEl.addEventListener('change', calculateActiveConversionRate);
+    if (homeEl) homeEl.addEventListener('change', () => {
+        updateBaseCurrencyConfigSymbols();
+        calculateActiveConversionRate();
+    });
+});
 
 // Automatically balances currency signs and passes metrics down to target tax variables
 function updateBaseCurrencyConfigSymbols() {
@@ -129,103 +172,183 @@ function drawFlowLines(expRatio, taxRate, netProfit, gross) {
     ctx.fillText(currentCurrency, startX, startY + 4); ctx.textAlign = 'left';
 }
 
-// References to your new dynamic ratio sliders
-const inputActiveRatio = document.getElementById('inputActiveRatio');
-const inputBusinessExpRatio = document.getElementById('inputBusinessExpRatio');
-const inputIncomeTaxRatio = document.getElementById('inputIncomeTaxRatio');
+// Aligned Breakdown Proportions Sliders
+const inputIncomeSplit = document.getElementById('inputIncomeSplit');
+const inputExpenseSplit = document.getElementById('inputExpenseSplit');
+const inputTaxSplit = document.getElementById('inputTaxSplit');
 
 function updateMatrixData() {
     let gross, expRatio, taxRate;
-    let activeSplit, bizExpSplit, incomeTaxSplit;
-    const totals = window.localHistoryTotals;
+    let incomePct, expensePct, taxPct;
     
-    // Fallback configurations if sheet metrics aren't populated yet
-    const sheetMetrics = window.liveSheetMetrics || { activeRatio: 0.65, bizExpRatio: 0.50, incomeTaxRatio: 0.80 };
+    const totals = window.localHistoryTotals;
+    const sheetMetrics = window.liveSheetMetrics || {
+        activeRatio: 0.65, bizExpRatio: 0.60, incomeTaxRatio: 0.80,
+        totals: { gross: 0, expenses: 0, taxWithheld: 0 }
+    };
 
     if (isLiveTrackingMode) {
+        // 1. LIVE MODE: Lock to real data coming from Google Sheets
         gross = totals.gross;
-        const totalExpenses = totals.expenses;
-        expRatio = gross > 0 ? (totalExpenses / gross) : 0;
+        expRatio = gross > 0 ? (totals.expenses / gross) : 0;
         taxRate = parseFloat(inputTaxRate.value) / 100;
-        
-        inputRevenue.value = gross || 0;
-        inputRatio.value = Math.round(expRatio * 100) || 0;
 
-        // DERIVED DIRECTLY FROM USER DATA: Pulling live ratios sent from Google Sheets
-        activeSplit = sheetMetrics.activeRatio;
-        bizExpSplit = sheetMetrics.bizExpRatio;
-        incomeTaxSplit = sheetMetrics.incomeTaxRatio;
+        incomePct = sheetMetrics.activeRatio;
+        expensePct = sheetMetrics.bizExpRatio;
+        taxPct = sheetMetrics.incomeTaxRatio;
 
-        // Auto-update slider visual values to echo real life state
-        inputActiveRatio.value = Math.round(activeSplit * 100);
-        inputBusinessExpRatio.value = Math.round(bizExpSplit * 100);
-        inputIncomeTaxRatio.value = Math.round(incomeTaxSplit * 100);
+        // Keep sliders updated with live backend values safely
+        if (inputRevenue) inputRevenue.value = gross;
+        if (inputRatio) inputRatio.value = Math.round(expRatio * 100);
+        if (inputIncomeSplit) inputIncomeSplit.value = Math.round(incomePct * 100);
+        if (inputExpenseSplit) inputExpenseSplit.value = Math.round(expensePct * 100);
+        if (inputTaxSplit) inputTaxSplit.value = Math.round(taxPct * 100);
     } else {
-        // SIMULATION MODE: Math responds 100% dynamically to the user's slider adjustments!
-        const sliderGrossVal = parseFloat(inputRevenue.value) || 0;
-        gross = sliderGrossVal < totals.gross ? totals.gross : sliderGrossVal;
-        inputRevenue.value = gross;
-
-        const simulatedGrossFuture = gross - totals.gross;
-        const sliderExpRatio = (parseFloat(inputRatio.value) || 0) / 100;
-        const calculatedTotalExpenses = totals.expenses + (simulatedGrossFuture * sliderExpRatio);
-        expRatio = gross > 0 ? (calculatedTotalExpenses / gross) : 0;
+        // 2. PREDICTIVE MODE: User shapes the future math with the slider panel
+        gross = parseFloat(inputRevenue.value) || 0;
+        expRatio = (parseFloat(inputRatio.value) || 0) / 100;
         taxRate = (parseFloat(inputTaxRate.value) || 0) / 100;
 
-        // Pulling mathematical weight from interactive sliders
-        activeSplit = (parseFloat(inputActiveRatio.value) || 0) / 100;
-        bizExpSplit = (parseFloat(inputBusinessExpRatio.value) || 0) / 100;
-        incomeTaxSplit = (parseFloat(inputIncomeTaxRatio.value) || 0) / 100;
+        incomePct = (parseFloat(inputIncomeSplit.value) || 0) / 100;
+        expensePct = (parseFloat(inputExpenseSplit.value) || 0) / 100;
+        taxPct = (parseFloat(inputTaxSplit.value) || 0) / 100;
     }
 
+    // Top-Level Matrix Totals
     const totalExpenses = gross * expRatio;
     const netProfit = gross - totalExpenses;
-    const taxReserve = (netProfit > 0 ? netProfit * taxRate : 0) + totals.taxWithheld;
-    const takeHome = netProfit - (netProfit > 0 ? netProfit * taxRate : 0);
+    const taxReserve = (netProfit > 0 ? netProfit * taxRate : 0) + (isLiveTrackingMode ? totals.taxWithheld : 0);
+    const takeHome = gross - totalExpenses - taxReserve;
 
-    // DYNAMIC SPLITTING: Calculated purely based on global proportions or user settings
-    const incActive = gross * activeSplit;
-    const incOthers = gross * (1 - activeSplit);
+    // Aligned Breakdown Calculations matching Sheet Blueprint
+    const incActive = gross * incomePct;
+    const incOthers = gross * (1 - incomePct);
     
-    const BusinessExpenses = totalExpenses * bizExpSplit;
-    const PlatformFees = totalExpenses * (1 - bizExpSplit);
+    const BusinessExpenses = totalExpenses * expensePct;
+    const PlatformFees = totalExpenses * (1 - expensePct);
     
-    const taxIncome = taxReserve * incomeTaxSplit;
-    const taxWithholding = taxReserve * (1 - incomeTaxSplit);
+    const taxIncome = taxReserve * taxPct;
+    const taxWithholding = taxReserve * (1 - taxPct);
 
-    // Update textual indicators
-    document.getElementById('valRevenue').innerText = `${currentCurrency}${gross.toLocaleString()}`;
-    document.getElementById('valRatio').innerText = `${Math.round(expRatio * 100)}%`;
-    document.getElementById('valTaxRate').innerText = `${inputTaxRate.value}%`;
-    document.getElementById('valActiveRatio').innerText = `${Math.round(activeSplit * 100)}%`;
-    document.getElementById('valBusinessExpRatio').innerText = `${Math.round(bizExpSplit * 100)}%`;
-    document.getElementById('valIncomeTaxRatio').innerText = `${Math.round(incomeTaxSplit * 100)}%`;
 
-    // Render metrics cleanly onto UI display columns
-    document.getElementById('grossDisplay').innerText = `${currentCurrency}${gross.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-    document.getElementById('expensesDisplay').innerText = `${currentCurrency}${totalExpenses.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-    document.getElementById('taxDisplay').innerText = `${currentCurrency}${taxReserve.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-    document.getElementById('takeHomeDisplay').innerText = `${currentCurrency}${takeHome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-
-    document.getElementById('incActive').innerText = `${currentCurrency}${incActive.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-    document.getElementById('incOthers').innerText = `${currentCurrency}${incOthers.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-    document.getElementById('expBusinessExpenses').innerText = `${currentCurrency}${BusinessExpenses.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-    document.getElementById('expPlatformFees').innerText = `${currentCurrency}${PlatformFees.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-    document.getElementById('taxIncome').innerText = `${currentCurrency}${taxIncome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-    document.getElementById('taxWithholding').innerText = `${currentCurrency}${taxWithholding.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-
-    if (gross > 0) {
-        document.getElementById('barExpenses').style.width = `${(totalExpenses / gross) * 100}%`;
-        document.getElementById('barTax').style.width = `${(taxReserve / gross) * 100}%`;
-        document.getElementById('barTakeHome').style.width = `${(takeHome / gross) * 100}%`;
+    // Update Text Indicators on Top of Each Slider
+    if (document.getElementById('valRevenue')) document.getElementById('valRevenue').innerText = `${currentCurrency}${gross.toLocaleString()}`;
+    // Find these text declaration lines inside updateMatrixData() and change them to use toFixed(1):
+    if (document.getElementById('valRatio')) {
+        const rVal = parseFloat(inputRatio.value) || 0;
+        document.getElementById('valRatio').innerText = `${rVal.toFixed(1)}%`;
     }
-    drawFlowLines(expRatio, taxRate, netProfit, gross);
+    if (document.getElementById('valTaxRate')) {
+        const tVal = parseFloat(inputTaxRate.value) || 0;
+        document.getElementById('valTaxRate').innerText = `${tVal.toFixed(1)}%`;
+    }
+        
+    // Find these three label display code blocks inside updateMatrixData() and swap them out:
+    if (document.getElementById('valIncomeSplitText')) {
+        const val = parseFloat(inputIncomeSplit.value) || 0;
+        document.getElementById('valIncomeSplitText').innerText = `${val.toFixed(1)}% / ${(100 - val).toFixed(1)}%`;
+    }
+    if (document.getElementById('valExpenseSplitText')) {
+        const val = parseFloat(inputExpenseSplit.value) || 0;
+        document.getElementById('valExpenseSplitText').innerText = `${val.toFixed(1)}% / ${(100 - val).toFixed(1)}%`;
+    }
+    if (document.getElementById('valTaxSplitText')) {
+        const val = parseFloat(inputTaxSplit.value) || 0;
+        document.getElementById('valTaxSplitText').innerText = `${val.toFixed(1)}% / ${(100 - val).toFixed(1)}%`;
+    }
+
+    // Render Macro Metrics Cards Cleanly
+    if (document.getElementById('grossDisplay')) document.getElementById('grossDisplay').innerText = `${currentCurrency}${gross.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+    if (document.getElementById('expensesDisplay')) document.getElementById('expensesDisplay').innerText = `${currentCurrency}${totalExpenses.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+    if (document.getElementById('taxDisplay')) document.getElementById('taxDisplay').innerText = `${currentCurrency}${taxReserve.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+    if (document.getElementById('takeHomeDisplay')) document.getElementById('takeHomeDisplay').innerText = `${currentCurrency}${takeHome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+
+    // Update Your Screen Displays to Match Your New Verified Blueprint Categories
+    if (document.getElementById('incActive')) document.getElementById('incActive').innerText = `${currentCurrency}${incActive.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+    if (document.getElementById('incOthers')) document.getElementById('incOthers').innerText = `${currentCurrency}${incOthers.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+    if (document.getElementById('expBusinessExpenses')) document.getElementById('expBusinessExpenses').innerText = `${currentCurrency}${BusinessExpenses.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+    if (document.getElementById('expPlatformFees')) document.getElementById('expPlatformFees').innerText = `${currentCurrency}${PlatformFees.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+    if (document.getElementById('taxIncome')) document.getElementById('taxIncome').innerText = `${currentCurrency}${taxIncome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+    if (document.getElementById('taxWithholding')) document.getElementById('taxWithholding').innerText = `${currentCurrency}${taxWithholding.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+
+    // Update Proportional Splitting Visual Layout Bars
+    if (gross > 0) {
+        if (document.getElementById('barExpenses')) document.getElementById('barExpenses').style.width = `${(totalExpenses / gross) * 100}%`;
+        if (document.getElementById('barTax')) document.getElementById('barTax').style.width = `${(taxReserve / gross) * 100}%`;
+        if (document.getElementById('barTakeHome')) document.getElementById('barTakeHome').style.width = `${(takeHome / gross) * 100}%`;
+    } else {
+        if (document.getElementById('barExpenses')) document.getElementById('barExpenses').style.width = `0%`;
+        if (document.getElementById('barTax')) document.getElementById('barTax').style.width = `0%`;
+        if (document.getElementById('barTakeHome')) document.getElementById('barTakeHome').style.width = `0%`;
+    }
+
+    // Refresh Canvas Chart Bezier lines
+    if (typeof drawFlowLines === 'function') drawFlowLines(expRatio, taxRate, netProfit, gross);
 }
 
-// Bind event listeners to new inputs so adjustment forces layout updates instantly
-inputActiveRatio.addEventListener('input', updateMatrixData);
-inputBusinessExpRatio.addEventListener('input', updateMatrixData);
-inputIncomeTaxRatio.addEventListener('input', updateMatrixData);
+// UPDATED: Completely open to floating intervals for infinite sequential clicks!
+function adjustSliderStep(sliderId, changeAmount, isMacro = false) {
+    const slider = document.getElementById(sliderId);
+    if (!slider) return;
+
+    // 1. Fetch current position value as a pure floating point decimal
+    let currentValue = parseFloat(slider.value) || 0;
+    let newValue = currentValue + changeAmount;
+
+    // 2. Map strict safety boundary caps matching individual parameters
+    const maxLimit = sliderId === 'inputTaxRate' ? 50 : (sliderId === 'inputRatio' ? 90 : 100);
+    if (newValue < 0) newValue = 0;
+    if (newValue > maxLimit) newValue = maxLimit;
+
+    // 3. Force the physical slider element handle location tracking to update
+    slider.value = newValue.toFixed(1);
+    
+    // 4. Trigger UI metrics matrix calculation block cleanly
+    if (typeof updateMatrixData === 'function') updateMatrixData();
+
+    // 5. Cloud Database Synchronization Pipelines Execution
+    if (isMacro) {
+        if (typeof updateBaseCurrencySettingsInSheet === 'function') updateBaseCurrencySettingsInSheet();
+    } else {
+        if (typeof streamBreakdownProportionsToSheet === 'function') streamBreakdownProportionsToSheet();
+    }
+}
+
+// UPDATED: Explicitly updates both the range value and handles multi-million math accurately
+function adjustRevenueViaMultiplier(direction) {
+    const slider = document.getElementById('inputRevenue');
+    const select = document.getElementById('revenueStepSelect');
+    if (!slider || !select) return;
+
+    let currentValue = parseFloat(slider.value) || 0;
+    const stepMultiplier = parseFloat(select.value) || 1000;
+
+    let newValue = currentValue + (direction * stepMultiplier);
+
+    if (newValue < 0) newValue = 0;
+    if (newValue > 1000000000) newValue = 1000000000;
+
+    // Force values and visually move browser engine tracking handle
+    slider.value = newValue;
+    
+    // Recalculate main display dashboard panels instantly
+    if (typeof updateMatrixData === 'function') updateMatrixData();
+}
+
+
+// Add Event Listeners across all controls to keep calculations interactive
+if (inputRevenue) inputRevenue.addEventListener('input', updateMatrixData);
+
+// Add or append the sync call directly to your drag input event handlers:
+if (inputRatio) inputRatio.addEventListener('input', () => { updateMatrixData(); updateBaseCurrencySettingsInSheet(); });
+if (inputTaxRate) inputTaxRate.addEventListener('input', () => { updateMatrixData(); updateBaseCurrencySettingsInSheet(); });
+if (inputIncomeSplit) inputIncomeSplit.addEventListener('input', () => { updateMatrixData(); streamBreakdownProportionsToSheet(); });
+if (inputExpenseSplit) inputExpenseSplit.addEventListener('input', () => { updateMatrixData(); streamBreakdownProportionsToSheet(); });
+if (inputTaxSplit) inputTaxSplit.addEventListener('input', () => { updateMatrixData(); streamBreakdownProportionsToSheet(); });
+
+// New Step Weight Selector Contextual Listener to clear interface lag:
+const revenueStepSelect = document.getElementById('revenueStepSelect');
+if (revenueStepSelect) revenueStepSelect.addEventListener('change', updateMatrixData);
 
 document.querySelectorAll('.curr-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {

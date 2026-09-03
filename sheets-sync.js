@@ -1,6 +1,9 @@
 const apiInput = document.getElementById('apiEndpoint');
 
+// SEARCH AND REPLACE THIS EXACT DEPLOYMENT INNER LIFECYCLE BLOCK IN SHEETS-SYNC.JS
+
 window.addEventListener('DOMContentLoaded', () => {
+    // 1. Restore local cache persistent environments safely
     if (localStorage.getItem('userSheetDB')) {
         apiInput.value = localStorage.getItem('userSheetDB');
     }
@@ -13,11 +16,22 @@ window.addEventListener('DOMContentLoaded', () => {
     
     document.getElementById('formDate').valueAsDate = new Date();
     
-    // Safety delay to make sure all your custom sidebar layout fields have loaded
+    // =========================================================================
+    // 🚀 FIXED RESOLUTION RENDERING LIFE CYCLE: FORCES PRE-RESIZE DRAWING CHANNELS
+    // =========================================================================
+    if (typeof resizeCanvas === 'function') {
+        resizeCanvas(); // Forces canvas pixel density mapping container boundaries instantly!
+    }
+    if (typeof updateBaseCurrencyConfigSymbols === 'function') {
+        updateBaseCurrencyConfigSymbols(); // Updates current active currency characters
+    }
+
+    // Short safety window to let CSS Flex grid compute layout geometry before firing updates
     setTimeout(() => {
+        if (typeof resizeCanvas === 'function') resizeCanvas();
         if (typeof refreshAllDropdowns === 'function') refreshAllDropdowns();
-        if (typeof updateMatrixData === 'function') updateMatrixData();
-    }, 150);
+        if (typeof updateMatrixData === 'function') updateMatrixData(); // Recalculates and paints clean paths
+    }, 50);
 });
 
 apiInput.addEventListener('input', (e) => {
@@ -48,7 +62,6 @@ async function updateBaseCurrencySettingsInSheet() {
         console.log("Settings synchronization pipeline error.");
     }
 }
-
 async function dispatchLedgerTransactionBundle() {
     const endpoint = apiInput.value.trim();
     const statusText = document.getElementById('syncStatus');
@@ -82,6 +95,18 @@ async function dispatchLedgerTransactionBundle() {
         statusText.innerText = "Error: Input an amount in at least one category pipeline!"; 
         return; 
     }
+
+    // =========================================================================
+    // 🚀 VISUAL LOADING STATE: BUTTON SWITCHES TO "SAVING..." WITH NEON GREEN ACCENT
+    // =========================================================================
+    const submitBtn = document.getElementById('btnSubmit');
+    const originalBtnText = submitBtn.innerText;
+    
+    submitBtn.disabled = true;
+    submitBtn.innerText = "SAVING...";
+    submitBtn.style.borderColor = "#4ade80";
+    submitBtn.style.color = "#4ade80";
+    submitBtn.style.boxShadow = "0 0 15px rgba(74, 222, 128, 0.4)";
 
     statusText.style.color = '#eab308'; 
     statusText.innerText = "Streaming records to Google Cloud...";
@@ -154,5 +179,44 @@ async function dispatchLedgerTransactionBundle() {
     } catch (err) {
         statusText.style.color = '#f87171'; 
         statusText.innerText = "Connection Failed. Check your Deployment Web App URL.";
+    } finally {
+        // =========================================================================
+        // CLEANUP: Release button interaction blocks and restore styles
+        // =========================================================================
+        submitBtn.disabled = false;
+        submitBtn.innerText = originalBtnText;
+        submitBtn.style.borderColor = "";
+        submitBtn.style.color = "";
+        submitBtn.style.boxShadow = "";
     }
 }
+
+    let splitSyncTimeout;
+
+    function streamBreakdownProportionsToSheet() {
+        const endpoint = apiInput.value.trim();
+        if (!endpoint) return;
+
+        // Fetch live input floating-point allocation values
+        const incomeSplitVal = (parseFloat(document.getElementById('inputIncomeSplit').value) || 0) / 100;
+        const expenseSplitVal = (parseFloat(document.getElementById('inputExpenseSplit').value) || 0) / 100;
+        const taxSplitVal = (parseFloat(document.getElementById('inputTaxSplit').value) || 0) / 100;
+
+        const payload = {
+            configUpdate: true,
+            "Income Split": incomeSplitVal,   // Targets row cell B3
+            "Expense Split": expenseSplitVal, // Targets row cell B4
+            "Tax Split": taxSplitVal          // Targets row cell B5
+        };
+
+        // Debounce optimization: waits 800ms after the user stops sliding before sending a single network call
+        clearTimeout(splitSyncTimeout);
+        splitSyncTimeout = setTimeout(async () => {
+            try {
+                await fetch(endpoint, { method: 'POST', body: JSON.stringify(payload) });
+                console.log("✔ Proportional matrix splits backed up to Google Sheet.");
+            } catch (e) {
+                console.log("Database synchronization pipeline lag.");
+            }
+        }, 800);
+    }

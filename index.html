@@ -32,29 +32,194 @@
                     <label>Invoice Amount</label>
                     <input type="number" id="formAmount" placeholder="0.00">
                 </div>
-                <div class="input-group">
-                    <label>Currency Received</label>
-                    <select id="formCurrency">
-                        <option value="USD">USD ($)</option>
-                        <option value="GBP">GBP (£)</option>
-                        <option value="EUR">EUR (€)</option>
-                        <option value="UGX">UGX (USh)</option>
-                        <option value="KES">KES (KSh)</option>
-                    </select>
-                </div>
-                            <!-- Dynamic Base Configuration Fields Matching Your Currency Settings Tab -->
-            <div class="form-grid-row">
-                <div class="input-group-half">
-                    <label>Home Currency</label>
-                    <select id="baseCurrencyConfig" class="bright-input" onchange="updateBaseCurrencySettingsInSheet()">
-                        <option value="USD">USD ($)</option>
-                        <option value="EUR">EUR (€)</option>
-                        <option value="GBP">GBP (£)</option>
-                        <option value="UGX">UGX (USh)</option>
-                        <option value="KES">KES (KSh)</option>
-                        <option value="NGN">NGN (₦)</option>
-                    </select>
-                </div>
+<!-- UPDATE: Comprehensive Global Dropdowns with Dynamic Forex Conversion Ticker -->
+            <div class="input-group">
+                <label>Currency Received</label>
+                <select id="formCurrency" class="bright-input">
+                    <option value="USD">USD ($)</option>
+                    <option value="GBP">GBP (£)</option>
+                    <option value="EUR">EUR (€)</option>
+                    <option value="CAD">CAD (CA$)</option>
+                    <option value="JPY">JPY (¥)</option>
+                    <option value="CNY">CNY (元)</option>
+                    <option value="CHF">CHF (Fr)</option>
+                    <option value="AUD">AUD (A$)</option>
+                    <option value="NZD">NZD (NZ$)</option>
+                    <option value="HKD">HKD (HK$)</option>
+                    <option value="SGD">SGD (S$)</option>
+                    <option value="KRW">KRW (₩)</option>
+                    <option value="SEK">SEK (kr)</option>
+                    <option value="NOK">NOK (kr)</option>
+                    <option value="DKK">DKK (kr)</option>
+                    <option value="INR">INR (₹)</option>
+                    <option value="MXN">MXN ($)</option>
+                    <option value="BRL">BRL (R$)</option>
+                    <option value="ZAR">ZAR (R)</option>
+                    <option value="TRY">TRY (₺)</option>
+                    <option value="PLN">PLN (zł)</option>
+                    <option value="THB">THB (฿)</option>
+                    <option value="IDR">IDR (Rp)</option>
+                    <option value="CZK">CZK (Kč)</option>
+                    <option value="COP">COP ($)</option>
+                    <option value="KWD">KWD (د.ك)</option>
+                    <option value="BHD">BHD (ب.د)</option>
+                    <option value="OMR">OMR (ر.ع.)</option>
+                    <option value="SAR">SAR (ر.س)</option>
+                    <option value="AED">AED (د.إ)</option>
+                    <option value="ILS">ILS (₪)</option>
+                    <option value="QAR">QAR (ر.ق)</option>
+                    <option value="EGP">EGP (E£)</option>
+                    <option value="DZD">DZD (د.ج)</option>
+                    <option value="MAD">MAD (د.م.)</option>
+                    <option value="TND">TND (د.ت)</option>
+                    <option value="JOD">JOD (د.ا)</option>
+                    <option value="IQD">IQD (ع.د)</option>
+                    <option value="LBP">LBP (ل.ل)</option>
+                    <option value="YER">YER (ر.ي)</option>
+                    <option value="XOF">XOF (CFA)</option>
+                    <option value="XAF">XAF (FCFA)</option>
+                    <option value="NGN">NGN (₦)</option>
+                    <option value="KES">KES (KSh)</option>
+                    <option value="AOA">AOA (Kz)</option>
+                    <option value="ETB">ETB (Br)</option>
+                    <option value="GHS">GHS (GH₵)</option>
+                    <option value="TZS">TZS (TSh)</option>
+                    <option value="UGX" selected>UGX (USh)</option>
+                    <option value="ZMW">ZMW (ZK)</option>
+                    <option value="BWP">BWP (P)</option>
+                    <option value="MUR">MUR (₨)</option>
+                    <option value="NAD">NAD (N$)</option>
+                    <option value="ZiG">ZiG (ZiG)</option>
+                    <option value="PKR">PKR (₨)</option>
+                    <option value="BDT">BDT (৳)</option>
+                    <option value="KZT">KZT (₸)</option>
+                    <option value="LKR">LKR (₨)</option>
+                    <option value="UZS">UZS (so'm)</option>
+                    <option value="NPR">NPR (₨)</option>
+                    <option value="TMT">TMT (T)</option>
+                    <option value="TWD">TWD (NT$)</option>
+                    <option value="PHP">PHP (₱)</option>
+                    <option value="VND">VND (₫)</option>
+                    <option value="MYR">MYR (RM)</option>
+                    <option value="MOP">MOP (MOP$)</option>
+                    <option value="FJD">FJD (FJ$)</option>
+                    <option value="PGK">PGK (K)</option>
+                    <option value="RUB">RUB (₽)</option>
+                    <option value="RON">RON (lei)</option>
+                    <option value="HUF">HUF (Ft)</option>
+                    <option value="UAH">UAH (₴)</option>
+                    <option value="BGN">BGN (лв)</option>
+                    <option value="RSD">RSD (дин.)</option>
+                    <option value="ISK">ISK (kr)</option>
+                    <option value="GEL">GEL (₾)</option>
+                    <option value="CLP">CLP (CLP$)</option>
+                    <option value="PEN">PEN (S/.)</option>
+                    <option value="UYU">UYU ($U)</option>
+                    <option value="CRC">CRC (₡)</option>
+                    <option value="DOP">DOP (RD$)</option>
+                    <option value="GTQ">GTQ (Q)</option>
+                    <option value="PAB">PAB (B/.)</option>
+                    <option value="JMD">JMD (J$)</option>
+                </select>
+            </div>
+
+            <!-- NEW: The Live Middle Exchange Rates Intercept Display Component -->
+            <div id="liveForexTicker" class="forex-ticker-container">
+                <div class="ticker-label">LIVE MARKET CONVERSION</div>
+                <div id="tickerRateText" class="ticker-rate">1 UGX = 1.0000 UGX</div>
+                <div class="ticker-source">via Google Cloud Feed</div>
+            </div>
+
+            <div class="input-group">
+                <label>Home Currency</label>
+                <select id="baseCurrencyConfig" class="bright-input" onchange="updateBaseCurrencySettingsInSheet()">
+                    <!-- Copy the exact same comprehensive list of option tags right here to maintain parity -->
+                    <option value="USD">USD ($)</option>
+                    <option value="GBP">GBP (£)</option>
+                    <option value="EUR">EUR (€)</option>
+                    <option value="CAD">CAD (CA$)</option>
+                    <option value="JPY">JPY (¥)</option>
+                    <option value="CNY">CNY (元)</option>
+                    <option value="CHF">CHF (Fr)</option>
+                    <option value="AUD">AUD (A$)</option>
+                    <option value="NZD">NZD (NZ$)</option>
+                    <option value="HKD">HKD (HK$)</option>
+                    <option value="SGD">SGD (S$)</option>
+                    <option value="KRW">KRW (₩)</option>
+                    <option value="SEK">SEK (kr)</option>
+                    <option value="NOK">NOK (kr)</option>
+                    <option value="DKK">DKK (kr)</option>
+                    <option value="INR">INR (₹)</option>
+                    <option value="MXN">MXN ($)</option>
+                    <option value="BRL">BRL (R$)</option>
+                    <option value="ZAR">ZAR (R)</option>
+                    <option value="TRY">TRY (₺)</option>
+                    <option value="PLN">PLN (zł)</option>
+                    <option value="THB">THB (฿)</option>
+                    <option value="IDR">IDR (Rp)</option>
+                    <option value="CZK">CZK (Kč)</option>
+                    <option value="COP">COP ($)</option>
+                    <option value="KWD">KWD (د.ك)</option>
+                    <option value="BHD">BHD (ب.د)</option>
+                    <option value="OMR">OMR (ر.ع.)</option>
+                    <option value="SAR">SAR (ر.س)</option>
+                    <option value="AED">AED (د.إ)</option>
+                    <option value="ILS">ILS (₪)</option>
+                    <option value="QAR">QAR (ر.ق)</option>
+                    <option value="EGP">EGP (E£)</option>
+                    <option value="DZD">DZD (د.ج)</option>
+                    <option value="MAD">MAD (د.م.)</option>
+                    <option value="TND">TND (د.ت)</option>
+                    <option value="JOD">JOD (د.ا)</option>
+                    <option value="IQD">IQD (ع.د)</option>
+                    <option value="LBP">LBP (ل.ل)</option>
+                    <option value="YER">YER (ر.ي)</option>
+                    <option value="XOF">XOF (CFA)</option>
+                    <option value="XAF">XAF (FCFA)</option>
+                    <option value="NGN">NGN (₦)</option>
+                    <option value="KES">KES (KSh)</option>
+                    <option value="AOA">AOA (Kz)</option>
+                    <option value="ETB">ETB (Br)</option>
+                    <option value="GHS">GHS (GH₵)</option>
+                    <option value="TZS">TZS (TSh)</option>
+                    <option value="UGX" selected>UGX (USh)</option>
+                    <option value="ZMW">ZMW (ZK)</option>
+                    <option value="BWP">BWP (P)</option>
+                    <option value="MUR">MUR (₨)</option>
+                    <option value="NAD">NAD (N$)</option>
+                    <option value="ZiG">ZiG (ZiG)</option>
+                    <option value="PKR">PKR (₨)</option>
+                    <option value="BDT">BDT (৳)</option>
+                    <option value="KZT">KZT (₸)</option>
+                    <option value="LKR">LKR (₨)</option>
+                    <option value="UZS">UZS (so'm)</option>
+                    <option value="NPR">NPR (₨)</option>
+                    <option value="TMT">TMT (T)</option>
+                    <option value="TWD">TWD (NT$)</option>
+                    <option value="PHP">PHP (₱)</option>
+                    <option value="VND">VND (₫)</option>
+                    <option value="MYR">MYR (RM)</option>
+                    <option value="MOP">MOP (MOP$)</option>
+                    <option value="FJD">FJD (FJ$)</option>
+                    <option value="PGK">PGK (K)</option>
+                    <option value="RUB">RUB (₽)</option>
+                    <option value="RON">RON (lei)</option>
+                    <option value="HUF">HUF (Ft)</option>
+                    <option value="UAH">UAH (₴)</option>
+                    <option value="BGN">BGN (лв)</option>
+                    <option value="RSD">RSD (дин.)</option>
+                    <option value="ISK">ISK (kr)</option>
+                    <option value="GEL">GEL (₾)</option>
+                    <option value="CLP">CLP (CLP$)</option>
+                    <option value="PEN">PEN (S/.)</option>
+                    <option value="UYU">UYU ($U)</option>
+                    <option value="CRC">CRC (₡)</option>
+                    <option value="DOP">DOP (RD$)</option>
+                    <option value="GTQ">GTQ (Q)</option>
+                    <option value="PAB">PAB (B/.)</option>
+                    <option value="JMD">JMD (J$)</option>
+                </select>
+            </div>
 
            
             </div>
@@ -140,33 +305,113 @@
                         <span class="dot dot-withholding"></span> Withholding Balance: <strong id="taxWithholding">$0.00</strong>
                     </div>
                 </div>
-
-                <!-- UPGRADED: 1 Billion Full-Width Marquee Slider Panel -->
+                <!-- UPDATE: Full-Width Revenue Controller with Interactive Step-Multiplier Panel -->
                 <div class="full-width-control">
-                    <!-- Inside <div class="settings-grid"> in index.html -->
+                    <div class="control-header">
+                        <span>ANNUAL REVENUE CONFIGURATION (UP TO 1 BILLION)</span>
+                        <div class="multiplier-box">
+                            <label for="revenueStepSelect">STEP WEIGHT:</label>
+                            <select id="revenueStepSelect" class="cyber-mini-select">
+                                <option value="1">± $1</option>
+                                <option value="10">± $10</option>
+                                <option value="100">± $100</option>
+                                <option value="1000" selected>± $1K</option>
+                                <option value="10000">± $10K</option>
+                                <option value="100000">± $100K</option>
+                                <option value="1000000">± $1M</option>
+                                <option value="10000000">± $10M</option>
+                                <option value="100000000">± $100M</option>
+                            </select>
+                            <span id="valRevenue" class="text-white font-mono" style="margin-left: 12px; font-weight: 800;">$0</span>
+                        </div>
+                    </div>
+                    <div class="stepper-wrapper">
+                        <button class="step-btn macro-btn" onclick="adjustRevenueViaMultiplier(-1)">-</button>
+                        <input type="range" id="inputRevenue" min="0" max="1000000000" step="1" value="0" class="slider slider-blue">
+                        <button class="step-btn macro-btn" onclick="adjustRevenueViaMultiplier(1)">+</button>
+                    </div>  
+                </div>
+
+                <!-- UPDATE: Precise Macro Sliders with 1% and 0.1% Button Steppers -->
+                <div class="settings-grid" style="margin-bottom: 24px;">
+                    
+                <!-- 2. Expenses Ratio Slider -->
+                <div class="control-block">
+                    <div class="control-header">
+                        <span>EXPENSES RATIO</span>
+                        <span id="valRatio" class="text-red">30%</span>
+                    </div>
+                    <div class="stepper-wrapper">
+                        <button class="step-btn" onclick="adjustSliderStep('inputRatio', -0.1, true)">-</button>
+                        <input type="range" id="inputRatio" min="0" max="90" step="0.1" value="30" class="slider slider-red">
+                        <button class="step-btn" onclick="adjustSliderStep('inputRatio', 0.1, true)">+</button>
+                    </div>
+                </div>
+
+                <!-- 3. Base Target Tax Rate Slider -->
+                <div class="control-block">
+                    <div class="control-header">
+                        <span>BASE TARGET TAX RATE</span>
+                        <span id="valTaxRate" class="text-yellow">15%</span>
+                    </div>
+                    <div class="stepper-wrapper">
+                        <button class="step-btn" onclick="adjustSliderStep('inputTaxRate', -0.1, true)">-</button>
+                        <input type="range" id="inputTaxRate" min="0" max="50" step="0.1" value="15" class="slider slider-yellow">
+                        <button class="step-btn" onclick="adjustSliderStep('inputTaxRate', 0.1, true)">+</button>
+                    </div>
+                </div>
+                </div>
+
+                <!-- ========================================================================= -->
+                <!-- 2. THE 6 CORRECTED SUB-BREAKDOWN SLIDERS (3 Dual-Action Balanced Inputs) -->
+                <!-- ========================================================================= -->
+                <div class="sidebar-header" style="margin-bottom: 12px; letter-spacing: 2px;">PREDICTIVE BREAKDOWN ALLOCATIONS</div>
+                <div class="settings-grid">
+                    
+                    <!-- SEARCH AND REPLACE THESE LINES FURTHER DOWN INSIDE INDEX.HTML -->
+
+                    <!-- 4. Income Split Slider -->
                     <div class="control-block">
                         <div class="control-header">
-                            <span>ACTIVE INVOICE RATIO</span>
-                            <span id="valActiveRatio" class="text-white">65%</span>
+                            <span>INCOME: ACTIVE vs OTHERS MIX</span>
+                            <span id="valIncomeSplitText" class="text-white">65% / 35%</span>
                         </div>
-                        <input type="range" id="inputActiveRatio" min="0" max="100" step="5" value="65" class="slider slider-blue">
+                        <div class="stepper-wrapper">
+                            <button class="step-btn" onclick="adjustSliderStep('inputIncomeSplit', -0.1)">-</button>
+                            <input type="range" id="inputIncomeSplit" min="0" max="100" step="0.1" value="65" class="slider slider-blue">
+                            <button class="step-btn" onclick="adjustSliderStep('inputIncomeSplit', 0.1)">+</button>
+                        </div>
                     </div>
 
+                    <!-- 5. Expense Split Slider -->
                     <div class="control-block">
                         <div class="control-header">
-                            <span>BUSINESS EXPENSE RATIO</span>
-                            <span id="valBusinessExpRatio" class="text-red">50%</span>
+                            <span>EXPENSES: BIZ EXPENSES vs PLATFORM FEES MIX</span>
+                            <span id="valExpenseSplitText" class="text-red">60% / 40%</span>
                         </div>
-                        <input type="range" id="inputBusinessExpRatio" min="0" max="100" step="5" value="50" class="slider slider-red">
+                        <div class="stepper-wrapper">
+                            <button class="step-btn" onclick="adjustSliderStep('inputExpenseSplit', -0.1)">-</button>
+                            <input type="range" id="inputExpenseSplit" min="0" max="100" step="0.1" value="60" class="slider slider-red">
+                            <button class="step-btn" onclick="adjustSliderStep('inputExpenseSplit', 0.1)">+</button>
+                        </div>
                     </div>
 
+                    <!-- 6. Tax Split Slider -->
                     <div class="control-block">
                         <div class="control-header">
-                            <span>INCOME TAX VAULT RATIO</span>
-                            <span id="valIncomeTaxRatio" class="text-yellow">80%</span>
+                            <span>TAX VAULT: INCOME TAX vs WITHHOLDING MIX</span>
+                            <span id="valTaxSplitText" class="text-yellow">80% / 20%</span>
                         </div>
-                        <input type="range" id="inputIncomeTaxRatio" min="0" max="100" step="5" value="80" class="slider slider-yellow">
+                        <div class="stepper-wrapper">
+                            <button class="step-btn" onclick="adjustSliderStep('inputTaxSplit', -0.1)">-</button>
+                            <input type="range" id="inputTaxSplit" min="0" max="100" step="0.1" value="80" class="slider slider-yellow">
+                            <button class="step-btn" onclick="adjustSliderStep('inputTaxSplit', 0.1)">+</button>
+                        </div>
                     </div>
+
+
+                </div>
+
 
                     <div class="control-block">
                         <div class="control-header">DISPLAY BASE CURRENCY</div>

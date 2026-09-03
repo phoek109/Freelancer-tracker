@@ -32,8 +32,12 @@ body {
     width: 100vw;
 }
 
+/* SEARCH AND REPLACE THIS EXACT BLOCK INSIDE STYLE.CSS */
+
 .sidebar {
     width: 340px;
+    min-width: 340px;        /* FIX 1: Hard-locks sidebar size so text elements cannot expand it */
+    max-width: 340px;        /* FIX 2: Prevents massive dropdown lists from pushing out columns */
     background-color: #0f1626;
     border-right: 1px solid #1e293b;
     padding: 24px;
@@ -41,7 +45,8 @@ body {
     display: flex;
     flex-direction: column;
     gap: 20px;
-    overflow-y: auto;
+    overflow-y: auto;        /* FIX 3: Unlocks vertical scrolls inside the form cleanly if fields overflow */
+    height: 100vh;           /* FIX 4: Fits sidebar cleanly to exactly the screen layout boundaries */
 }
 
 .sidebar-header {
@@ -92,23 +97,86 @@ body {
     display: block;
 }
 
+/* ========================================================================= */
+/* 🚀 UPGRADED: NEON GLOWING STREAM BUTTON OVERHAUL                          */
+/* ========================================================================= */
+
 #btnSubmit {
-    background: #38bdf8;
-    color: #070a13;
-    border: none;
+    background: transparent;
+    color: #38bdf8;
+    border: 2px solid #38bdf8;
     padding: 12px;
     border-radius: 8px;
     font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 1.5px;
     cursor: pointer;
-    font-family: inherit;
-    transition: all 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     margin-top: 10px;
+    position: relative;
+    overflow: hidden;
+    /* Subtle running energy pulse loop */
+    animation: cyberPulse 3s infinite ease-in-out;
 }
 
 #btnSubmit:hover {
-    background: #0ea5e9;
-    box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+    background: #38bdf8;
+    color: #070a13;
+    border-color: #38bdf8;
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.6), 
+                0 0 40px rgba(56, 189, 248, 0.3);
+    text-shadow: 0 0 2px rgba(7, 10, 19, 0.5);
+    transform: translateY(-1px);
 }
+
+#btnSubmit:active {
+    transform: translateY(1px);
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+}
+
+/* Add a sleek diagonal scanning sheen on top of the button matrix track */
+#btnSubmit::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -60%;
+    width: 30%;
+    height: 200%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(56, 189, 248, 0.3),
+        transparent
+    );
+    transform: rotate(35deg);
+    transition: none;
+}
+
+#btnSubmit:hover::after {
+    left: 140%;
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Core Neon Energy Pulse Animation Keyframes Loop */
+@keyframes cyberPulse {
+    0% {
+        box-shadow: 0 0 4px rgba(56, 189, 248, 0.15), 
+                    inset 0 0 4px rgba(56, 189, 248, 0.05);
+        border-color: rgba(56, 189, 248, 0.6);
+    }
+    50% {
+        box-shadow: 0 0 14px rgba(56, 189, 248, 0.35), 
+                    inset 0 0 8px rgba(56, 189, 248, 0.15);
+        border-color: rgba(56, 189, 248, 1);
+    }
+    100% {
+        box-shadow: 0 0 4px rgba(56, 189, 248, 0.15), 
+                    inset 0 0 4px rgba(56, 189, 248, 0.05);
+        border-color: rgba(56, 189, 248, 0.6);
+    }
+}
+
 
 .status-text {
     font-size: 12px;
@@ -117,15 +185,19 @@ body {
     font-weight: 600;
 }
 
+/* SEARCH AND REPLACE THIS EXACT BLOCK INSIDE STYLE.CSS */
+
 .main-content {
     flex: 1;
     padding: 40px;
     display: flex;
     justify-content: center;
-    align-items: center;
-    overflow-y: auto;
+    align-items: flex-start; /* FIX 1: Shifts baseline attachment to top to avoid vertical compression cutoff */
+    overflow-y: auto;        /* FIX 2: Unlocks smooth vertical scrolling independently of the sidebar */
     box-sizing: border-box;
+    height: 100vh;           /* FIX 3: Pins content scope block firmly to exact screen height parameters */
 }
+
 
 .matrix-container {
     width: 100%;
@@ -135,6 +207,9 @@ body {
     border-radius: 24px;
     padding: 36px;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    
+    /* ADD THIS LINE BELOW TO BALANCES PADDING REGIONS AUTOMATICALLY: */
+    margin: auto 0; 
 }
 
 .chart-header {
@@ -257,8 +332,9 @@ body {
 
 .settings-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 24px 40px;
+    grid-template-columns: repeat(2, 1fr); /* Split items evenly into pairs of 2 columns */
+    gap: 20px 36px;
+    margin-top: 15px;
 }
 
 .control-block {
@@ -340,4 +416,125 @@ body {
 .toggle-mode-btn:hover {
     background: #2563eb;
     color: #ffffff;
+}
+
+/* ========================================================================= */
+/* 🚀 MERGED & CORRECTED STEPPER WRAPPER: RESTORES HORIZONTAL ALIGNMENT     */
+/* ========================================================================= */
+.stepper-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 4px; /* Creates clean spacing under labels */
+}
+
+/* Forces input ranges to stretch dynamically in the middle of buttons */
+.stepper-wrapper input[type="range"] {
+    flex: 1 !important;
+    width: 100% !important;
+    margin: 0 !important;
+}
+
+/* Cyberpunk-themed Micro-Adjustment Stepper Buttons */
+.step-btn {
+    background-color: #070a13;
+    border: 1px solid #1e293b;
+    color: #38bdf8;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.15s ease;
+    user-select: none;
+    flex-shrink: 0; /* Prevents buttons from compressing or squishing */
+}
+
+.step-btn:hover {
+    border-color: #38bdf8;
+    color: #f8fafc;
+    box-shadow: 0 0 8px rgba(56, 189, 248, 0.25);
+}
+
+.step-btn:active {
+    background-color: #111827;
+}
+
+/* Container alignment for the step settings metrics */
+.multiplier-box {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.multiplier-box label {
+    font-size: 9px;
+    font-family: 'JetBrains Mono', monospace;
+    color: #475569;
+    font-weight: 700;
+}
+
+/* Premium Dark Minimally Blended Dropdown */
+.cyber-mini-select {
+    background: #070a13 !important;
+    border: 1px solid #1e293b !important;
+    color: #38bdf8 !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 10px !important;
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+    width: auto !important;
+    cursor: pointer;
+}
+
+.cyber-mini-select:focus {
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 6px rgba(56, 189, 248, 0.2);
+}
+
+/* Balanced click targets for your macro revenue handles */
+.macro-btn {
+    height: 28px !important;
+    width: 28px !important;
+    font-size: 14px !important;
+}
+/* NEW: Dark Cyberpunk Glass Ticker Display Panel for Real-Time Forex Metrics */
+.forex-ticker-container {
+    background-color: #070a13;
+    border: 1px dashed rgba(56, 189, 248, 0.25);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin: 4px 0;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.forex-ticker-container .ticker-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    color: #64748b;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+}
+
+.forex-ticker-container .ticker-rate {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 800;
+    color: #4ade80; /* Bright glowing green for real market prices */
+    text-shadow: 0 0 6px rgba(74, 222, 128, 0.25);
+}
+
+.forex-ticker-container .ticker-source {
+    font-size: 9px;
+    color: #475569;
+    margin-top: 2px;
 }
