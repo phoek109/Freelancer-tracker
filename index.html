@@ -17,22 +17,24 @@
                 <small class="help-text">Deploy your Google Sheet script to get an unlimited backend link.</small>
             </div>
 
-    
             <div class="sidebar-header">ADD INCOME ENTRY</div>
             <div class="form-grid">
+                
                 <div class="input-group">
                     <label>Date</label>
                     <input type="date" id="formDate">
                 </div>
+                
                 <div class="input-group">
                     <label>Client Name</label>
                     <input type="text" id="formClient" placeholder="e.g., Acme Corp">
                 </div>
+                
                 <div class="input-group">
                     <label>Invoice Amount</label>
                     <input type="number" id="formAmount" placeholder="0.00">
                 </div>
-                <!-- UPDATE: Dynamic Selection Inputs in index.html -->
+                
                 <div class="input-group">
                     <label>Currency Received</label>
                     <select id="formCurrency" class="bright-input">
@@ -40,7 +42,7 @@
                     </select>
                 </div>
 
-                <!-- Dynamic Middle Forex Conversion Status Ticker Element Panel -->
+                <!-- Live Forex Conversion Status Ticker Element Panel -->
                 <div id="liveForexTicker" class="forex-ticker-container">
                     <div class="ticker-label">LIVE MARKET CONVERSION</div>
                     <div id="tickerRateText" class="ticker-rate">Initializing feed...</div>
@@ -54,10 +56,7 @@
                     </select>
                 </div>
 
-           
-            </div>
-
-                <div class="input-group-half">
+                <div class="input-group">
                     <label>Tax Rate (%)</label>
                     <input type="number" id="baseTaxRateConfig" value="15" class="bright-input" oninput="updateBaseCurrencySettingsInSheet()">
                 </div>
@@ -66,10 +65,12 @@
                     <label>Platform Fees (%)</label>
                     <input type="number" id="formFees" placeholder="e.g., 5" value="0">
                 </div>
+                
                 <div class="input-group">
                     <label>Business Expenses</label>
                     <input type="number" id="formExpenses" placeholder="0.00" value="0">
                 </div>
+                
                 <div class="input-group">
                     <label>Withholding Tax Deducted?</label>
                     <select id="formWithholdingToggle">
@@ -77,6 +78,7 @@
                         <option value="Yes">Yes</option>
                     </select>
                 </div>
+                
                 <div class="input-group">
                     <label>Withholding Amount</label>
                     <input type="number" id="formWithholdingAmt" placeholder="0.00" value="0">
@@ -84,8 +86,9 @@
                 
                 <button id="btnSubmit" onclick="dispatchLedgerTransactionBundle()">STREAM TO SHEET</button>
                 <p id="syncStatus" class="status-text"></p>
-            </div>
-        </div>
+                
+            </div> <!-- Close form-grid -->
+        </div> <!-- Close sidebar -->
 
         <!-- RIGHT PANEL: Matrix Simulation Dashboard -->
         <div class="main-content">
