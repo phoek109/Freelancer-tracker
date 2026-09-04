@@ -359,6 +359,7 @@ function updateMatrixData() {
     if (typeof drawFlowLines === 'function') {
         drawFlowLines(expRatio, taxRate, netProfit, gross);
     }
+
 }
 
 // UPDATED: Completely open to floating intervals for infinite sequential clicks!
