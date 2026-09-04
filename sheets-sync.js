@@ -5,8 +5,10 @@ window.activeMatrixCurrencyScopeMode = "home"; // Toggles between "received" or 
 window.currentlyPinnedLogIndex = null;
 window.cachedHistoricalLogs = [];
 
+// =========================================================================
+// 🚀 FIXED: IMMEDIATE LOCAL HYDRATION ENFORCED UPON LAUNCHING CORES
+// =========================================================================
 window.addEventListener('DOMContentLoaded', () => {
-    // 1. Restore local cache persistent environments safely
     if (localStorage.getItem('userSheetDB')) {
         apiInput.value = localStorage.getItem('userSheetDB');
     }
@@ -19,26 +21,20 @@ window.addEventListener('DOMContentLoaded', () => {
     
     document.getElementById('formDate').valueAsDate = new Date();
     
-    // =========================================================================
-    // 🚀 FIXED RESOLUTION RENDERING LIFE CYCLE: FORCES PRE-RESIZE DRAWING CHANNELS
-    // =========================================================================
     if (typeof resizeCanvas === 'function') {
-        resizeCanvas(); // Forces canvas pixel density mapping container boundaries instantly!
+        resizeCanvas(); 
     }
     if (typeof updateBaseCurrencyConfigSymbols === 'function') {
-        updateBaseCurrencyConfigSymbols(); // Updates current active currency characters
+        updateBaseCurrencyConfigSymbols(); 
     }
 
-            // FIXED: Removed calculateActiveConversionRate call completely
-            setTimeout(() => {
-                if (typeof updateBaseCurrencyConfigSymbols === 'function') {
-                    updateBaseCurrencyConfigSymbols(); 
-                }
-                if (typeof synchronizeDualCurrencyActionButtons === 'function') {
-                    synchronizeDualCurrencyActionButtons();
-                }
-            }, 100); 
-
+    setTimeout(() => {
+        if (typeof resizeCanvas === 'function') resizeCanvas();
+        if (typeof refreshAllDropdowns === 'function') refreshAllDropdowns();
+        
+        // CRUCIAL: Force browser-locale generation to execute immediately on boot!
+        dynamicallyHydrateGlobalCurrencies();
+    }, 50);
 });
 
 apiInput.addEventListener('input', (e) => {
@@ -205,7 +201,7 @@ async function dispatchLedgerTransactionBundle() {
     }
 }
 // =========================================================================
-// 🚀 FIXED: TRUE ZERO-HARDCODING CURRENCY INVENTORY HYDRATOR
+// 🚀 UPGRADED: TRUE ZERO-HARDCODING DROPDOWN LOADER WITH ANIMATED SHIMMER
 // =========================================================================
 async function dynamicallyHydrateGlobalCurrencies() {
     const selectReceived = document.getElementById('formCurrency');
@@ -213,53 +209,57 @@ async function dynamicallyHydrateGlobalCurrencies() {
 
     if (!selectReceived || !selectHome) return;
 
-    try {
-        // FIXED: Dynamically queries the browser's OS directly for every valid global currency code
-        let currencyCodes = Intl.supportedValuesOf('currency');
+    // Phase A: Inject animated neon state tags onto selector element containers
+    selectReceived.classList.add('select-loading-pulse');
+    selectHome.classList.add('select-loading-pulse');
+    
+    selectReceived.innerHTML = "<option>COMPUTING GLOBAL EXCHANGES...</option>";
+    selectHome.innerHTML = "<option>INITIALIZING ISO CODES...</option>";
 
-        // Sort them alphabetically to provide a premium user workspace layout profile
-        currencyCodes.sort();
+    // Safety timeout to create a beautiful, visible 400ms loading sequence before populating values
+    setTimeout(() => {
+        try {
+            // Query the browser core directly for every single active currency on earth
+            let currencyCodes = Intl.supportedValuesOf('currency');
+            currencyCodes.sort();
 
-        selectReceived.innerHTML = "";
-        selectHome.innerHTML = "";
+            selectReceived.innerHTML = "";
+            selectHome.innerHTML = "";
 
-        // Loop and build dropdown elements instantly inside the browser DOM tree
-        currencyCodes.forEach(code => {
-            const optRec = document.createElement('option');
-            optRec.value = code;
-            optRec.innerText = code;
-            if (code === "EUR") optRec.selected = true; 
-            selectReceived.appendChild(optRec);
+            currencyCodes.forEach(code => {
+                const optRec = document.createElement('option');
+                optRec.value = code;
+                optRec.innerText = code;
+                if (code === "EUR") optRec.selected = true; 
+                selectReceived.appendChild(optRec);
 
-            const optHome = document.createElement('option');
-            optHome.value = code;
-            optHome.innerText = code;
-            if (code === "USD") optHome.selected = true; 
-            selectHome.appendChild(optHome);
-        });
+                const optHome = document.createElement('option');
+                optHome.value = code;
+                optHome.innerText = code;
+                if (code === "USD") optHome.selected = true; 
+                selectHome.appendChild(optHome);
+            });
 
-        console.log(`✔ Dynamically pulled ${currencyCodes.length} live ISO currency tokens from the browser engine.`);
-        
-        // Execute structural rendering hooks to link your dual buttons interface instantly
-        if (typeof synchronizeDualCurrencyActionButtons === 'function') {
-            synchronizeDualCurrencyActionButtons();
+            console.log(`✔ Populated ${currencyCodes.length} currency definitions via local runtime locales.`);
+            
+        } catch (e) {
+            console.log("Local localization tables lagging. Applying baseline defaults.");
+            const backups = ["USD", "EUR", "GBP", "UGX", "KES", "NGN", "SEK", "LKR"];
+            selectReceived.innerHTML = ""; selectHome.innerHTML = "";
+            backups.forEach(code => {
+                selectReceived.innerHTML += `<option value="${code}">${code}</option>`;
+                selectHome.innerHTML += `<option value="${code}">${code}</option>`;
+            });
+        } finally {
+            // Phase B: Data extraction complete! Drop loading classes to snap layout back to standard state
+            selectReceived.classList.remove('select-loading-pulse');
+            selectHome.classList.remove('select-loading-pulse');
+
+            // Force visual sync hooks to calculate charts and mount your dual button selectors instantly
+            if (typeof synchronizeDualCurrencyActionButtons === 'function') synchronizeDualCurrencyActionButtons();
+            if (typeof updateMatrixData === 'function') updateMatrixData();
         }
-        if (typeof calculateActiveConversionRate === 'function') {
-            calculateActiveConversionRate(); 
-        }
-        if (typeof updateBaseCurrencyConfigSymbols === 'function') {
-            updateBaseCurrencyConfigSymbols(); 
-        }
-        
-    } catch (e) {
-        console.log("Browser failed to compute dynamic currency arrays. Falling back to simple default.");
-        // Ultrafast safety layout injector fallback if the browser engine lags
-        const safeCodes = ["USD", "EUR", "GBP", "UGX"];
-        safeCodes.forEach(code => {
-            selectReceived.innerHTML += `<option value="${code}">${code}</option>`;
-            selectHome.innerHTML += `<option value="${code}">${code}</option>`;
-        });
-    }
+    }, 400); // 400ms execution frame guarantees the premium shimmer effect paints smoothly
 }
 
 let splitSyncTimeout;
