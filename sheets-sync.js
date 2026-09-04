@@ -142,13 +142,12 @@ async function dispatchLedgerTransactionBundle() {
         totals.taxWithheld += amtTax;
     }
 
-    // CRUCIAL DATA PAYLOAD ALIGNMENT: Standardized flat payload keys for Code.gs
     const payload = {
         data: {
             "Date": date,
             "Client Name": client,
             "Invoice Amount": amtIncome,
-            "Currency Recieved": subIncome,
+            "Currency Received": subIncome,
             "Platform Fees": feeIncome,
             "Withholding Tax Deducted?": isWithholding,
             "Withholding Amount": isWithholding === "Yes" ? amtTax : 0,
