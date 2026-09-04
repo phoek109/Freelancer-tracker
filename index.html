@@ -162,24 +162,26 @@
                         <span class="dot dot-withholding"></span> Withholding Balance: <strong id="taxWithholding">$0.00</strong>
                     </div>
                 </div>
-                <!-- UPDATE: Full-Width Revenue Controller with Interactive Step-Multiplier Panel -->
+                <!-- ========================================================================= -->
+                <!-- 🚀 FIXED: STRIPPED HARDCODED SIGNS FROM MULTIPLIER SELECTION MATRIX        -->
+                <!-- ========================================================================= -->
                 <div class="full-width-control">
                     <div class="control-header">
                         <span>ANNUAL REVENUE CONFIGURATION (UP TO 1 BILLION)</span>
-                        <div class="multiplier-box">
+                        <div class="multiplier-box" style="display: flex; align-items: center; gap: 8px;">
                             <label for="revenueStepSelect">STEP WEIGHT:</label>
-                            <select id="revenueStepSelect" class="cyber-mini-select">
-                                <option value="1">± $1</option>
-                                <option value="10">± $10</option>
-                                <option value="100">± $100</option>
-                                <option value="1000" selected>± $1K</option>
-                                <option value="10000">± $10K</option>
-                                <option value="100000">± $100K</option>
-                                <option value="1000000">± $1M</option>
-                                <option value="10000000">± $10M</option>
-                                <option value="100000000">± $100M</option>
+                            <select id="revenueStepSelect" class="cyber-mini-select upgraded-macro-select" onchange="updateMatrixData()">
+                                <option value="1"> 1 </option>
+                                <option value="10"> 10  </option>
+                                <option value="100"> 100  </option>
+                                <option value="1000" selected> 1K  </option>
+                                <option value="10000"> 10K  </option>
+                                <option value="100000"> 100K  </option>
+                                <option value="1000000"> 1M  </option>
+                                <option value="10000000"> 10M  </option>
+                                <option value="100000000"> 100M  </option>
                             </select>
-                            <span id="valRevenue" class="text-white font-mono" style="margin-left: 12px; font-weight: 800;">$0</span>
+                            <span id="valRevenue" class="text-white font-mono" style="margin-left: 12px; font-weight: 800;">0</span>
                         </div>
                     </div>
                     <div class="stepper-wrapper">
