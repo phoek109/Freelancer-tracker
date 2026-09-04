@@ -218,6 +218,7 @@ function updateMatrixData() {
     const taxReserve = (netProfit > 0 ? netProfit * taxRate : 0) + (isLiveTrackingMode ? totals.taxWithheld : 0);
     const takeHome = gross - totalExpenses - taxReserve;
 
+
     // Aligned Breakdown Calculations matching Sheet Blueprint
     const incActive = gross * incomePct;
     const incOthers = gross * (1 - incomePct);
