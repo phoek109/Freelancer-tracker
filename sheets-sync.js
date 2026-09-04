@@ -43,8 +43,22 @@ window.addEventListener('DOMContentLoaded', () => {
     }, 50);
 });
 
+// SEARCH AND REPLACE THIS INPUT LISTENER IN SHEETS-SYNC.JS
+
 apiInput.addEventListener('input', (e) => {
-    localStorage.setItem('userSheetDB', e.target.value);
+    const urlValue = e.target.value.trim();
+    localStorage.setItem('userSheetDB', urlValue);
+    
+    // =========================================================================
+    // 🚀 FIXED: Run data hydration instantly when the user configures the URL!
+    // =========================================================================
+    if (urlValue.startsWith('https://google.com')) {
+        console.log("Valid Google Web App detected. Initializing database hydration stream...");
+        
+        if (typeof dynamicallyHydrateGlobalCurrencies === 'function') {
+            dynamicallyHydrateGlobalCurrencies();
+        }
+    }
 });
 
 async function updateBaseCurrencySettingsInSheet() {
@@ -200,8 +214,6 @@ async function dispatchLedgerTransactionBundle() {
     }
 }
 
-// Add this data hydration function to the bottom of sheets-sync.js
-
 async function dynamicallyHydrateGlobalCurrencies() {
     const endpoint = apiInput.value.trim();
     if (!endpoint) return;
@@ -215,36 +227,46 @@ async function dynamicallyHydrateGlobalCurrencies() {
         const result = await response.json();
 
         if (result.status === "success" && result.currencies) {
-            // Clear out old loading placeholders
             selectReceived.innerHTML = "";
             selectHome.innerHTML = "";
 
-            // Loop through the data validation array to construct options dynamically
-            result.currencies.forEach(code => {
+            // Flatten multidimensional arrays from Google Sheets instantly into clean text strings
+            let rawString = String(result.currencies);
+            let cleanCurrencyArray = rawString.split(',').map(item => item.trim()).filter(Boolean);
+
+            cleanCurrencyArray.forEach(code => {
                 const optRec = document.createElement('option');
                 optRec.value = code;
                 optRec.innerText = code;
-                if (code === "EUR") optRec.selected = true; // Sets safe default matches
+                if (code === "EUR") optRec.selected = true; 
                 selectReceived.appendChild(optRec);
 
                 const optHome = document.createElement('option');
                 optHome.value = code;
                 optHome.innerText = code;
-                if (code === "UGX") optHome.selected = true; // Sets safe default matches
+                if (code === "USD") optHome.selected = true; 
                 selectHome.appendChild(optHome);
             });
 
-            console.log("✔ Global currency items successfully populated from Google Sheets.");
+            console.log("✔ Global currency dropdown menus successfully populated.");
             
-            // Re-run your center status calculations to sync live tickers instantly
-            if (typeof calculateActiveConversionRate === 'function') calculateActiveConversionRate();
-            if (typeof updateBaseCurrencyConfigSymbols === 'function') updateBaseCurrencyConfigSymbols();
-        }
+            // =========================================================================
+            // 🚀 FIXED: Dynamic Triggers to clear "Initializing feed..." instantly on load!
+            // =========================================================================
+            setTimeout(() => {
+                if (typeof calculateActiveConversionRate === 'function') {
+                    calculateActiveConversionRate(); // Pings the backend to update your center label!
+                }
+                if (typeof updateBaseCurrencyConfigSymbols === 'function') {
+                    updateBaseCurrencyConfigSymbols(); // Ensures currency markers ($ / USh) sync
+                }
+            }, 100); // 100ms safety window gives the browser time to paint dropdown updates
+            
+        } // Close if(result.status === "success")
     } catch (e) {
         console.log("Failed to fetch currencies from Google Cloud.");
     }
 }
-
 
     let splitSyncTimeout;
 
