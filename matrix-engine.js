@@ -47,47 +47,57 @@ async function fetchLiveExchangeRates(baseCurrency) {
 }
 
 // =========================================================================
-// 🚀 FIXED: RE-ROUTED RATE REQUEST TO BACKEND TO EVADE BROWSER CORS BLOCKS
+// 🚀 FIXED: DIRECT PUBLIC API FETCH PIPELINE (BYPASSES CORS BLOCKS INSTANTLY)
 // =========================================================================
 async function calculateActiveConversionRate() {
     const receivedElement = document.getElementById('formCurrency');
     const homeElement = document.getElementById('baseCurrencyConfig');
     const rateTextElement = document.getElementById('tickerRateText');
-    const endpoint = document.getElementById('apiEndpoint').value.trim();
     
-    if (!receivedElement || !homeElement || !rateTextElement || !endpoint) return;
+    if (!receivedElement || !homeElement || !rateTextElement) return;
 
     const receivedCurr = receivedElement.value;
     const homeCurr = homeElement.value;
 
+    // Safety check: if both fields match, rate is mathematically exactly 1
     if (receivedCurr === homeCurr) {
         rateTextElement.innerText = `1 ${receivedCurr} = 1.0000 ${homeCurr}`;
+        rateTextElement.style.color = "#4ade80"; // Bright glowing green
         return;
     }
 
-    const payload = {
-        fetchLiveGoogleFinanceRate: true,
-        receivedCurrency: receivedCurr,
-        homeCurrency: homeCurr
-    };
-
     try {
-        // We POST to our own Google Web App endpoint to skip CORS restrictions safely
-        const response = await fetch(endpoint, { method: 'POST', body: JSON.stringify(payload) });
-        const result = await response.json();
-
-        if (result.status === "success" && result.liveRate) {
-            rateTextElement.innerText = `1 ${receivedCurr} = ${result.liveRate.toFixed(4)} ${homeCurr}`;
+        // We bypass the Google Web App entirely for the ticker to avoid local scheme file blocks
+        const response = await fetch(`https://er-api.com{receivedCurr.toLowerCase()}`);
+        
+        if (!response.ok) {
+            throw new Error("Public market feed route currently unresponsive.");
+        }
+        
+        const json = await response.json();
+        
+        if (json && json.rates && json.rates[homeCurr.toUpperCase()]) {
+            const liveMarketPrice = parseFloat(json.rates[homeCurr.toUpperCase()]);
+            
+            // Render the clean 4-decimal currency breakdown value inside the ticker panel
+            rateTextElement.innerText = `1 ${receivedCurr} = ${liveMarketPrice.toFixed(4)} ${homeCurr}`;
+            rateTextElement.style.color = "#4ade80"; // Restore glowing neon green
             
             // Push calculation down to your matrix engine variables tracking array
-            exchangeRatesCache[receivedCurr] = 1 / result.liveRate; 
-            if (typeof updateMatrixData === 'function') updateMatrixData();
+            exchangeRatesCache[receivedCurr] = 1 / liveMarketPrice; 
+            
+            // Force the right dashboard matrix chart cards to update instantly
+            if (typeof updateMatrixData === 'function') {
+                updateMatrixData();
+            }
         } else {
-            rateTextElement.innerText = "Market feed error...";
+            rateTextElement.innerText = "Currency parsing mismatch...";
+            rateTextElement.style.color = "#fb923c"; // Warning Orange
         }
     } catch (e) {
-        rateTextElement.innerText = "Connection lagging...";
-        console.log("Spreadsheet connection timed out. Using fallback cache parameters.");
+        rateTextElement.innerText = "Market feed lagging...";
+        rateTextElement.style.color = "#f87171"; // Error Red
+        console.log("Direct market connection exception:", e);
     }
 }
 
