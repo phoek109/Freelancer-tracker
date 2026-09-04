@@ -488,7 +488,7 @@ body {
 /* 🚀 UPGRADE: STEP MULTIPLIER DROPDOWN BOX INTERFACE EXPANSER PACKS        */
 /* ========================================================================= */
 .upgraded-macro-select {
-    min-width: 110px !important;    /* Expanded width allocation boundaries to eliminate layout crowding */
+    width: auto !important;    /* Expanded width allocation boundaries to eliminate layout crowding */
     padding: 6px 12px !important;    /* Added wide interior cushion zones for increased clickable size profiles */
     font-size: 11px !important;      /* Tweaked typography weight scaling properties */
     font-family: 'JetBrains Mono', monospace !important;
