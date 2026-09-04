@@ -9,7 +9,7 @@ window.subCategoriesCache = {
 };
 
 window.localHistoryTotals = {
-    gross: 1000, expenses: 300, taxWithheld: 0,
+    gross:'', expenses:'', taxWithheld: '',
     breakdownValues: {}
 };
 
