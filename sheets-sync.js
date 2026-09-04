@@ -209,61 +209,61 @@ async function dispatchLedgerTransactionBundle() {
         submitBtn.style.boxShadow = "";
     }
 }
+// =========================================================================
+// 🚀 FIXED: TRUE ZERO-HARDCODING CURRENCY INVENTORY HYDRATOR
+// =========================================================================
 async function dynamicallyHydrateGlobalCurrencies() {
-    const endpoint = apiInput.value.trim();
-    if (!endpoint) return;
-
-    const payload = { fetchCurrencyCatalog: true };
     const selectReceived = document.getElementById('formCurrency');
     const selectHome = document.getElementById('baseCurrencyConfig');
 
+    if (!selectReceived || !selectHome) return;
+
     try {
-        const response = await fetch(endpoint, { method: 'POST', body: JSON.stringify(payload) });
-        const result = await response.json();
+        // FIXED: Dynamically queries the browser's OS directly for every valid global currency code
+        let currencyCodes = Intl.supportedValuesOf('currency');
 
-        if (result.status === "success" && result.currencies) {
-            selectReceived.innerHTML = "";
-            selectHome.innerHTML = "";
+        // Sort them alphabetically to provide a premium user workspace layout profile
+        currencyCodes.sort();
 
-            // Flatten multidimensional arrays from Google Sheets instantly into clean text strings
-            let rawString = String(result.currencies);
-            let cleanCurrencyArray = rawString.split(',').map(item => item.trim()).filter(Boolean);
+        selectReceived.innerHTML = "";
+        selectHome.innerHTML = "";
 
-            cleanCurrencyArray.forEach(code => {
-                const optRec = document.createElement('option');
-                optRec.value = code;
-                optRec.innerText = code;
-                if (code === "EUR") optRec.selected = true; 
-                selectReceived.appendChild(optRec);
+        // Loop and build dropdown elements instantly inside the browser DOM tree
+        currencyCodes.forEach(code => {
+            const optRec = document.createElement('option');
+            optRec.value = code;
+            optRec.innerText = code;
+            if (code === "EUR") optRec.selected = true; 
+            selectReceived.appendChild(optRec);
 
-                const optHome = document.createElement('option');
-                optHome.value = code;
-                optHome.innerText = code;
-                if (code === "USD") optHome.selected = true; 
-                selectHome.appendChild(optHome);
-            });
+            const optHome = document.createElement('option');
+            optHome.value = code;
+            optHome.innerText = code;
+            if (code === "USD") optHome.selected = true; 
+            selectHome.appendChild(optHome);
+        });
 
-            console.log("✔ Global currency dropdown menus successfully populated.");
-            
-            // =========================================================================
-            // 🚀 FIXED: Dynamic Triggers to clear "Initializing feed..." instantly on load!
-            // =========================================================================
-            setTimeout(() => {
-                if (typeof calculateActiveConversionRate === 'function') {
-                    calculateActiveConversionRate(); // Pings the backend to update your center label!
-                }
-                if (typeof updateBaseCurrencyConfigSymbols === 'function') {
-                    updateBaseCurrencyConfigSymbols(); // Ensures currency markers ($ / USh) sync
-                }
-                // Instantly sync the dual button switches position tracking anchors
-                if (typeof synchronizeDualCurrencyActionButtons === 'function') {
-                    synchronizeDualCurrencyActionButtons();
-                }
-            }, 100); 
-            
-        } 
+        console.log(`✔ Dynamically pulled ${currencyCodes.length} live ISO currency tokens from the browser engine.`);
+        
+        // Execute structural rendering hooks to link your dual buttons interface instantly
+        if (typeof synchronizeDualCurrencyActionButtons === 'function') {
+            synchronizeDualCurrencyActionButtons();
+        }
+        if (typeof calculateActiveConversionRate === 'function') {
+            calculateActiveConversionRate(); 
+        }
+        if (typeof updateBaseCurrencyConfigSymbols === 'function') {
+            updateBaseCurrencyConfigSymbols(); 
+        }
+        
     } catch (e) {
-        console.log("Failed to fetch currencies from Google Cloud.");
+        console.log("Browser failed to compute dynamic currency arrays. Falling back to simple default.");
+        // Ultrafast safety layout injector fallback if the browser engine lags
+        const safeCodes = ["USD", "EUR", "GBP", "UGX"];
+        safeCodes.forEach(code => {
+            selectReceived.innerHTML += `<option value="${code}">${code}</option>`;
+            selectHome.innerHTML += `<option value="${code}">${code}</option>`;
+        });
     }
 }
 
@@ -315,7 +315,6 @@ function getGlobalCurrencySymbolCharacter(currencyCode) {
         return cleanCode + " ";
     }
 }
-
 
 // Re-evaluates and paints the two custom parallel selector toggle blocks automatically
 function synchronizeDualCurrencyActionButtons() {
