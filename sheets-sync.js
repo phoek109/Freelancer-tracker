@@ -337,6 +337,116 @@ dynamicallyHydrateGlobalCurrencies = async function() {
     } catch(e) { console.log("Failed to load initial history stack."); }
 };
 
+// =========================================================================
+// 🔄 DYNAMIC UI STATE MANAGER: AUTOMATED SWITCHING & HISTORICAL DRILL-DOWN
+// =========================================================================
+
+// Global dynamic anchor tracker state reference nodes
+window.currentlyPinnedLogIndex = null;
+
+// Synchronizes dashboard currency button groups to match your sidebar setups
+function updateDashboardCurrencyPanelButtons(overrideSymbol = null, overrideText = null) {
+    const buttonGroup = document.getElementById('dynamicDashboardCurrencyButtonGroup');
+    const titleLabel = document.getElementById('displayBaseCurrencyTitle');
+    if (!buttonGroup) return;
+
+    buttonGroup.innerHTML = "";
+
+    // Determine target symbols and strings based on active focus state loops
+    let activeSymbol = overrideSymbol || window.currentCurrency || '$';
+    let labelText = overrideText || document.getElementById('baseCurrencyConfig').value || 'USD';
+
+    // Build the dynamic button element
+    const btn = document.createElement('button');
+    btn.className = "curr-btn active";
+    btn.style.width = "100%";
+    btn.setAttribute('data-symbol', activeSymbol);
+    btn.innerText = `${labelText} (${activeSymbol.trim()})`;
+    
+    buttonGroup.appendChild(btn);
+
+    if (window.currentlyPinnedLogIndex !== null) {
+        titleLabel.innerHTML = `DISPLAYING HISTORICAL LOG VIEW <span style="color:#a855f7;font-weight:800;">[LOCKED]</span>`;
+    } else {
+        titleLabel.innerHTML = `DISPLAYING ACTIVE MATRIX TRACKING CURRENCY`;
+    }
+}
+
+// Hook directly into the standard currency change tracking loops
+document.addEventListener('DOMContentLoaded', () => {
+    const homeEl = document.getElementById('baseCurrencyConfig');
+    if (homeEl) {
+        homeEl.addEventListener('change', () => {
+            // Drop any historic pin locks to avoid calculations collisions
+            window.currentlyPinnedLogIndex = null;
+            setTimeout(() => {
+                updateDashboardCurrencyPanelButtons();
+            }, 150);
+        });
+    }
+});
+
+// Intercepts and overrides the baseline matrix updates inside matrix-engine.js if pinned
+const originalUpdateMatrixData = window.updateMatrixData;
+window.updateMatrixData = function() {
+    if (window.currentlyPinnedLogIndex !== null && window.cachedHistoricalLogs[window.currentlyPinnedLogIndex]) {
+        const selectedLog = window.cachedHistoricalLogs[window.currentlyPinnedLogIndex];
+        
+        // Match base tokens to derive accurate typography components
+        let targetSign = '$';
+        if (selectedLog.currency === 'EUR') targetSign = '€';
+        else if (selectedLog.currency === 'GBP') targetSign = '£';
+        else if (selectedLog.currency === 'UGX') targetSign = 'USh ';
+        else if (selectedLog.currency === 'KES') targetSign = 'KSh ';
+        else if (selectedLog.currency === 'NGN') targetSign = '₦';
+
+        // Swap visual tracking reference matrices instantly
+        window.currentCurrency = targetSign;
+        
+        // Force the text metrics cards across your dashboard layout to render specific row units
+        document.getElementById('grossDisplay').innerText = `${targetSign}${selectedLog.homeIncome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        document.getElementById('takeHomeDisplay').innerText = `${targetSign}${selectedLog.takeHome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        
+        // Handle visual slider tracker handles fallback smoothly 
+        document.getElementById('valRevenue').innerText = `${targetSign}${selectedLog.homeIncome.toLocaleString()}`;
+        document.getElementById('inputRevenue').value = selectedLog.homeIncome;
+
+        // Force canvas drawing pipes to re-evaluate based on the log's exact static ratios
+        const canvasEl = document.getElementById('flowChart');
+        if (canvasEl) {
+            const ctx = canvasEl.getContext('2d');
+            ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+            if (typeof drawFlowLines === 'function') {
+                // Pin canvas view lines to show 100% processing curves for this specific item log
+                drawFlowLines(0.2, parseFloat(document.getElementById('baseTaxRateConfig').value)/100, 0.8, selectedLog.homeIncome);
+            }
+        }
+        updateDashboardCurrencyPanelButtons(targetSign, selectedLog.currency);
+        return;
+    }
+
+    // Otherwise, fall straight back onto normal operational dashboard pipelines
+    if (typeof originalUpdateMatrixData === 'function') {
+        originalUpdateMatrixData();
+    }
+    updateDashboardCurrencyPanelButtons();
+};
+
+function selectAndPinHistoricalLogCard(index) {
+    // If user clicks the exact same card twice, unlock the screen back to live metrics mode
+    if (window.currentlyPinnedLogIndex === index) {
+        window.currentlyPinnedLogIndex = null;
+        console.log("Database drill-down lock released. Restoring active tracking profiles.");
+    } else {
+        window.currentlyPinnedLogIndex = index;
+        console.log(`Matrix console locked on historical transaction row: Index [${index}]`);
+    }
+
+    // Refresh layout view configurations instantly across the screen workspace
+    window.updateMatrixData();
+    renderHistoricalSidebarLogs();
+}
+
 function renderHistoricalSidebarLogs() {
     const container = document.getElementById('sidebarLogContainer');
     const searchQuery = document.getElementById('logSearchInput').value.toLowerCase().trim();
@@ -345,10 +455,19 @@ function renderHistoricalSidebarLogs() {
     if (!container) return;
     container.innerHTML = "";
 
-    // Step 1: Run filter parameters over the dataset array tracking stack
-    let filtered = window.cachedHistoricalLogs.filter(item => {
-        return item.client.toLowerCase().includes(searchQuery) || 
-               item.currency.toLowerCase().includes(searchQuery);
+    if (!window.cachedHistoricalLogs || window.cachedHistoricalLogs.length === 0) {
+        container.innerHTML = `<div class="empty-tray-text">No records streamed yet.</div>`;
+        return;
+    }
+
+    // 1. Run structural filters over tracking arrays
+    let logItemsWithIndices = window.cachedHistoricalLogs.map((item, originalIndex) => {
+        return { data: item, id: originalIndex };
+    });
+
+    let filtered = logItemsWithIndices.filter(item => {
+        return item.data.client.toLowerCase().includes(searchQuery) || 
+               item.data.currency.toLowerCase().includes(searchQuery);
     });
 
     if (filtered.length === 0) {
@@ -356,28 +475,37 @@ function renderHistoricalSidebarLogs() {
         return;
     }
 
-    // Step 2: Sort records based on user choice
+    // 2. Execute sorting rules
     filtered.sort((a, b) => {
-        if (sortMode === "date_desc") return new Date(b.date) - new Date(a.date);
-        if (sortMode === "date_asc") return new Date(a.date) - new Date(b.date);
-        if (sortMode === "amt_desc") return b.amount - a.amount;
-        if (sortMode === "client_asc") return a.client.localeCompare(b.client);
+        if (sortMode === "date_desc") return new Date(b.data.date) - new Date(a.data.date);
+        if (sortMode === "date_asc") return new Date(a.data.date) - new Date(b.data.date);
+        if (sortMode === "amt_desc") return b.data.amount - a.data.amount;
+        if (sortMode === "client_asc") return a.data.client.localeCompare(b.data.client);
         return 0;
     });
 
-    // Step 3: Loop and generate the card layout components inside the DOM container
-    filtered.forEach(log => {
+    // 3. Render actionable data card items
+    filtered.forEach(item => {
+        const log = item.data;
         const card = document.createElement('div');
-        card.className = 'transaction-card';
+        
+        // Apply active CSS highlight wrapper outlines if this node matches the tracking pin lock state
+        const isPinned = (window.currentlyPinnedLogIndex === item.id);
+        card.className = `transaction-card ${isPinned ? 'pinned-active' : ''}`;
+        
+        // Attach interactive click handler to trigger dashboard data substitution loops
+        card.setAttribute('onclick', `selectAndPinHistoricalLogCard(${item.id})`);
+        card.style.cursor = "pointer";
+
         card.innerHTML = `
             <div class="card-row-top">
-                <span>${log.date}</span>
+                <span>${log.date} ${isPinned ? '<strong style="color:#a855f7;">[PINNED VIEW]</strong>' : ''}</span>
                 <span style="color:#38bdf8; font-weight:700;">${log.currency}</span>
             </div>
             <div class="card-client-title">${log.client}</div>
             <div class="card-row-metrics">
                 <span>Invoice: <strong style="color:#f8fafc;">${log.amount.toLocaleString(undefined,{minimumFractionDigits:2})}</strong></span>
-                <span>Take-Home: <strong style="color:#4ade80;">${currentCurrency}${log.takeHome.toLocaleString(undefined,{maximumFractionDigits:0})}</strong></span>
+                <span>Net Base: <strong style="color:#4ade80;">${window.currentCurrency}${log.homeIncome.toLocaleString(undefined,{maximumFractionDigits:0})}</strong></span>
             </div>
         `;
         container.appendChild(card);

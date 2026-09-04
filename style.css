@@ -598,3 +598,10 @@ body {
     padding: 20px 0;
     font-style: italic;
 }
+
+/* Neon outline accent when a historical log card or currency node is actively pinned */
+.transaction-card.pinned-active {
+    border-color: #a855f7 !important;
+    box-shadow: 0 0 12px rgba(168, 85, 247, 0.35);
+    background: linear-gradient(145deg, #13122e, #070a13) !important;
+}

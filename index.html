@@ -270,14 +270,16 @@
                 </div>
 
 
+                    <!-- ========================================================================= -->
+                    <!-- 🔄 UPGRADED: AUTOMATED ADAPTIVE BASE CURRENCY CONTROL PANEL CONTAINER     -->
+                    <!-- ========================================================================= -->
                     <div class="control-block">
-                        <div class="control-header">DISPLAY BASE CURRENCY</div>
-                        <div class="currency-btn-group">
-                            <button class="curr-btn active" data-symbol="$">USD ($)</button>
-                            <button class="curr-btn" data-symbol="€">EUR (€)</button>
-                            <button class="curr-btn" data-symbol="£">GBP (£)</button>
+                        <div class="control-header" id="displayBaseCurrencyTitle">DISPLAYING ACTIVE MATRIX TRACKING CURRENCY</div>
+                        <div class="currency-btn-group" id="dynamicDashboardCurrencyButtonGroup">
+                            <!-- Populated automatically by the sync engine matrices on initial load -->
                         </div>
                     </div>
+
                     
                     <div class="control-block">
                         <div class="control-header">LEDGER INTEGRATION</div>
