@@ -541,3 +541,60 @@ body {
     color: #475569;
     margin-top: 2px;
 }
+
+/* ========================================================================= */
+/* 🔎 STYLE SPECIFICATIONS: SIDEBAR HISTORICAL SEARCH TRAYS                  */
+/* ========================================================================= */
+.log-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 12px;
+}
+.sidebar-records-scroll-tray {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 320px;
+    overflow-y: auto;
+    padding-right: 4px;
+    box-sizing: border-box;
+}
+.transaction-card {
+    background-color: #070a13;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: border-color 0.2s;
+}
+.transaction-card:hover {
+    border-color: #38bdf8;
+}
+.card-row-top {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    color: #64748b;
+}
+.card-client-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #f8fafc;
+}
+.card-row-metrics {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-top: 2px;
+}
+.empty-tray-text {
+    font-size: 11px;
+    color: #475569;
+    text-align: center;
+    padding: 20px 0;
+    font-style: italic;
+}

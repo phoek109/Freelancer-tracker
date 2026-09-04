@@ -297,3 +297,89 @@ async function dynamicallyHydrateGlobalCurrencies() {
             }
         }, 800);
     }
+
+    // =========================================================================
+// 🔎 FRONTEND DATA HOOKS: SIDEBAR CARD VIEW GENERATION, SORTING, & SEARCH
+// =========================================================================
+window.cachedHistoricalLogs = [];
+
+// Intercept data packets following successful sync calls
+const originalDispatch = dispatchLedgerTransactionBundle;
+dispatchLedgerTransactionBundle = async function() {
+    await originalDispatch();
+    extractLogsFromActiveSession();
+};
+
+function extractLogsFromActiveSession() {
+    if (window.liveSheetMetrics && window.liveSheetMetrics.logs) {
+        window.cachedHistoricalLogs = window.liveSheetMetrics.logs;
+        renderHistoricalSidebarLogs();
+    }
+}
+
+// Modify initial setup hydration hooks to scan logs immediately upon launching the site
+const originalHydrate = dynamicallyHydrateGlobalCurrencies;
+dynamicallyHydrateGlobalCurrencies = async function() {
+    await originalHydrate();
+    
+    // Fire a quick blank POST payload to safely read the dashboard summaries on launch
+    const endpoint = document.getElementById('apiEndpoint').value.trim();
+    if (!endpoint) return;
+    try {
+        const res = await fetch(endpoint, { method: 'POST', body: JSON.stringify({ fetchCurrencyCatalog: false }) });
+        const json = await res.json();
+        if (json.status === "success" && json.summary) {
+            window.liveSheetMetrics = json.summary;
+            window.localHistoryTotals = json.summary.totals;
+            if (typeof updateMatrixData === 'function') updateMatrixData();
+            extractLogsFromActiveSession();
+        }
+    } catch(e) { console.log("Failed to load initial history stack."); }
+};
+
+function renderHistoricalSidebarLogs() {
+    const container = document.getElementById('sidebarLogContainer');
+    const searchQuery = document.getElementById('logSearchInput').value.toLowerCase().trim();
+    const sortMode = document.getElementById('logSortSelect').value;
+    
+    if (!container) return;
+    container.innerHTML = "";
+
+    // Step 1: Run filter parameters over the dataset array tracking stack
+    let filtered = window.cachedHistoricalLogs.filter(item => {
+        return item.client.toLowerCase().includes(searchQuery) || 
+               item.currency.toLowerCase().includes(searchQuery);
+    });
+
+    if (filtered.length === 0) {
+        container.innerHTML = `<div class="empty-tray-text">No matching records found.</div>`;
+        return;
+    }
+
+    // Step 2: Sort records based on user choice
+    filtered.sort((a, b) => {
+        if (sortMode === "date_desc") return new Date(b.date) - new Date(a.date);
+        if (sortMode === "date_asc") return new Date(a.date) - new Date(b.date);
+        if (sortMode === "amt_desc") return b.amount - a.amount;
+        if (sortMode === "client_asc") return a.client.localeCompare(b.client);
+        return 0;
+    });
+
+    // Step 3: Loop and generate the card layout components inside the DOM container
+    filtered.forEach(log => {
+        const card = document.createElement('div');
+        card.className = 'transaction-card';
+        card.innerHTML = `
+            <div class="card-row-top">
+                <span>${log.date}</span>
+                <span style="color:#38bdf8; font-weight:700;">${log.currency}</span>
+            </div>
+            <div class="card-client-title">${log.client}</div>
+            <div class="card-row-metrics">
+                <span>Invoice: <strong style="color:#f8fafc;">${log.amount.toLocaleString(undefined,{minimumFractionDigits:2})}</strong></span>
+                <span>Take-Home: <strong style="color:#4ade80;">${currentCurrency}${log.takeHome.toLocaleString(undefined,{maximumFractionDigits:0})}</strong></span>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
