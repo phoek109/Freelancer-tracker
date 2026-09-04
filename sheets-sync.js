@@ -29,21 +29,16 @@ window.addEventListener('DOMContentLoaded', () => {
         updateBaseCurrencyConfigSymbols(); // Updates current active currency characters
     }
 
-    // Short safety window to let CSS Flex grid compute layout geometry before firing updates
-    setTimeout(() => {
-        if (typeof resizeCanvas === 'function') resizeCanvas();
-        if (typeof refreshAllDropdowns === 'function') refreshAllDropdowns();
-        
-        // =========================================================================
-        // 🚀 DATABASE HYDRATION: Fetch and populate global menu items dynamically
-        // =========================================================================
-        if (typeof dynamicallyHydrateGlobalCurrencies === 'function') {
-            dynamicallyHydrateGlobalCurrencies();
-        } else {
-            // Internal safety fallback to refresh display values if module is detached
-            if (typeof updateMatrixData === 'function') updateMatrixData(); 
-        }
-    }, 50);
+            // FIXED: Removed calculateActiveConversionRate call completely
+            setTimeout(() => {
+                if (typeof updateBaseCurrencyConfigSymbols === 'function') {
+                    updateBaseCurrencyConfigSymbols(); 
+                }
+                if (typeof synchronizeDualCurrencyActionButtons === 'function') {
+                    synchronizeDualCurrencyActionButtons();
+                }
+            }, 100); 
+
 });
 
 apiInput.addEventListener('input', (e) => {
