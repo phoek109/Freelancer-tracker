@@ -274,9 +274,17 @@ function updateMatrixData() {
     const taxWithholding = taxReserve * (1 - taxPct);
 
 
-    // Update Text Indicators on Top of Each Slider
-    if (document.getElementById('valRevenue')) document.getElementById('valRevenue').innerText = `${currentCurrency}${gross.toLocaleString()}`;
-    // Find these text declaration lines inside updateMatrixData() and change them to use toFixed(1):
+// =========================================================================
+// 🚀 FIXED: STRIPPED ALL HARDCODED SYMBOL DECLARATIONS FROM METRICS DRIVERS
+// =========================================================================
+
+// Find this exact segment inside your matrix-engine.js updateMatrixData() function:
+// Replace the hardcoded indicator strings block with this dynamic loop:
+
+    // 1. Update Slider Text Readout Nodes Up Above Form Handles
+    if (document.getElementById('valRevenue')) {
+        document.getElementById('valRevenue').innerText = `${window.currentCurrency || '$'}${gross.toLocaleString()}`;
+    }
     if (document.getElementById('valRatio')) {
         const rVal = parseFloat(inputRatio.value) || 0;
         document.getElementById('valRatio').innerText = `${rVal.toFixed(1)}%`;
@@ -286,7 +294,6 @@ function updateMatrixData() {
         document.getElementById('valTaxRate').innerText = `${tVal.toFixed(1)}%`;
     }
         
-    // Find these three label display code blocks inside updateMatrixData() and swap them out:
     if (document.getElementById('valIncomeSplitText')) {
         const val = parseFloat(inputIncomeSplit.value) || 0;
         document.getElementById('valIncomeSplitText').innerText = `${val.toFixed(1)}% / ${(100 - val).toFixed(1)}%`;
@@ -300,21 +307,44 @@ function updateMatrixData() {
         document.getElementById('valTaxSplitText').innerText = `${val.toFixed(1)}% / ${(100 - val).toFixed(1)}%`;
     }
 
-    // Render Macro Metrics Cards Cleanly
-    if (document.getElementById('grossDisplay')) document.getElementById('grossDisplay').innerText = `${currentCurrency}${gross.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-    if (document.getElementById('expensesDisplay')) document.getElementById('expensesDisplay').innerText = `${currentCurrency}${totalExpenses.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-    if (document.getElementById('taxDisplay')) document.getElementById('taxDisplay').innerText = `${currentCurrency}${taxReserve.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-    if (document.getElementById('takeHomeDisplay')) document.getElementById('takeHomeDisplay').innerText = `${currentCurrency}${takeHome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+    // 2. Render Macro Metrics Display Panel Cards Dynamically
+    // FIXED: Using window.currentCurrency directly instead of hardcoded symbol formatting structures
+    const activeSymbol = window.currentCurrency || '$';
 
-    // Update Your Screen Displays to Match Your New Verified Blueprint Categories
-    if (document.getElementById('incActive')) document.getElementById('incActive').innerText = `${currentCurrency}${incActive.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-    if (document.getElementById('incOthers')) document.getElementById('incOthers').innerText = `${currentCurrency}${incOthers.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-    if (document.getElementById('expBusinessExpenses')) document.getElementById('expBusinessExpenses').innerText = `${currentCurrency}${BusinessExpenses.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-    if (document.getElementById('expPlatformFees')) document.getElementById('expPlatformFees').innerText = `${currentCurrency}${PlatformFees.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-    if (document.getElementById('taxIncome')) document.getElementById('taxIncome').innerText = `${currentCurrency}${taxIncome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-    if (document.getElementById('taxWithholding')) document.getElementById('taxWithholding').innerText = `${currentCurrency}${taxWithholding.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+    if (document.getElementById('grossDisplay')) {
+        document.getElementById('grossDisplay').innerText = `${activeSymbol}${gross.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+    }
+    if (document.getElementById('expensesDisplay')) {
+        document.getElementById('expensesDisplay').innerText = `${activeSymbol}${totalExpenses.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+    }
+    if (document.getElementById('taxDisplay')) {
+        document.getElementById('taxDisplay').innerText = `${activeSymbol}${taxReserve.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+    }
+    if (document.getElementById('takeHomeDisplay')) {
+        document.getElementById('takeHomeDisplay').innerText = `${activeSymbol}${takeHome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+    }
 
-    // Update Proportional Splitting Visual Layout Bars
+    // 3. Update Breakdown Label Item Details Text Indicators
+    if (document.getElementById('incActive')) {
+        document.getElementById('incActive').innerText = `${activeSymbol}${incActive.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+    }
+    if (document.getElementById('incOthers')) {
+        document.getElementById('incOthers').innerText = `${activeSymbol}${incOthers.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+    }
+    if (document.getElementById('expBusinessExpenses')) {
+        document.getElementById('expBusinessExpenses').innerText = `${activeSymbol}${BusinessExpenses.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+    }
+    if (document.getElementById('expPlatformFees')) {
+        document.getElementById('expPlatformFees').innerText = `${activeSymbol}${PlatformFees.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+    }
+    if (document.getElementById('taxIncome')) {
+        document.getElementById('taxIncome').innerText = `${activeSymbol}${taxIncome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+    }
+    if (document.getElementById('taxWithholding')) {
+        document.getElementById('taxWithholding').innerText = `${activeSymbol}${taxWithholding.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+    }
+
+    // 4. Paint Proportional Distribution Interface Trays
     if (gross > 0) {
         if (document.getElementById('barExpenses')) document.getElementById('barExpenses').style.width = `${(totalExpenses / gross) * 100}%`;
         if (document.getElementById('barTax')) document.getElementById('barTax').style.width = `${(taxReserve / gross) * 100}%`;
@@ -325,8 +355,10 @@ function updateMatrixData() {
         if (document.getElementById('barTakeHome')) document.getElementById('barTakeHome').style.width = `0%`;
     }
 
-    // Refresh Canvas Chart Bezier lines
-    if (typeof drawFlowLines === 'function') drawFlowLines(expRatio, taxRate, netProfit, gross);
+    // 5. Fire Unified Canvas Layout Render Refresh Loops
+    if (typeof drawFlowLines === 'function') {
+        drawFlowLines(expRatio, taxRate, netProfit, gross);
+    }
 }
 
 // UPDATED: Completely open to floating intervals for infinite sequential clicks!
