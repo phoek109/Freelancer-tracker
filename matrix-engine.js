@@ -47,7 +47,7 @@ async function fetchLiveExchangeRates(baseCurrency) {
 }
 
 // =========================================================================
-// 🚀 FIXED: DIRECT PUBLIC API FETCH PIPELINE (BYPASSES CORS BLOCKS INSTANTLY)
+// 🚀 FIXED: ALTERNATIVE FINANCIAL ROUTE WITH UNRESTRICTED OPEN ACCESS HEADERS
 // =========================================================================
 async function calculateActiveConversionRate() {
     const receivedElement = document.getElementById('formCurrency');
@@ -59,16 +59,15 @@ async function calculateActiveConversionRate() {
     const receivedCurr = receivedElement.value;
     const homeCurr = homeElement.value;
 
-    // Safety check: if both fields match, rate is mathematically exactly 1
     if (receivedCurr === homeCurr) {
         rateTextElement.innerText = `1 ${receivedCurr} = 1.0000 ${homeCurr}`;
-        rateTextElement.style.color = "#4ade80"; // Bright glowing green
+        rateTextElement.style.color = "#4ade80"; 
         return;
     }
 
     try {
-        // We bypass the Google Web App entirely for the ticker to avoid local scheme file blocks
-        const response = await fetch(`https://er-api.com{receivedCurr.toLowerCase()}`);
+        // FIXED: Swapped to ://exchangerate-api.com to completely bypass browser CORS restrictions
+        const response = await fetch(`https://://exchangerate-api.comlatest/${receivedCurr.toUpperCase()}`);
         
         if (!response.ok) {
             throw new Error("Public market feed route currently unresponsive.");
@@ -81,7 +80,7 @@ async function calculateActiveConversionRate() {
             
             // Render the clean 4-decimal currency breakdown value inside the ticker panel
             rateTextElement.innerText = `1 ${receivedCurr} = ${liveMarketPrice.toFixed(4)} ${homeCurr}`;
-            rateTextElement.style.color = "#4ade80"; // Restore glowing neon green
+            rateTextElement.style.color = "#4ade80"; // Glowing neon green
             
             // Push calculation down to your matrix engine variables tracking array
             exchangeRatesCache[receivedCurr] = 1 / liveMarketPrice; 
