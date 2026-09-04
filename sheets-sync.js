@@ -1,6 +1,9 @@
 const apiInput = document.getElementById('apiEndpoint');
 
-// SEARCH AND REPLACE THIS EXACT DEPLOYMENT INNER LIFECYCLE BLOCK IN SHEETS-SYNC.JS
+// Global dynamic active view tracking target indicators
+window.activeMatrixCurrencyScopeMode = "home"; // Toggles between "received" or "home" pipelines
+window.currentlyPinnedLogIndex = null;
+window.cachedHistoricalLogs = [];
 
 window.addEventListener('DOMContentLoaded', () => {
     // 1. Restore local cache persistent environments safely
@@ -43,18 +46,12 @@ window.addEventListener('DOMContentLoaded', () => {
     }, 50);
 });
 
-// SEARCH AND REPLACE THIS INPUT LISTENER IN SHEETS-SYNC.JS
-
 apiInput.addEventListener('input', (e) => {
     const urlValue = e.target.value.trim();
     localStorage.setItem('userSheetDB', urlValue);
     
-    // =========================================================================
-    // 🚀 FIXED: Run data hydration instantly when the user configures the URL!
-    // =========================================================================
     if (urlValue.startsWith('https://google.com')) {
         console.log("Valid Google Web App detected. Initializing database hydration stream...");
-        
         if (typeof dynamicallyHydrateGlobalCurrencies === 'function') {
             dynamicallyHydrateGlobalCurrencies();
         }
@@ -75,8 +72,8 @@ async function updateBaseCurrencySettingsInSheet() {
 
     const payload = {
         configUpdate: true,
-        "Base Currency": baseCurrencyValue, // Target row cell cell B1
-        "Tax Rate": targetTaxRateValue       // Target row cell cell B2
+        "Base Currency": baseCurrencyValue,
+        "Tax Rate": targetTaxRateValue
     };
 
     try {
@@ -104,7 +101,7 @@ async function dispatchLedgerTransactionBundle() {
     // Core income input streams
     const amtIncome = parseFloat(document.getElementById('formAmount').value) || 0;
     const feeIncome = (parseFloat(document.getElementById('formFees').value) || 0) / 100;
-    const subIncome = document.getElementById('formCurrency').value; // Currency select dropdown
+    const subIncome = document.getElementById('formCurrency').value;
 
     // Expense and withholding streams
     const amtExpense = parseFloat(document.getElementById('formExpenses').value) || 0;
@@ -157,14 +154,14 @@ async function dispatchLedgerTransactionBundle() {
     // CRUCIAL DATA PAYLOAD ALIGNMENT: Standardized flat payload keys for Code.gs
     const payload = {
         data: {
-            "Date": date,                               // Matches rowData["Date"] in Apps Script
-            "Client Name": client,                      // Matches rowData["Client Name"]
-            "Invoice Amount": amtIncome,                // Matches rowData["Invoice Amount"]
-            "Currency Recieved": subIncome,             // Matches rowData["Currency Recieved"]
-            "Platform Fees": feeIncome,                 // Matches rowData["Platform Fees"]
-            "Withholding Tax Deducted?": isWithholding, // Matches rowData["Withholding Tax Deducted?"]
-            "Withholding Amount": isWithholding === "Yes" ? amtTax : 0, // Matches rowData["Withholding Amount"]
-            "Business Expenses": amtExpense             // Matches rowData["Business Expenses"]
+            "Date": date,
+            "Client Name": client,
+            "Invoice Amount": amtIncome,
+            "Currency Recieved": subIncome,
+            "Platform Fees": feeIncome,
+            "Withholding Tax Deducted?": isWithholding,
+            "Withholding Amount": isWithholding === "Yes" ? amtTax : 0,
+            "Business Expenses": amtExpense
         }
     };
 
@@ -195,7 +192,8 @@ async function dispatchLedgerTransactionBundle() {
             document.getElementById('formWithholdingAmt').value = '0';
             document.getElementById('formClient').value = '';
             
-            if (typeof updateMatrixData === 'function') updateMatrixData(); // Refresh matrix layout lines
+            if (typeof updateMatrixData === 'function') updateMatrixData();
+            extractLogsFromActiveSession();
         } else {
             throw new Error(result.message);
         }
@@ -203,9 +201,7 @@ async function dispatchLedgerTransactionBundle() {
         statusText.style.color = '#f87171'; 
         statusText.innerText = "Connection Failed. Check your Deployment Web App URL.";
     } finally {
-        // =========================================================================
         // CLEANUP: Release button interaction blocks and restore styles
-        // =========================================================================
         submitBtn.disabled = false;
         submitBtn.innerText = originalBtnText;
         submitBtn.style.borderColor = "";
@@ -213,7 +209,6 @@ async function dispatchLedgerTransactionBundle() {
         submitBtn.style.boxShadow = "";
     }
 }
-
 async function dynamicallyHydrateGlobalCurrencies() {
     const endpoint = apiInput.value.trim();
     if (!endpoint) return;
@@ -260,54 +255,186 @@ async function dynamicallyHydrateGlobalCurrencies() {
                 if (typeof updateBaseCurrencyConfigSymbols === 'function') {
                     updateBaseCurrencyConfigSymbols(); // Ensures currency markers ($ / USh) sync
                 }
-            }, 100); // 100ms safety window gives the browser time to paint dropdown updates
+                // Instantly sync the dual button switches position tracking anchors
+                if (typeof synchronizeDualCurrencyActionButtons === 'function') {
+                    synchronizeDualCurrencyActionButtons();
+                }
+            }, 100); 
             
-        } // Close if(result.status === "success")
+        } 
     } catch (e) {
         console.log("Failed to fetch currencies from Google Cloud.");
     }
 }
 
-    let splitSyncTimeout;
+let splitSyncTimeout;
 
-    function streamBreakdownProportionsToSheet() {
-        const endpoint = apiInput.value.trim();
-        if (!endpoint) return;
+function streamBreakdownProportionsToSheet() {
+    const endpoint = apiInput.value.trim();
+    if (!endpoint) return;
 
-        // Fetch live input floating-point allocation values
-        const incomeSplitVal = (parseFloat(document.getElementById('inputIncomeSplit').value) || 0) / 100;
-        const expenseSplitVal = (parseFloat(document.getElementById('inputExpenseSplit').value) || 0) / 100;
-        const taxSplitVal = (parseFloat(document.getElementById('inputTaxSplit').value) || 0) / 100;
+    // Fetch live input floating-point allocation values
+    const incomeSplitVal = (parseFloat(document.getElementById('inputIncomeSplit').value) || 0) / 100;
+    const expenseSplitVal = (parseFloat(document.getElementById('inputExpenseSplit').value) || 0) / 100;
+    const taxSplitVal = (parseFloat(document.getElementById('inputTaxSplit').value) || 0) / 100;
 
-        const payload = {
-            configUpdate: true,
-            "Income Split": incomeSplitVal,   // Targets row cell B3
-            "Expense Split": expenseSplitVal, // Targets row cell B4
-            "Tax Split": taxSplitVal          // Targets row cell B5
-        };
+    const payload = {
+        configUpdate: true,
+        "Income Split": incomeSplitVal,   
+        "Expense Split": expenseSplitVal, 
+        "Tax Split": taxSplitVal          
+    };
 
-        // Debounce optimization: waits 800ms after the user stops sliding before sending a single network call
-        clearTimeout(splitSyncTimeout);
-        splitSyncTimeout = setTimeout(async () => {
-            try {
-                await fetch(endpoint, { method: 'POST', body: JSON.stringify(payload) });
-                console.log("✔ Proportional matrix splits backed up to Google Sheet.");
-            } catch (e) {
-                console.log("Database synchronization pipeline lag.");
-            }
-        }, 800);
+    // Debounce optimization: waits 800ms after the user stops sliding before sending a single network call
+    clearTimeout(splitSyncTimeout);
+    splitSyncTimeout = setTimeout(async () => {
+        try {
+            await fetch(endpoint, { method: 'POST', body: JSON.stringify(payload) });
+            console.log("✔ Proportional matrix splits backed up to Google Sheet.");
+        } catch (e) {
+            console.log("Database synchronization pipeline lag.");
+        }
+    }, 800);
+}
+// =========================================================================
+// 🔄 DUAL-ACTION CONTROL PANEL CURRENCY ELEMENT CONTROLLERS & LOG ENGINE
+// =========================================================================
+
+// Safely converts currency codes into universal design font characters dynamically
+function getGlobalCurrencySymbolCharacter(currencyCode) {
+    if (!currencyCode) return '$';
+    const cleanCode = String(currencyCode).toUpperCase().trim();
+    switch (cleanCode) {
+        case 'USD': return '$';
+        case 'EUR': return '€';
+        case 'GBP': return '£';
+        case 'UGX': return 'USh ';
+        case 'KES': return 'KSh ';
+        case 'NGN': return '₦';
+        case 'CAD': return 'C$';
+        case 'AUD': return 'A$';
+        case 'JPY': return '¥';
+        default: return cleanCode + " "; 
+    }
+}
+
+// Re-evaluates and paints the two custom parallel selector toggle blocks automatically
+function synchronizeDualCurrencyActionButtons() {
+    const buttonGrid = document.getElementById('dualCurrencyControlGrid');
+    const titleLabel = document.getElementById('displayBaseCurrencyTitle');
+    const receivedSelect = document.getElementById('formCurrency');
+    const homeSelect = document.getElementById('baseCurrencyConfig');
+
+    if (!buttonGrid || !receivedSelect || !homeSelect) return;
+
+    // Extract real-time values from the form inputs instantly
+    const valReceived = receivedSelect.value || "EUR";
+    const valHome = homeSelect.value || "USD";
+
+    const symbolReceived = getGlobalCurrencySymbolCharacter(valReceived);
+    const symbolHome = getGlobalCurrencySymbolCharacter(valHome);
+
+    buttonGrid.innerHTML = "";
+
+    // 1. Build Button Block 1: Received Currency Track
+    const btnReceived = document.createElement('button');
+    btnReceived.className = `curr-btn ${window.activeMatrixCurrencyScopeMode === "received" ? "active" : ""}`;
+    btnReceived.style.flex = "1";
+    btnReceived.style.padding = "10px";
+    btnReceived.innerText = `${valReceived} (${symbolReceived.trim()})`;
+    btnReceived.onclick = () => {
+        window.currentlyPinnedLogIndex = null; // Release historic log pinning frames safely
+        window.activeMatrixCurrencyScopeMode = "received";
+        window.currentCurrency = symbolReceived;
+        window.updateMatrixData();
+        renderHistoricalSidebarLogs();
+    };
+
+    // 2. Build Button Block 2: Home Base Currency Track
+    const btnHome = document.createElement('button');
+    btnHome.className = `curr-btn ${window.activeMatrixCurrencyScopeMode === "home" ? "active" : ""}`;
+    btnHome.style.flex = "1";
+    btnHome.style.padding = "10px";
+    btnHome.innerText = `${valHome} (${symbolHome.trim()})`;
+    btnHome.onclick = () => {
+        window.currentlyPinnedLogIndex = null;
+        window.activeMatrixCurrencyScopeMode = "home";
+        window.currentCurrency = symbolHome;
+        window.updateMatrixData();
+        renderHistoricalSidebarLogs();
+    };
+
+    buttonGrid.appendChild(btnReceived);
+    buttonGrid.appendChild(btnHome);
+
+    // Dynamic header visual display notification tracking title modifiers
+    if (window.currentlyPinnedLogIndex !== null) {
+        titleLabel.innerHTML = `MATRIX TRACKING VIEW: <span style="color:#a855f7;font-weight:800;">HISTORICAL LOG FILE [LOCKED]</span>`;
+    } else {
+        titleLabel.innerHTML = `MATRIX TRACKING VIEW: <span style="color:#38bdf8;font-weight:700;">LIVE STREAMING CONSOLE</span>`;
+    }
+}
+
+// Intercept dropdown mutations to trigger instant button updates automatically
+document.addEventListener('DOMContentLoaded', () => {
+    const receivedEl = document.getElementById('formCurrency');
+    const homeEl = document.getElementById('baseCurrencyConfig');
+
+    if (receivedEl) receivedEl.addEventListener('change', () => { synchronizeDualCurrencyActionButtons(); window.updateMatrixData(); });
+    if (homeEl) homeEl.addEventListener('change', () => { synchronizeDualCurrencyActionButtons(); window.updateMatrixData(); });
+});
+
+// Upgraded matrix driver intercept loop inside matrix-engine.js to cleanly strip hardcoded behaviors
+const originalUpdateMatrixData = window.updateMatrixData;
+window.updateMatrixData = function() {
+    const receivedSelect = document.getElementById('formCurrency');
+    const homeSelect = document.getElementById('baseCurrencyConfig');
+    
+    if (!receivedSelect || !homeSelect) return;
+
+    // SCENARIO A: Historical Archival Drill-down is active
+    if (window.currentlyPinnedLogIndex !== null && window.cachedHistoricalLogs && window.cachedHistoricalLogs[window.currentlyPinnedLogIndex]) {
+        const logItem = window.cachedHistoricalLogs[window.currentlyPinnedLogIndex];
+        const logSymbol = getGlobalCurrencySymbolCharacter(logItem.currency);
+
+        window.currentCurrency = logSymbol;
+
+        document.getElementById('grossDisplay').innerText = `${logSymbol}${logItem.homeIncome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        document.getElementById('takeHomeDisplay').innerText = `${logSymbol}${logItem.takeHome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        document.getElementById('valRevenue').innerText = `${logSymbol}${logItem.homeIncome.toLocaleString()}`;
+        document.getElementById('inputRevenue').value = logItem.homeIncome;
+
+        const canvasEl = document.getElementById('flowChart');
+        if (canvasEl && typeof drawFlowLines === 'function') {
+            drawFlowLines(0.2, parseFloat(document.getElementById('baseTaxRateConfig').value)/100 || 0.15, 0.8, logItem.homeIncome);
+        }
+        
+        synchronizeDualCurrencyActionButtons();
+        return;
     }
 
-    // =========================================================================
-// 🔎 FRONTEND DATA HOOKS: SIDEBAR CARD VIEW GENERATION, SORTING, & SEARCH
-// =========================================================================
-window.cachedHistoricalLogs = [];
+    // SCENARIO B: Live tracking modes driven directly by active dropdown status loops
+    const activeCurrencyCode = (window.activeMatrixCurrencyScopeMode === "received") ? receivedSelect.value : homeSelect.value;
+    window.currentCurrency = getGlobalCurrencySymbolCharacter(activeCurrencyCode);
 
-// Intercept data packets following successful sync calls
-const originalDispatch = dispatchLedgerTransactionBundle;
-dispatchLedgerTransactionBundle = async function() {
-    await originalDispatch();
-    extractLogsFromActiveSession();
+    if (typeof originalUpdateMatrixData === 'function') {
+        originalUpdateMatrixData();
+    }
+    
+    synchronizeDualCurrencyActionButtons();
+};
+
+// Force custom injector hooks to re-draw elements immediately upon completing dropdown hydration runs
+const originalHydrateGlobalCurrencies = window.dynamicallyHydrateGlobalCurrencies;
+window.dynamicallyHydrateGlobalCurrencies = async function() {
+    if (typeof originalHydrateGlobalCurrencies === 'function') {
+        await originalHydrateGlobalCurrencies();
+    }
+    // Fire structural refresh signals to snap buttons into place the exact moment dropdown entries load!
+    setTimeout(() => {
+        synchronizeDualCurrencyActionButtons();
+        window.updateMatrixData();
+    }, 180);
 };
 
 function extractLogsFromActiveSession() {
@@ -317,123 +444,7 @@ function extractLogsFromActiveSession() {
     }
 }
 
-// Modify initial setup hydration hooks to scan logs immediately upon launching the site
-const originalHydrate = dynamicallyHydrateGlobalCurrencies;
-dynamicallyHydrateGlobalCurrencies = async function() {
-    await originalHydrate();
-    
-    // Fire a quick blank POST payload to safely read the dashboard summaries on launch
-    const endpoint = document.getElementById('apiEndpoint').value.trim();
-    if (!endpoint) return;
-    try {
-        const res = await fetch(endpoint, { method: 'POST', body: JSON.stringify({ fetchCurrencyCatalog: false }) });
-        const json = await res.json();
-        if (json.status === "success" && json.summary) {
-            window.liveSheetMetrics = json.summary;
-            window.localHistoryTotals = json.summary.totals;
-            if (typeof updateMatrixData === 'function') updateMatrixData();
-            extractLogsFromActiveSession();
-        }
-    } catch(e) { console.log("Failed to load initial history stack."); }
-};
-
-// =========================================================================
-// 🔄 DYNAMIC UI STATE MANAGER: AUTOMATED SWITCHING & HISTORICAL DRILL-DOWN
-// =========================================================================
-
-// Global dynamic anchor tracker state reference nodes
-window.currentlyPinnedLogIndex = null;
-
-// Synchronizes dashboard currency button groups to match your sidebar setups
-function updateDashboardCurrencyPanelButtons(overrideSymbol = null, overrideText = null) {
-    const buttonGroup = document.getElementById('dynamicDashboardCurrencyButtonGroup');
-    const titleLabel = document.getElementById('displayBaseCurrencyTitle');
-    if (!buttonGroup) return;
-
-    buttonGroup.innerHTML = "";
-
-    // Determine target symbols and strings based on active focus state loops
-    let activeSymbol = overrideSymbol || window.currentCurrency || '$';
-    let labelText = overrideText || document.getElementById('baseCurrencyConfig').value || 'USD';
-
-    // Build the dynamic button element
-    const btn = document.createElement('button');
-    btn.className = "curr-btn active";
-    btn.style.width = "100%";
-    btn.setAttribute('data-symbol', activeSymbol);
-    btn.innerText = `${labelText} (${activeSymbol.trim()})`;
-    
-    buttonGroup.appendChild(btn);
-
-    if (window.currentlyPinnedLogIndex !== null) {
-        titleLabel.innerHTML = `DISPLAYING HISTORICAL LOG VIEW <span style="color:#a855f7;font-weight:800;">[LOCKED]</span>`;
-    } else {
-        titleLabel.innerHTML = `DISPLAYING ACTIVE MATRIX TRACKING CURRENCY`;
-    }
-}
-
-// Hook directly into the standard currency change tracking loops
-document.addEventListener('DOMContentLoaded', () => {
-    const homeEl = document.getElementById('baseCurrencyConfig');
-    if (homeEl) {
-        homeEl.addEventListener('change', () => {
-            // Drop any historic pin locks to avoid calculations collisions
-            window.currentlyPinnedLogIndex = null;
-            setTimeout(() => {
-                updateDashboardCurrencyPanelButtons();
-            }, 150);
-        });
-    }
-});
-
-// Intercepts and overrides the baseline matrix updates inside matrix-engine.js if pinned
-const originalUpdateMatrixData = window.updateMatrixData;
-window.updateMatrixData = function() {
-    if (window.currentlyPinnedLogIndex !== null && window.cachedHistoricalLogs[window.currentlyPinnedLogIndex]) {
-        const selectedLog = window.cachedHistoricalLogs[window.currentlyPinnedLogIndex];
-        
-        // Match base tokens to derive accurate typography components
-        let targetSign = '$';
-        if (selectedLog.currency === 'EUR') targetSign = '€';
-        else if (selectedLog.currency === 'GBP') targetSign = '£';
-        else if (selectedLog.currency === 'UGX') targetSign = 'USh ';
-        else if (selectedLog.currency === 'KES') targetSign = 'KSh ';
-        else if (selectedLog.currency === 'NGN') targetSign = '₦';
-
-        // Swap visual tracking reference matrices instantly
-        window.currentCurrency = targetSign;
-        
-        // Force the text metrics cards across your dashboard layout to render specific row units
-        document.getElementById('grossDisplay').innerText = `${targetSign}${selectedLog.homeIncome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-        document.getElementById('takeHomeDisplay').innerText = `${targetSign}${selectedLog.takeHome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-        
-        // Handle visual slider tracker handles fallback smoothly 
-        document.getElementById('valRevenue').innerText = `${targetSign}${selectedLog.homeIncome.toLocaleString()}`;
-        document.getElementById('inputRevenue').value = selectedLog.homeIncome;
-
-        // Force canvas drawing pipes to re-evaluate based on the log's exact static ratios
-        const canvasEl = document.getElementById('flowChart');
-        if (canvasEl) {
-            const ctx = canvasEl.getContext('2d');
-            ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
-            if (typeof drawFlowLines === 'function') {
-                // Pin canvas view lines to show 100% processing curves for this specific item log
-                drawFlowLines(0.2, parseFloat(document.getElementById('baseTaxRateConfig').value)/100, 0.8, selectedLog.homeIncome);
-            }
-        }
-        updateDashboardCurrencyPanelButtons(targetSign, selectedLog.currency);
-        return;
-    }
-
-    // Otherwise, fall straight back onto normal operational dashboard pipelines
-    if (typeof originalUpdateMatrixData === 'function') {
-        originalUpdateMatrixData();
-    }
-    updateDashboardCurrencyPanelButtons();
-};
-
 function selectAndPinHistoricalLogCard(index) {
-    // If user clicks the exact same card twice, unlock the screen back to live metrics mode
     if (window.currentlyPinnedLogIndex === index) {
         window.currentlyPinnedLogIndex = null;
         console.log("Database drill-down lock released. Restoring active tracking profiles.");
@@ -442,15 +453,14 @@ function selectAndPinHistoricalLogCard(index) {
         console.log(`Matrix console locked on historical transaction row: Index [${index}]`);
     }
 
-    // Refresh layout view configurations instantly across the screen workspace
     window.updateMatrixData();
     renderHistoricalSidebarLogs();
 }
 
 function renderHistoricalSidebarLogs() {
     const container = document.getElementById('sidebarLogContainer');
-    const searchQuery = document.getElementById('logSearchInput').value.toLowerCase().trim();
-    const sortMode = document.getElementById('logSortSelect').value;
+    const searchQuery = document.getElementById('logSearchInput') ? document.getElementById('logSearchInput').value.toLowerCase().trim() : '';
+    const sortMode = document.getElementById('logSortSelect') ? document.getElementById('logSortSelect').value : 'date_desc';
     
     if (!container) return;
     container.innerHTML = "";
@@ -460,7 +470,6 @@ function renderHistoricalSidebarLogs() {
         return;
     }
 
-    // 1. Run structural filters over tracking arrays
     let logItemsWithIndices = window.cachedHistoricalLogs.map((item, originalIndex) => {
         return { data: item, id: originalIndex };
     });
@@ -475,7 +484,6 @@ function renderHistoricalSidebarLogs() {
         return;
     }
 
-    // 2. Execute sorting rules
     filtered.sort((a, b) => {
         if (sortMode === "date_desc") return new Date(b.data.date) - new Date(a.data.date);
         if (sortMode === "date_asc") return new Date(a.data.date) - new Date(b.data.date);
@@ -484,22 +492,18 @@ function renderHistoricalSidebarLogs() {
         return 0;
     });
 
-    // 3. Render actionable data card items
     filtered.forEach(item => {
         const log = item.data;
         const card = document.createElement('div');
         
-        // Apply active CSS highlight wrapper outlines if this node matches the tracking pin lock state
         const isPinned = (window.currentlyPinnedLogIndex === item.id);
         card.className = `transaction-card ${isPinned ? 'pinned-active' : ''}`;
-        
-        // Attach interactive click handler to trigger dashboard data substitution loops
         card.setAttribute('onclick', `selectAndPinHistoricalLogCard(${item.id})`);
         card.style.cursor = "pointer";
 
         card.innerHTML = `
             <div class="card-row-top">
-                <span>${log.date} ${isPinned ? '<strong style="color:#a855f7;">[PINNED VIEW]</strong>' : ''}</span>
+                <span>${log.date} ${isPinned ? '<strong style="color:#a855f7;">[PINNED]</strong>' : ''}</span>
                 <span style="color:#38bdf8; font-weight:700;">${log.currency}</span>
             </div>
             <div class="card-client-title">${log.client}</div>
