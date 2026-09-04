@@ -153,6 +153,9 @@ function drawBackgroundGrid(ctx, w, h) {
     }
 }
 
+// =========================================================================
+// 🚀 FIXED: STRIPPED HARDCODED TEXT CODES FROM CANVAS BEZIER TEXT GENERATION
+// =========================================================================
 function drawFlowLines(expRatio, taxRate, netProfit, gross) {
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -177,27 +180,39 @@ function drawFlowLines(expRatio, taxRate, netProfit, gross) {
     ctx.fillStyle = '#38bdf8'; 
     ctx.fillText("GROSS INPUT", 20, startY - 14);
 
-    function drawCurve(endY, color, baseText, percentValue) {
+    // FIXED: Dynamic Currency Symbol Assignment applied inside layout drawing routine loops
+    function drawCurve(endY, color, baseText, percentValue, numericValue) {
         ctx.beginPath(); ctx.moveTo(startX, startY);
         ctx.bezierCurveTo(startX + (w * 0.25), startY, endX - (w * 0.25), endY, endX, endY);
         ctx.strokeStyle = color; ctx.lineWidth = 4;
         ctx.shadowBlur = 10; ctx.shadowColor = color; ctx.stroke(); ctx.shadowBlur = 0;
 
-        const labelText = `${baseText} (${percentValue}%)`;
+        // FIXED: Stripped static strings out and linked labels directly to window.currentCurrency
+        const labelText = `${baseText} (${percentValue}%) - ${window.currentCurrency || '$'}${Math.round(numericValue).toLocaleString()}`;
         const pillW = ctx.measureText(labelText).width + 24;
+        
         ctx.beginPath(); ctx.roundRect(endX, endY - 11, pillW, 22, 11);
         ctx.fillStyle = color; ctx.fill();
         ctx.fillStyle = '#ffffff'; ctx.fillText(labelText, endX + 12, endY + 4);
     }
 
-    drawCurve(endY_Expenses, '#f87171', 'Expenses', expPercent);
-    drawCurve(endY_Tax, '#facc15', 'Tax Reserve', taxPercent);
-    drawCurve(endY_TakeHome, '#4ade80', 'Take-Home', homePercent);
+    // Pass the calculated numeric value downstream to display on the graph curves directly
+    const totalExpenses = gross * expRatio;
+    const taxReserve = (gross - totalExpenses) * taxRate;
+    const takeHome = gross - totalExpenses - taxReserve;
 
+    drawCurve(endY_Expenses, '#f87171', 'Expenses', expPercent, totalExpenses);
+    drawCurve(endY_Tax, '#facc15', 'Tax Reserve', taxPercent, taxReserve);
+    drawCurve(endY_TakeHome, '#4ade80', 'Take-Home', homePercent, takeHome);
+
+    // Dynamic central node currency tracker badge anchor rendering
     ctx.beginPath(); ctx.arc(startX, startY, 13, 0, Math.PI * 2);
     ctx.fillStyle = '#3b82f6'; ctx.fill();
     ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center';
-    ctx.fillText(currentCurrency, startX, startY + 4); ctx.textAlign = 'left';
+    
+    // FIXED: Node character glyph locks perfectly onto window.currentCurrency values
+    ctx.fillText((window.currentCurrency || '$').trim(), startX, startY + 4); 
+    ctx.textAlign = 'left';
 }
 
 // Aligned Breakdown Proportions Sliders

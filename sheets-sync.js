@@ -297,26 +297,25 @@ function streamBreakdownProportionsToSheet() {
     }, 800);
 }
 // =========================================================================
-// 🔄 DUAL-ACTION CONTROL PANEL CURRENCY ELEMENT CONTROLLERS & LOG ENGINE
+// 🚀 FIXED: ZERO HARDCODING. AUTOMATICALLY EXTRACT ANY GLOBAL SYMBOL
 // =========================================================================
-
-// Safely converts currency codes into universal design font characters dynamically
 function getGlobalCurrencySymbolCharacter(currencyCode) {
     if (!currencyCode) return '$';
     const cleanCode = String(currencyCode).toUpperCase().trim();
-    switch (cleanCode) {
-        case 'USD': return '$';
-        case 'EUR': return '€';
-        case 'GBP': return '£';
-        case 'UGX': return 'USh ';
-        case 'KES': return 'KSh ';
-        case 'NGN': return '₦';
-        case 'CAD': return 'C$';
-        case 'AUD': return 'A$';
-        case 'JPY': return '¥';
-        default: return cleanCode + " "; 
+    
+    try {
+        // Native browser engine tricks: extracts the symbol from a formatted sample item
+        const formatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: cleanCode });
+        const parts = formatter.formatToParts(1);
+        const currencyPart = parts.find(part => part.type === 'currency');
+        
+        return currencyPart ? currencyPart.value + " " : cleanCode + " ";
+    } catch (e) {
+        // Fallback safety catch if a strange currency string slips through
+        return cleanCode + " ";
     }
 }
+
 
 // Re-evaluates and paints the two custom parallel selector toggle blocks automatically
 function synchronizeDualCurrencyActionButtons() {

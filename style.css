@@ -226,7 +226,7 @@ body {
 
 .flow-chart-wrapper {
     position: relative;
-    height: 240px;
+    height: 260px; /* Boosted slightly to prevent edge labels cutting off */
     width: 100%;
     background: #070a13;
     border: 1px solid #1e293b;
