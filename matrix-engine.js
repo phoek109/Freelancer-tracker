@@ -46,60 +46,6 @@ async function fetchLiveExchangeRates(baseCurrency) {
     }
 }
 
-// =========================================================================
-// 🚀 FIXED: ALTERNATIVE FINANCIAL ROUTE WITH UNRESTRICTED OPEN ACCESS HEADERS
-// =========================================================================
-async function calculateActiveConversionRate() {
-    const receivedElement = document.getElementById('formCurrency');
-    const homeElement = document.getElementById('baseCurrencyConfig');
-    const rateTextElement = document.getElementById('tickerRateText');
-    
-    if (!receivedElement || !homeElement || !rateTextElement) return;
-
-    const receivedCurr = receivedElement.value;
-    const homeCurr = homeElement.value;
-
-    if (receivedCurr === homeCurr) {
-        rateTextElement.innerText = `1 ${receivedCurr} = 1.0000 ${homeCurr}`;
-        rateTextElement.style.color = "#4ade80"; 
-        return;
-    }
-
-    try {
-        // FIXED: Swapped to ://exchangerate-api.com to completely bypass browser CORS restrictions
-        const response = await fetch(`https://://exchangerate-api.comlatest/${receivedCurr.toUpperCase()}`);
-        
-        if (!response.ok) {
-            throw new Error("Public market feed route currently unresponsive.");
-        }
-        
-        const json = await response.json();
-        
-        if (json && json.rates && json.rates[homeCurr.toUpperCase()]) {
-            const liveMarketPrice = parseFloat(json.rates[homeCurr.toUpperCase()]);
-            
-            // Render the clean 4-decimal currency breakdown value inside the ticker panel
-            rateTextElement.innerText = `1 ${receivedCurr} = ${liveMarketPrice.toFixed(4)} ${homeCurr}`;
-            rateTextElement.style.color = "#4ade80"; // Glowing neon green
-            
-            // Push calculation down to your matrix engine variables tracking array
-            exchangeRatesCache[receivedCurr] = 1 / liveMarketPrice; 
-            
-            // Force the right dashboard matrix chart cards to update instantly
-            if (typeof updateMatrixData === 'function') {
-                updateMatrixData();
-            }
-        } else {
-            rateTextElement.innerText = "Currency parsing mismatch...";
-            rateTextElement.style.color = "#fb923c"; // Warning Orange
-        }
-    } catch (e) {
-        rateTextElement.innerText = "Market feed lagging...";
-        rateTextElement.style.color = "#f87171"; // Error Red
-        console.log("Direct market connection exception:", e);
-    }
-}
-
 // Bind change tracking event listeners to both components natively
 document.addEventListener('DOMContentLoaded', () => {
     const receivedEl = document.getElementById('formCurrency');
@@ -445,23 +391,17 @@ document.querySelectorAll('.curr-btn').forEach(btn => {
 });
 window.onresize = () => { resizeCanvas(); updateMatrixData(); };
 
-// ADD THIS PAIR TO YOUR DOM INITIALIZATION OR LOGIC BLOCK IN MATRIX-ENGINE.JS
-
-// Bind change tracking event listeners to both elements cleanly
+// =========================================================================
+// 🚀 CLEANED: ADAPTIVE DOM INITIALIZATION WITHOUT LIVE FEED CALLS
+// =========================================================================
 document.addEventListener('DOMContentLoaded', () => {
-    const receivedEl = document.getElementById('formCurrency');
     const homeEl = document.getElementById('baseCurrencyConfig');
-    
-    if (receivedEl) {
-        receivedEl.addEventListener('change', () => {
-            if (typeof calculateActiveConversionRate === 'function') calculateActiveConversionRate();
-        });
-    }
     
     if (homeEl) {
         homeEl.addEventListener('change', () => {
-            if (typeof updateBaseCurrencyConfigSymbols === 'function') updateBaseCurrencyConfigSymbols();
-            if (typeof calculateActiveConversionRate === 'function') calculateActiveConversionRate();
+            if (typeof updateBaseCurrencyConfigSymbols === 'function') {
+                updateBaseCurrencyConfigSymbols();
+            }
         });
     }
 });
