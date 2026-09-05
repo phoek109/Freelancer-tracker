@@ -89,32 +89,25 @@ async function dispatchLedgerTransactionBundle() {
         return; 
     }
 
-    // Capture Currency field and verify it is not empty
+    // Capture Currency selector field safely
     const currencySelectEl = document.getElementById('formCurrency');
     const subIncome = currencySelectEl ? currencySelectEl.value.trim() : "";
 
     if (!subIncome || subIncome === "" || subIncome.includes("COMPUTING") || subIncome.includes("Loading")) {
         statusText.style.color = '#f87171';
         statusText.innerText = "🛑 Input Error: Currency field cannot be left blank!";
-        currencySelectEl.focus();
         return;
     }
 
     const date = document.getElementById('formDate').value;
     const client = document.getElementById('formClient').value.trim() || "Ledger Entry";
     const amtIncome = parseFloat(document.getElementById('formAmount').value) || 0;
-    
     const rawFeeVal = parseFloat(document.getElementById('formFees').value) || 0;
     const feePercentage = rawFeeVal / 100;
-
     const amtExpense = parseFloat(document.getElementById('formExpenses').value) || 0;
     const amtTax = parseFloat(document.getElementById('formWithholdingAmt').value) || 0;
     const isWithholding = document.getElementById('formWithholdingToggle').value;
     const isPlatformFeesDeducted = document.getElementById('formPlatformFeesToggle').value;
-
-    const submitBtn = document.getElementById('btnSubmit');
-    submitBtn.disabled = true;
-    submitBtn.innerText = "SAVING...";
 
     const payload = {
         data: {
@@ -130,6 +123,27 @@ async function dispatchLedgerTransactionBundle() {
         }
     };
 
+    // =========================================================================
+    // 🔎 FRONT-END LOGCAT ENGINE DIAGNOSTIC TRACE
+    // =========================================================================
+    console.log("=================================================================");
+    console.log("⚡ FRONT-END LOGCAT TRIGGERED: PRE-TRANSMISSION PAYLOAD DETECTED ⚡");
+    console.log("=================================================================");
+    console.log("📅 Extracted Date: ", payload.data["Date"]);
+    console.log("👤 Client Name:   ", payload.data["Client Name"]);
+    console.log("💰 Invoice Cash:   ", payload.data["Invoice Amount"]);
+    console.log("💱 Selected Coin:  ", payload.data["Currency Received"]);
+    console.log("📉 Tax Toggle:    ", payload.data["Withholding Tax Deducted"]);
+    console.log("💸 Withhold Value: ", payload.data["Withholding Amount"]);
+    console.log("🛠️ Platform Pct:   ", payload.data["Platform Percentage"]);
+    console.log("🎒 Biz Expenses:  ", payload.data["Business Expenses"]);
+    console.log("📦 FULL JSON PAYLOAD ARRAY OVERVIEW:\n", JSON.stringify(payload, null, 2));
+    console.log("=================================================================");
+
+    const submitBtn = document.getElementById('btnSubmit');
+    submitBtn.disabled = true;
+    submitBtn.innerText = "SAVING...";
+
     try {
         const response = await fetch(endpoint, { 
             method: 'POST', 
@@ -137,22 +151,19 @@ async function dispatchLedgerTransactionBundle() {
         });
         const result = await response.json();
 
+        // Log what the server replied with
+        console.log("🛰️ SERVER RESPONSE RECEIVED: ", JSON.stringify(result, null, 2));
+
         if (result.status === "success") {
             statusText.style.color = '#4ade80'; 
-            statusText.innerText = "✔ Success! Raw inputs injected safely.";
-            
-            // Clear inputs
-            document.getElementById('formAmount').value = '';
-            document.getElementById('formFees').value = '0';
-            document.getElementById('formExpenses').value = '0';
-            document.getElementById('formWithholdingAmt').value = '0';
-            document.getElementById('formClient').value = '';
+            statusText.innerText = "✔ Success! Inputs verified and logged.";
         } else {
             throw new Error(result.message);
         }
     } catch (err) {
+        console.error("🚨 TRANSMISSION CRASH LOG: ", err);
         statusText.style.color = '#f87171'; 
-        statusText.innerText = "Streaming failed. Check deployment endpoint rules.";
+        statusText.innerText = "Streaming failed. Check logcat traces inside F12 browser console panel!";
     } finally {
         submitBtn.disabled = false;
         submitBtn.innerText = "STREAM TO SHEET";
