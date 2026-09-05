@@ -83,32 +83,81 @@ async function dispatchLedgerTransactionBundle() {
     const endpoint = apiInput.value.trim();
     const statusText = document.getElementById('syncStatus');
     
+    // 1. Hard-Block: Verify API Setup is Present
     if (!endpoint) {
         statusText.style.color = '#f87171'; 
-        statusText.innerText = "Error: Paste your Google Web App URL first!"; 
+        statusText.innerText = "🚨 Error: Paste your Google Web App URL first!"; 
         return; 
     }
 
+    // 2. Fetch and Check Currency Dropdown Status Safely
+    const currencySelectEl = document.getElementById('formCurrency');
+    const subIncome = currencySelectEl ? currencySelectEl.value.trim() : "";
+
+    // 🛑 STRICT FINANCIAL ENFORCEMENT: Block submission if currency dropdown is empty or still loading markets
+    if (!subIncome || subIncome === "" || subIncome.includes("COMPUTING") || subIncome.includes("Loading")) {
+        statusText.style.color = '#f87171';
+        statusText.innerText = "🛑 Transaction Blocked: Wait for Forex market tables to finish loading!";
+        currencySelectEl.focus();
+        currencySelectEl.style.borderColor = "#f87171";
+        return;
+    } else {
+        currencySelectEl.style.borderColor = "";
+    }
+
+    // 3. Collect form fields
     const date = document.getElementById('formDate').value;
-    const client = document.getElementById('formClient').value.trim() || "Ledger Entry";
+    const client = document.getElementById('formClient').value.trim();
     const amtIncome = parseFloat(document.getElementById('formAmount').value) || 0;
-    
-    // Pass raw percentage fraction integer out (e.g. 3% -> 0.03)
     const rawFeeVal = parseFloat(document.getElementById('formFees').value) || 0;
     const feePercentage = rawFeeVal / 100;
 
-    const subIncome = document.getElementById('formCurrency').value;
     const amtExpense = parseFloat(document.getElementById('formExpenses').value) || 0;
     const amtTax = parseFloat(document.getElementById('formWithholdingAmt').value) || 0;
     const isWithholding = document.getElementById('formWithholdingToggle').value;
-    const isPlatformFeesDeducted = document.getElementById('formPlatformFeesToggle').value;
+    const platformToggleEl = document.getElementById('formPlatformFeesToggle');
+    const isPlatformFeesDeducted = platformToggleEl ? platformToggleEl.value : (feePercentage > 0 ? "YES" : "NO");
 
-    if (amtIncome === 0 && amtExpense === 0 && amtTax === 0) {
+    // 🛑 STRICT FINANCIAL ENFORCEMENT: Enforce Date, Client, and Base Amount Parameters
+    if (!date) {
+        statusText.style.color = '#f87171';
+        statusText.innerText = "🛑 Transaction Blocked: You must select a valid Transaction Date!";
+        document.getElementById('formDate').focus();
+        return;
+    }
+    if (!client) {
+        statusText.style.color = '#f87171';
+        statusText.innerText = "🛑 Transaction Blocked: Client Name cannot be left blank!";
+        document.getElementById('formClient').focus();
+        return;
+    }
+    if (amtIncome <= 0 && amtExpense === 0 && amtTax === 0) {
         statusText.style.color = '#f87171'; 
-        statusText.innerText = "Error: Input an amount in at least one category pipeline!"; 
+        statusText.innerText = "🛑 Transaction Blocked: Enter an Invoice Amount greater than 0!"; 
+        document.getElementById('formAmount').focus();
         return; 
     }
 
+    // 4. Handle Operational Mode Parameters Safely
+    const convMode = document.getElementById('formConversionMode').value;
+    const exactCashAmt = parseFloat(document.getElementById('formExactCashAmt').value) || 0;
+    const customRateVal = parseFloat(document.getElementById('formCustomRateVal').value) || 1;
+
+    // 🛑 STRICT FINANCIAL ENFORCEMENT: Validate Options based on Chosen Mode Path
+    if (convMode === "exact_cash" && exactCashAmt <= 0) {
+        statusText.style.color = '#f87171';
+        statusText.innerText = "🛑 Transaction Blocked: For Option A, Exact Cash Arrived cannot be 0!";
+        document.getElementById('formExactCashAmt').focus();
+        return;
+    }
+    if (convMode === "custom_rate" && customRateVal <= 0) {
+        statusText.style.color = '#f87171';
+        statusText.innerText = "🛑 Transaction Blocked: For Option B, Custom Exchange Rate must be greater than 0!";
+        document.getElementById('formCustomRateVal').focus();
+        return;
+    }
+
+    // --- Core Valuations Passed! Execute Secure Transmission Network Streams ---
     const submitBtn = document.getElementById('btnSubmit');
     const originalBtnText = submitBtn.innerText;
     
@@ -119,13 +168,8 @@ async function dispatchLedgerTransactionBundle() {
     submitBtn.style.boxShadow = "0 0 15px rgba(74, 222, 128, 0.4)";
 
     statusText.style.color = '#eab308'; 
-    statusText.innerText = "Streaming records to Google Cloud...";
+    statusText.innerText = "Streaming verified record bundle to Google Cloud...";
 
-    const convMode = document.getElementById('formConversionMode').value;
-    const exactCashAmt = parseFloat(document.getElementById('formExactCashAmt').value) || 0;
-    const customRateVal = parseFloat(document.getElementById('formCustomRateVal').value) || 1;
-
-    // Send the layout switch parameters along with every log submission
     const payload = {
         data: {
             "Date": date,
@@ -144,7 +188,7 @@ async function dispatchLedgerTransactionBundle() {
     };
 
     try {
-        // Fire dynamic switch to Currency Settings parameters tab instantly before streaming rows
+        // Sync operation matrix setup mode indicators first
         await fetch(endpoint, {
             method: 'POST',
             body: JSON.stringify({
@@ -162,13 +206,14 @@ async function dispatchLedgerTransactionBundle() {
 
         if (result.status === "success") {
             statusText.style.color = '#4ade80'; 
-            statusText.innerText = "✔ Success! Row entry streamed to Google Sheets.";
+            statusText.innerText = "✔ Verified transaction successfully logged into Google Sheets!";
             
             if (result.summary) {
                 window.liveSheetMetrics = result.summary;
                 window.localHistoryTotals = result.summary.totals;
             }
 
+            // Clean input boxes safely
             document.getElementById('formAmount').value = '';
             document.getElementById('formFees').value = '0';
             document.getElementById('formExpenses').value = '0';
