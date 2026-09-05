@@ -142,16 +142,30 @@ async function dispatchLedgerTransactionBundle() {
         totals.taxWithheld += amtTax;
     }
 
+    // =========================================================================
+    // 🚀 UPGRADED PAYLOAD STAGING DATA BUNDLE FOR BACK-TRACING MATH ENGINE
+    // =========================================================================
+    
+    // 1. Fetch our newly introduced conversion portal option metrics
+    const convMode = document.getElementById('formConversionMode').value;
+    const exactCashAmt = parseFloat(document.getElementById('formExactCashAmt').value) || 0;
+    const customRateVal = parseFloat(document.getElementById('formCustomRateVal').value) || 1;
+
+    // 2. Package all keys to align precisely with your upgraded Code.gs endpoints
     const payload = {
         data: {
             "Date": date,
             "Client Name": client,
             "Invoice Amount": amtIncome,
-            "Currency Received": subIncome,
+            "Currency Recieved": subIncome,
             "Platform Fees": feeIncome,
             "Withholding Tax Deducted?": isWithholding,
             "Withholding Amount": isWithholding === "Yes" ? amtTax : 0,
-            "Business Expenses": amtExpense
+            "Business Expenses": amtExpense,
+            // Added conversion keys
+            "Conversion Mode": convMode,
+            "Exact Cash Input": exactCashAmt,
+            "Custom Rate Input": customRateVal
         }
     };
 
