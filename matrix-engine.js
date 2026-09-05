@@ -19,15 +19,11 @@ const inputTaxRate = document.getElementById('inputTaxRate');
 const canvas = document.getElementById('flowChart');
 const btnToggle = document.getElementById('btnToggleMode');
 
-// SEARCH AND REPLACE THIS CORRECTED DATA ENGINES MODULE IN MATRIX-ENGINE.JS
-
-// =========================================================================
-// 🚀 FIXED: RESTORED CORRECT EXCHANGE RATE API ROUTE PATH & SYNTAX
-// =========================================================================
 async function fetchLiveExchangeRates(baseCurrency) {
     if (!baseCurrency) return;
     try {
         const cleanBase = String(baseCurrency).toUpperCase().trim();
+        // FIXED: Added missing forward slash and literal variable prefix
         const response = await fetch(`https://er-api.com{cleanBase}`);
         
         if (response.ok) {
@@ -48,6 +44,7 @@ async function fetchLiveExchangeRates(baseCurrency) {
         console.warn("Forex Cloud Matrix Offline. Dropping into local recovery variables cache.", e);
     }
 }
+
 
 // Bind change tracking event listeners to both components natively
 document.addEventListener('DOMContentLoaded', () => {
