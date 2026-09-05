@@ -57,14 +57,19 @@ async function updateBaseCurrencySettingsInSheet() {
 
     const baseCurrencyValue = document.getElementById('baseCurrencyConfig').value;
     const targetTaxRateValue = (parseFloat(document.getElementById('baseTaxRateConfig').value) || 0) / 100;
+    const convMode = document.getElementById('formConversionMode').value;
+    const exactCashAmt = parseFloat(document.getElementById('formExactCashAmt').value) || 0;
 
     localStorage.setItem('userBaseCurrencyConfig', baseCurrencyValue);
     localStorage.setItem('userBaseTaxRateConfig', document.getElementById('baseTaxRateConfig').value);
 
+    // Dynamic Payload Sync across configuration elements
     const payload = {
         configUpdate: true,
         "Base Currency": baseCurrencyValue,
-        "Tax Rate": targetTaxRateValue
+        "Tax Rate": targetTaxRateValue,
+        "Conversion Mode": convMode,
+        "Exact Cash Input": exactCashAmt
     };
 
     try {
@@ -88,7 +93,7 @@ async function dispatchLedgerTransactionBundle() {
     const client = document.getElementById('formClient').value.trim() || "Ledger Entry";
     const amtIncome = parseFloat(document.getElementById('formAmount').value) || 0;
     
-    // Clean percentage conversions
+    // Pass raw percentage fraction integer out (e.g. 3% -> 0.03)
     const rawFeeVal = parseFloat(document.getElementById('formFees').value) || 0;
     const feePercentage = rawFeeVal / 100;
 
@@ -96,9 +101,7 @@ async function dispatchLedgerTransactionBundle() {
     const amtExpense = parseFloat(document.getElementById('formExpenses').value) || 0;
     const amtTax = parseFloat(document.getElementById('formWithholdingAmt').value) || 0;
     const isWithholding = document.getElementById('formWithholdingToggle').value;
-    
-    const platformToggleEl = document.getElementById('formPlatformFeesToggle');
-    const isPlatformFeesDeducted = platformToggleEl ? platformToggleEl.value : (feePercentage > 0 ? "YES" : "NO");
+    const isPlatformFeesDeducted = document.getElementById('formPlatformFeesToggle').value;
 
     if (amtIncome === 0 && amtExpense === 0 && amtTax === 0) {
         statusText.style.color = '#f87171'; 
@@ -122,17 +125,17 @@ async function dispatchLedgerTransactionBundle() {
     const exactCashAmt = parseFloat(document.getElementById('formExactCashAmt').value) || 0;
     const customRateVal = parseFloat(document.getElementById('formCustomRateVal').value) || 1;
 
-    // LOCKED STRUCTURAL INGESTION OBJECT KEYS MAP
+    // Send the layout switch parameters along with every log submission
     const payload = {
         data: {
             "Date": date,
             "Client Name": client,
             "Invoice Amount": amtIncome,
-            "Currency Received": subIncome,
+            "Currency Received": subIncome.toUpperCase().trim(),
             "Withholding Tax Deducted": (isWithholding.toUpperCase() === "YES") ? "YES" : "NO",
             "Withholding Amount": amtTax, 
             "Platform Fees Deducted": (isPlatformFeesDeducted.toUpperCase() === "YES") ? "YES" : "NO",
-            "Platform Fees": feePercentage, 
+            "Platform Percentage": feePercentage, 
             "Business Expenses": amtExpense,
             "Conversion Mode": convMode,
             "Exact Cash Input": exactCashAmt,
@@ -141,6 +144,16 @@ async function dispatchLedgerTransactionBundle() {
     };
 
     try {
+        // Fire dynamic switch to Currency Settings parameters tab instantly before streaming rows
+        await fetch(endpoint, {
+            method: 'POST',
+            body: JSON.stringify({
+                configUpdate: true,
+                "Conversion Mode": convMode,
+                "Exact Cash Input": exactCashAmt
+            })
+        });
+
         const response = await fetch(endpoint, { 
             method: 'POST', 
             body: JSON.stringify(payload) 
@@ -161,7 +174,6 @@ async function dispatchLedgerTransactionBundle() {
             document.getElementById('formExpenses').value = '0';
             document.getElementById('formWithholdingAmt').value = '0';
             document.getElementById('formClient').value = '';
-            if (platformToggleEl) platformToggleEl.value = 'No';
             
             if (typeof updateMatrixData === 'function') updateMatrixData();
             extractLogsFromActiveSession();
