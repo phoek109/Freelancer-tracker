@@ -182,11 +182,13 @@ function updateMatrixData() {
     let gross, expRatio, taxRate;
     let incomePct, expensePct, taxPct;
     
-    const totals = window.localHistoryTotals;
     const sheetMetrics = window.liveSheetMetrics || {
-        activeRatio: 0.65, bizExpRatio: 0.60, incomeTaxRatio: 0.80,
+        activeRatio: 0.50,       // Default 50% split fallback metric balance
+        bizExpRatio: 0.50,       // Default 50% split fallback metric balance
+        incomeTaxRatio: 0.50,    // Default 50% split fallback metric balance
         totals: { gross: 0, expenses: 0, taxWithheld: 0 }
     };
+
 
     if (isLiveTrackingMode) {
         // 1. LIVE MODE: Lock to real data coming from Google Sheets
