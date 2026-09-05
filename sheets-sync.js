@@ -50,9 +50,33 @@ apiInput.addEventListener('input', (e) => {
 });
 
 async function updateBaseCurrencySettingsInSheet() {
-    // FIXED: Skip dynamic standalone sync loops completely to bypass CORS conflicts entirely!
     if (typeof updateBaseCurrencyConfigSymbols === 'function') updateBaseCurrencyConfigSymbols();
-    console.log("⚡ Logcat Core: Base tracking config tokens updated locally.");
+    
+    const endpoint = apiInput.value.trim();
+    if (!endpoint) return;
+
+    const baseCurrencyValue = document.getElementById('baseCurrencyConfig').value;
+    const targetTaxRateValue = (parseFloat(document.getElementById('baseTaxRateConfig').value) || 0) / 100;
+    const convMode = document.getElementById('formConversionMode').value;
+    const exactCashAmt = parseFloat(document.getElementById('formExactCashAmt').value) || 0;
+
+    localStorage.setItem('userBaseCurrencyConfig', baseCurrencyValue);
+    localStorage.setItem('userBaseTaxRateConfig', document.getElementById('baseTaxRateConfig').value);
+
+    // Dynamic Payload Sync across configuration elements
+    const payload = {
+        configUpdate: true,
+        "Base Currency": baseCurrencyValue,
+        "Tax Rate": targetTaxRateValue,
+        "Conversion Mode": convMode,
+        "Exact Cash Input": exactCashAmt
+    };
+
+    try {
+        await fetch(endpoint, { method: 'POST', body: JSON.stringify(payload) });
+    } catch (e) {
+        console.log("Settings synchronization pipeline error.");
+    }
 }
 
 async function dispatchLedgerTransactionBundle() {
@@ -61,48 +85,30 @@ async function dispatchLedgerTransactionBundle() {
     
     if (!endpoint) {
         statusText.style.color = '#f87171'; 
-        statusText.innerText = "🛑 Error: Paste your Google Web App URL first!"; 
+        statusText.innerText = "Error: Paste your Google Web App URL first!"; 
         return; 
     }
 
+    // Capture Currency selector field safely
     const currencySelectEl = document.getElementById('formCurrency');
     const subIncome = currencySelectEl ? currencySelectEl.value.trim() : "";
 
     if (!subIncome || subIncome === "" || subIncome.includes("COMPUTING") || subIncome.includes("Loading")) {
         statusText.style.color = '#f87171';
-        statusText.innerText = "🛑 Blocked: Wait for Currency selection code inputs!";
+        statusText.innerText = "🛑 Input Error: Currency field cannot be left blank!";
         return;
     }
 
-    // Extract dynamic form fields elements
     const date = document.getElementById('formDate').value;
-    const client = document.getElementById('formClient').value.trim();
+    const client = document.getElementById('formClient').value.trim() || "Ledger Entry";
     const amtIncome = parseFloat(document.getElementById('formAmount').value) || 0;
-    
     const rawFeeVal = parseFloat(document.getElementById('formFees').value) || 0;
     const feePercentage = rawFeeVal / 100;
-
     const amtExpense = parseFloat(document.getElementById('formExpenses').value) || 0;
     const amtTax = parseFloat(document.getElementById('formWithholdingAmt').value) || 0;
     const isWithholding = document.getElementById('formWithholdingToggle').value;
-    const platformToggleEl = document.getElementById('formPlatformFeesToggle');
-    const isPlatformFeesDeducted = platformToggleEl ? platformToggleEl.value : (feePercentage > 0 ? "YES" : "NO");
+    const isPlatformFeesDeducted = document.getElementById('formPlatformFeesToggle').value;
 
-    // Fetch Global Configuration Inputs straight off the form UI slots
-    const globalBaseCurrency = document.getElementById('baseCurrencyConfig').value;
-    const globalTaxTableRate  = (parseFloat(document.getElementById('baseTaxRateConfig').value) || 0) / 100;
-
-    if (!date || !client || (amtIncome <= 0 && amtExpense === 0)) {
-        statusText.style.color = '#f87171';
-        statusText.innerText = "🛑 Blocked: Fill out all required fields!";
-        return;
-    }
-
-    const convMode = document.getElementById('formConversionMode').value;
-    const exactCashAmt = parseFloat(document.getElementById('formExactCashAmt').value) || 0;
-    const customRateVal = parseFloat(document.getElementById('formCustomRateVal').value) || 1;
-
-    // RIGID SECURE INGESTION STRUCTURAL UNIFIED PAYLOAD BUNDLE
     const payload = {
         data: {
             "Date": date,
@@ -113,23 +119,30 @@ async function dispatchLedgerTransactionBundle() {
             "Withholding Amount": amtTax, 
             "Platform Fees Deducted": isPlatformFeesDeducted.toUpperCase().trim(),
             "Platform Percentage": feePercentage, 
-            "Business Expenses": amtExpense,
-            "Conversion Mode": convMode,
-            "Exact Cash Input": exactCashAmt,
-            "Custom Rate Input": customRateVal,
-            // FIXED: Bundled the global base currency configurations directly inside the payload tracker
-            "Base Currency Config": globalBaseCurrency,
-            "Global Tax Config": globalTaxTableRate
+            "Business Expenses": amtExpense
         }
     };
 
-    console.log("⚡ secure Ingestion Loop: Dispatching single payload bundle:\n", JSON.stringify(payload, null, 2));
+    // =========================================================================
+    // 🔎 FRONT-END LOGCAT ENGINE DIAGNOSTIC TRACE
+    // =========================================================================
+    console.log("=================================================================");
+    console.log("⚡ FRONT-END LOGCAT TRIGGERED: PRE-TRANSMISSION PAYLOAD DETECTED ⚡");
+    console.log("=================================================================");
+    console.log("📅 Extracted Date: ", payload.data["Date"]);
+    console.log("👤 Client Name:   ", payload.data["Client Name"]);
+    console.log("💰 Invoice Cash:   ", payload.data["Invoice Amount"]);
+    console.log("💱 Selected Coin:  ", payload.data["Currency Received"]);
+    console.log("📉 Tax Toggle:    ", payload.data["Withholding Tax Deducted"]);
+    console.log("💸 Withhold Value: ", payload.data["Withholding Amount"]);
+    console.log("🛠️ Platform Pct:   ", payload.data["Platform Percentage"]);
+    console.log("🎒 Biz Expenses:  ", payload.data["Business Expenses"]);
+    console.log("📦 FULL JSON PAYLOAD ARRAY OVERVIEW:\n", JSON.stringify(payload, null, 2));
+    console.log("=================================================================");
 
     const submitBtn = document.getElementById('btnSubmit');
     submitBtn.disabled = true;
     submitBtn.innerText = "SAVING...";
-    statusText.style.color = '#eab308';
-    statusText.innerText = "Streaming verified raw record bundle...";
 
     try {
         const response = await fetch(endpoint, { 
@@ -138,21 +151,19 @@ async function dispatchLedgerTransactionBundle() {
         });
         const result = await response.json();
 
+        // Log what the server replied with
+        console.log("🛰️ SERVER RESPONSE RECEIVED: ", JSON.stringify(result, null, 2));
+
         if (result.status === "success") {
             statusText.style.color = '#4ade80'; 
-            statusText.innerText = "✔ Success! Raw inputs injected safely.";
-            
-            document.getElementById('formAmount').value = '';
-            document.getElementById('formFees').value = '0';
-            document.getElementById('formExpenses').value = '0';
-            document.getElementById('formWithholdingAmt').value = '0';
-            document.getElementById('formClient').value = '';
+            statusText.innerText = "✔ Success! Inputs verified and logged.";
         } else {
             throw new Error(result.message);
         }
     } catch (err) {
+        console.error("🚨 TRANSMISSION CRASH LOG: ", err);
         statusText.style.color = '#f87171'; 
-        statusText.innerText = "Streaming failed. Check connection parameter inputs!";
+        statusText.innerText = "Streaming failed. Check logcat traces inside F12 browser console panel!";
     } finally {
         submitBtn.disabled = false;
         submitBtn.innerText = "STREAM TO SHEET";
