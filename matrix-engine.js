@@ -42,9 +42,6 @@ async function fetchLiveExchangeRates(baseCurrency) {
     }
 }
 
-
-// Bind change tracking event listeners to both components natively
-// Bind change tracking event listeners to both components natively
 document.addEventListener('DOMContentLoaded', () => {
     const receivedEl = document.getElementById('formCurrency');
     const homeEl = document.getElementById('baseCurrencyConfig');
