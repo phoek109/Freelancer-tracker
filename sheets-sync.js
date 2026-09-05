@@ -83,92 +83,38 @@ async function dispatchLedgerTransactionBundle() {
     const endpoint = apiInput.value.trim();
     const statusText = document.getElementById('syncStatus');
     
-    // 1. Hard-Block: Verify API Setup is Present
     if (!endpoint) {
         statusText.style.color = '#f87171'; 
-        statusText.innerText = "🚨 Error: Paste your Google Web App URL first!"; 
+        statusText.innerText = "Error: Paste your Google Web App URL first!"; 
         return; 
     }
 
-    // 2. Fetch and Check Currency Dropdown Status Safely
+    // Capture Currency field and verify it is not empty
     const currencySelectEl = document.getElementById('formCurrency');
     const subIncome = currencySelectEl ? currencySelectEl.value.trim() : "";
 
-    // 🛑 STRICT FINANCIAL ENFORCEMENT: Block submission if currency dropdown is empty or still loading markets
     if (!subIncome || subIncome === "" || subIncome.includes("COMPUTING") || subIncome.includes("Loading")) {
         statusText.style.color = '#f87171';
-        statusText.innerText = "🛑 Transaction Blocked: Wait for Forex market tables to finish loading!";
+        statusText.innerText = "🛑 Input Error: Currency field cannot be left blank!";
         currencySelectEl.focus();
-        currencySelectEl.style.borderColor = "#f87171";
         return;
-    } else {
-        currencySelectEl.style.borderColor = "";
     }
 
-    // 3. Collect form fields
     const date = document.getElementById('formDate').value;
-    const client = document.getElementById('formClient').value.trim();
+    const client = document.getElementById('formClient').value.trim() || "Ledger Entry";
     const amtIncome = parseFloat(document.getElementById('formAmount').value) || 0;
+    
     const rawFeeVal = parseFloat(document.getElementById('formFees').value) || 0;
     const feePercentage = rawFeeVal / 100;
 
     const amtExpense = parseFloat(document.getElementById('formExpenses').value) || 0;
     const amtTax = parseFloat(document.getElementById('formWithholdingAmt').value) || 0;
     const isWithholding = document.getElementById('formWithholdingToggle').value;
-    const platformToggleEl = document.getElementById('formPlatformFeesToggle');
-    const isPlatformFeesDeducted = platformToggleEl ? platformToggleEl.value : (feePercentage > 0 ? "YES" : "NO");
+    const isPlatformFeesDeducted = document.getElementById('formPlatformFeesToggle').value;
 
-    // 🛑 STRICT FINANCIAL ENFORCEMENT: Enforce Date, Client, and Base Amount Parameters
-    if (!date) {
-        statusText.style.color = '#f87171';
-        statusText.innerText = "🛑 Transaction Blocked: You must select a valid Transaction Date!";
-        document.getElementById('formDate').focus();
-        return;
-    }
-    if (!client) {
-        statusText.style.color = '#f87171';
-        statusText.innerText = "🛑 Transaction Blocked: Client Name cannot be left blank!";
-        document.getElementById('formClient').focus();
-        return;
-    }
-    if (amtIncome <= 0 && amtExpense === 0 && amtTax === 0) {
-        statusText.style.color = '#f87171'; 
-        statusText.innerText = "🛑 Transaction Blocked: Enter an Invoice Amount greater than 0!"; 
-        document.getElementById('formAmount').focus();
-        return; 
-    }
-
-    // 4. Handle Operational Mode Parameters Safely
-    const convMode = document.getElementById('formConversionMode').value;
-    const exactCashAmt = parseFloat(document.getElementById('formExactCashAmt').value) || 0;
-    const customRateVal = parseFloat(document.getElementById('formCustomRateVal').value) || 1;
-
-    // 🛑 STRICT FINANCIAL ENFORCEMENT: Validate Options based on Chosen Mode Path
-    if (convMode === "exact_cash" && exactCashAmt <= 0) {
-        statusText.style.color = '#f87171';
-        statusText.innerText = "🛑 Transaction Blocked: For Option A, Exact Cash Arrived cannot be 0!";
-        document.getElementById('formExactCashAmt').focus();
-        return;
-    }
-    if (convMode === "custom_rate" && customRateVal <= 0) {
-        statusText.style.color = '#f87171';
-        statusText.innerText = "🛑 Transaction Blocked: For Option B, Custom Exchange Rate must be greater than 0!";
-        document.getElementById('formCustomRateVal').focus();
-        return;
-    }
-
-    // --- Core Valuations Passed! Execute Secure Transmission Network Streams ---
     const submitBtn = document.getElementById('btnSubmit');
-    const originalBtnText = submitBtn.innerText;
-    
     submitBtn.disabled = true;
     submitBtn.innerText = "SAVING...";
-    submitBtn.style.borderColor = "#4ade80";
-    submitBtn.style.color = "#4ade80";
-    submitBtn.style.boxShadow = "0 0 15px rgba(74, 222, 128, 0.4)";
-
-    statusText.style.color = '#eab308'; 
-    statusText.innerText = "Streaming verified record bundle to Google Cloud...";
 
     const payload = {
         data: {
@@ -176,28 +122,15 @@ async function dispatchLedgerTransactionBundle() {
             "Client Name": client,
             "Invoice Amount": amtIncome,
             "Currency Received": subIncome.toUpperCase().trim(),
-            "Withholding Tax Deducted": (isWithholding.toUpperCase() === "YES") ? "YES" : "NO",
+            "Withholding Tax Deducted": isWithholding.toUpperCase().trim(),
             "Withholding Amount": amtTax, 
-            "Platform Fees Deducted": (isPlatformFeesDeducted.toUpperCase() === "YES") ? "YES" : "NO",
+            "Platform Fees Deducted": isPlatformFeesDeducted.toUpperCase().trim(),
             "Platform Percentage": feePercentage, 
-            "Business Expenses": amtExpense,
-            "Conversion Mode": convMode,
-            "Exact Cash Input": exactCashAmt,
-            "Custom Rate Input": customRateVal
+            "Business Expenses": amtExpense
         }
     };
 
     try {
-        // Sync operation matrix setup mode indicators first
-        await fetch(endpoint, {
-            method: 'POST',
-            body: JSON.stringify({
-                configUpdate: true,
-                "Conversion Mode": convMode,
-                "Exact Cash Input": exactCashAmt
-            })
-        });
-
         const response = await fetch(endpoint, { 
             method: 'POST', 
             body: JSON.stringify(payload) 
@@ -206,34 +139,23 @@ async function dispatchLedgerTransactionBundle() {
 
         if (result.status === "success") {
             statusText.style.color = '#4ade80'; 
-            statusText.innerText = "✔ Verified transaction successfully logged into Google Sheets!";
+            statusText.innerText = "✔ Success! Raw inputs injected safely.";
             
-            if (result.summary) {
-                window.liveSheetMetrics = result.summary;
-                window.localHistoryTotals = result.summary.totals;
-            }
-
-            // Clean input boxes safely
+            // Clear inputs
             document.getElementById('formAmount').value = '';
             document.getElementById('formFees').value = '0';
             document.getElementById('formExpenses').value = '0';
             document.getElementById('formWithholdingAmt').value = '0';
             document.getElementById('formClient').value = '';
-            
-            if (typeof updateMatrixData === 'function') updateMatrixData();
-            extractLogsFromActiveSession();
         } else {
             throw new Error(result.message);
         }
     } catch (err) {
         statusText.style.color = '#f87171'; 
-        statusText.innerText = "Connection Failed. Check your Deployment Web App URL.";
+        statusText.innerText = "Streaming failed. Check deployment endpoint rules.";
     } finally {
         submitBtn.disabled = false;
-        submitBtn.innerText = originalBtnText;
-        submitBtn.style.borderColor = "";
-        submitBtn.style.color = "";
-        submitBtn.style.boxShadow = "";
+        submitBtn.innerText = "STREAM TO SHEET";
     }
 }
 
