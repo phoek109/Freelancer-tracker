@@ -151,23 +151,26 @@ async function dispatchLedgerTransactionBundle() {
     const exactCashAmt = parseFloat(document.getElementById('formExactCashAmt').value) || 0;
     const customRateVal = parseFloat(document.getElementById('formCustomRateVal').value) || 1;
 
-    // 2. Package all keys to align precisely with your upgraded Code.gs endpoints
-    const payload = {
-        data: {
-            "Date": date,
-            "Client Name": client,
-            "Invoice Amount": amtIncome,
-            "Currency Recieved": subIncome,
-            "Platform Fees": feeIncome,
-            "Withholding Tax Deducted?": isWithholding,
-            "Withholding Amount": isWithholding === "Yes" ? amtTax : 0,
-            "Business Expenses": amtExpense,
-            // Added conversion keys
-            "Conversion Mode": convMode,
-            "Exact Cash Input": exactCashAmt,
-            "Custom Rate Input": customRateVal
-        }
-    };
+// Calculate absolute fee value locally inside the frontend transaction engine wrapper
+const calculatedPlatformFeeCurrencyAmount = amtIncome * feeIncome;
+
+const payload = {
+    data: {
+        "Date": date,
+        "Client Name": client,
+        "Invoice Amount": amtIncome,
+        "Currency Recieved": subIncome,
+        "Withholding Tax Deducted?": isWithholding,
+        "Withholding Amount": isWithholding === "Yes" ? amtTax : 0,
+        //  FIXES PAYLOAD DESYNC REGIONS:
+        "Platform Fees Deducted?": feeIncome > 0 ? "Yes" : "No",
+        "Platform Fees": calculatedPlatformFeeCurrencyAmount,
+        "Business Expenses": amtExpense,
+        "Conversion Mode": convMode,
+        "Exact Cash Input": exactCashAmt,
+        "Custom Rate Input": customRateVal
+    }
+};
 
     try {
         const response = await fetch(endpoint, { 
