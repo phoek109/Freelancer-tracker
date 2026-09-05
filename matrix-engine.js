@@ -32,9 +32,6 @@ async function fetchLiveExchangeRates(baseCurrency) {
                 exchangeRatesCache = data.rates;
                 console.log(`✔ Forex Engine Sync Successful for Base: ${cleanBase}`);
                 
-                if (typeof calculateActiveConversionRate === 'function') {
-                    calculateActiveConversionRate();
-                }
                 if (typeof updateMatrixData === 'function') {
                     updateMatrixData();
                 }
@@ -54,7 +51,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (receivedEl) receivedEl.addEventListener('change', calculateActiveConversionRate);
     if (homeEl) homeEl.addEventListener('change', () => {
         updateBaseCurrencyConfigSymbols();
-        calculateActiveConversionRate();
     });
 });
 
@@ -393,17 +389,3 @@ document.querySelectorAll('.curr-btn').forEach(btn => {
 });
 window.onresize = () => { resizeCanvas(); updateMatrixData(); };
 
-// =========================================================================
-// 🚀 CLEANED: ADAPTIVE DOM INITIALIZATION WITHOUT LIVE FEED CALLS
-// =========================================================================
-document.addEventListener('DOMContentLoaded', () => {
-    const homeEl = document.getElementById('baseCurrencyConfig');
-    
-    if (homeEl) {
-        homeEl.addEventListener('change', () => {
-            if (typeof updateBaseCurrencyConfigSymbols === 'function') {
-                updateBaseCurrencyConfigSymbols();
-            }
-        });
-    }
-});
