@@ -44,14 +44,23 @@ async function fetchLiveExchangeRates(baseCurrency) {
 
 
 // Bind change tracking event listeners to both components natively
+// Bind change tracking event listeners to both components natively
 document.addEventListener('DOMContentLoaded', () => {
     const receivedEl = document.getElementById('formCurrency');
     const homeEl = document.getElementById('baseCurrencyConfig');
-    
-    if (receivedEl) receivedEl.addEventListener('change');
-    if (homeEl) homeEl.addEventListener('change', () => {
-        updateBaseCurrencyConfigSymbols();
-    });
+
+    // FIXED: Passed a clean arrow function to handle the change event safely
+    if (receivedEl) {
+        receivedEl.addEventListener('change', () => { 
+            if (typeof updateMatrixData === 'function') updateMatrixData(); 
+        });
+    }
+    if (homeEl) {
+        homeEl.addEventListener('change', () => {
+            if (typeof updateBaseCurrencyConfigSymbols === 'function') updateBaseCurrencyConfigSymbols();
+            if (typeof updateMatrixData === 'function') updateMatrixData();
+        });
+    }
 });
 
 // Automatically balances currency signs and passes metrics down to target tax variables
