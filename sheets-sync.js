@@ -88,7 +88,7 @@ async function dispatchLedgerTransactionBundle() {
     const client = document.getElementById('formClient').value.trim() || "Ledger Entry";
     const amtIncome = parseFloat(document.getElementById('formAmount').value) || 0;
     
-    // Convert percentage entry cleanly to numeric scale coefficient (e.g., 3 -> 0.03)
+    // Clean percentage conversions
     const rawFeeVal = parseFloat(document.getElementById('formFees').value) || 0;
     const feePercentage = rawFeeVal / 100;
 
@@ -122,17 +122,17 @@ async function dispatchLedgerTransactionBundle() {
     const exactCashAmt = parseFloat(document.getElementById('formExactCashAmt').value) || 0;
     const customRateVal = parseFloat(document.getElementById('formCustomRateVal').value) || 1;
 
-    // STABLE UNIFIED PAYLOAD DATA OBJECT
+    // LOCKED STRUCTURAL INGESTION OBJECT KEYS MAP
     const payload = {
         data: {
             "Date": date,
             "Client Name": client,
             "Invoice Amount": amtIncome,
             "Currency Received": subIncome,
-            "Withholding Tax Deducted": isWithholding,
-            "Withholding Amount": isWithholding === "Yes" || isWithholding === "YES" ? amtTax : 0,
-            "Platform Fees Deducted": isPlatformFeesDeducted,
-            "Platform Percentage": feePercentage, // FIXED: Sends percentage coefficient directly
+            "Withholding Tax Deducted": (isWithholding.toUpperCase() === "YES") ? "YES" : "NO",
+            "Withholding Amount": amtTax, 
+            "Platform Fees Deducted": (isPlatformFeesDeducted.toUpperCase() === "YES") ? "YES" : "NO",
+            "Platform Fees": feePercentage, 
             "Business Expenses": amtExpense,
             "Conversion Mode": convMode,
             "Exact Cash Input": exactCashAmt,
