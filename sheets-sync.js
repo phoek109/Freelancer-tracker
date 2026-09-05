@@ -73,6 +73,7 @@ async function updateBaseCurrencySettingsInSheet() {
         console.log("Settings synchronization pipeline error.");
     }
 }
+
 async function dispatchLedgerTransactionBundle() {
     const endpoint = apiInput.value.trim();
     const statusText = document.getElementById('syncStatus');
@@ -83,33 +84,31 @@ async function dispatchLedgerTransactionBundle() {
         return; 
     }
 
-    // ==========================================
-    // CRUCIAL ALIGNMENT AREA: REAL HTML TARGETS
-    // ==========================================
+    // Core validation and input harvesting parameters
     const date = document.getElementById('formDate').value;
     const client = document.getElementById('formClient').value.trim() || "Ledger Entry";
-    
-    // Core income input streams
     const amtIncome = parseFloat(document.getElementById('formAmount').value) || 0;
-    const feeIncome = (parseFloat(document.getElementById('formFees').value) || 0) / 100;
+    const feePercentage = (parseFloat(document.getElementById('formFees').value) || 0) / 100;
     const subIncome = document.getElementById('formCurrency').value;
-
-    // Expense and withholding streams
     const amtExpense = parseFloat(document.getElementById('formExpenses').value) || 0;
     const amtTax = parseFloat(document.getElementById('formWithholdingAmt').value) || 0;
     const isWithholding = document.getElementById('formWithholdingToggle').value;
-    // ==========================================
+    
+    // Harvest the newly integrated Platform Fees toggle logic safely
+    const platformToggleEl = document.getElementById('formPlatformFeesToggle');
+    const isPlatformFeesDeducted = platformToggleEl ? platformToggleEl.value : (feePercentage > 0 ? "Yes" : "No");
 
-    // Validation check: ensure at least one numerical amount field has data
+    // Block empty payload operations immediately
     if (amtIncome === 0 && amtExpense === 0 && amtTax === 0) {
         statusText.style.color = '#f87171'; 
         statusText.innerText = "Error: Input an amount in at least one category pipeline!"; 
         return; 
     }
 
-    // =========================================================================
-    // 🚀 VISUAL LOADING STATE: BUTTON SWITCHES TO "SAVING..." WITH NEON GREEN ACCENT
-    // =========================================================================
+    // Process local screen calculations for true absolute fee currency conversions
+    const calculatedPlatformFeeCurrencyAmount = amtIncome * feePercentage;
+
+    // UI Loading Transformation Lock
     const submitBtn = document.getElementById('btnSubmit');
     const originalBtnText = submitBtn.innerText;
     
@@ -121,17 +120,16 @@ async function dispatchLedgerTransactionBundle() {
 
     statusText.style.color = '#eab308'; 
     statusText.innerText = "Streaming records to Google Cloud...";
+    
     const totals = window.localHistoryTotals;
 
-    // Reset fallback mock demo records upon first true user log stream
     if (totals.gross === 0 && Object.keys(totals.breakdownValues).length <= 7) {
         totals.gross = 0; 
         totals.breakdownValues = {};
     }
 
-    // Process local screen calculations for all active channels in parallel
     if (amtIncome > 0) {
-        totals.gross += amtIncome * (1 - feeIncome);
+        totals.gross += amtIncome * (1 - feePercentage);
         if (!totals.breakdownValues[subIncome]) totals.breakdownValues[subIncome] = 0;
         totals.breakdownValues[subIncome] += amtIncome;
     }
@@ -142,35 +140,28 @@ async function dispatchLedgerTransactionBundle() {
         totals.taxWithheld += amtTax;
     }
 
-    // =========================================================================
-    // 🚀 UPGRADED PAYLOAD STAGING DATA BUNDLE FOR BACK-TRACING MATH ENGINE
-    // =========================================================================
-    
-    // 1. Fetch our newly introduced conversion portal option metrics
+    // Dual-Mode Option Portal Parameters Extraction
     const convMode = document.getElementById('formConversionMode').value;
     const exactCashAmt = parseFloat(document.getElementById('formExactCashAmt').value) || 0;
     const customRateVal = parseFloat(document.getElementById('formCustomRateVal').value) || 1;
 
-// Calculate absolute fee value locally inside the frontend transaction engine wrapper
-const calculatedPlatformFeeCurrencyAmount = amtIncome * feeIncome;
-
-const payload = {
-    data: {
-        "Date": date,
-        "Client Name": client,
-        "Invoice Amount": amtIncome,
-        "Currency Recieved": subIncome,
-        "Withholding Tax Deducted?": isWithholding,
-        "Withholding Amount": isWithholding === "Yes" ? amtTax : 0,
-        //  FIXES PAYLOAD DESYNC REGIONS:
-        "Platform Fees Deducted?": feeIncome > 0 ? "Yes" : "No",
-        "Platform Fees": calculatedPlatformFeeCurrencyAmount,
-        "Business Expenses": amtExpense,
-        "Conversion Mode": convMode,
-        "Exact Cash Input": exactCashAmt,
-        "Custom Rate Input": customRateVal
-    }
-};
+    // Package payload structure to exactly match 15-Column Code.gs requirements
+    const payload = {
+        data: {
+            "Date": date,
+            "Client Name": client,
+            "Invoice Amount": amtIncome,
+            "Currency Recieved": subIncome,
+            "Withholding Tax Deducted?": isWithholding,
+            "Withholding Amount": isWithholding === "Yes" ? amtTax : 0,
+            "Platform Fees Deducted?": isPlatformFeesDeducted,
+            "Platform Fees": calculatedPlatformFeeCurrencyAmount,
+            "Business Expenses": amtExpense,
+            "Conversion Mode": convMode,
+            "Exact Cash Input": exactCashAmt,
+            "Custom Rate Input": customRateVal
+        }
+    };
 
     try {
         const response = await fetch(endpoint, { 
@@ -183,21 +174,18 @@ const payload = {
             statusText.style.color = '#4ade80'; 
             statusText.innerText = "✔ Success! Row entry streamed to Google Sheets.";
             
-            // =========================================================================
-            // 🚀 INTERCEPT THE DYNAMIC BREAKDOWN PACKET FROM THE DATABASE BACKEND
-            // =========================================================================
             if (result.summary) {
                 window.liveSheetMetrics = result.summary;
                 window.localHistoryTotals = result.summary.totals;
             }
-            // =========================================================================
 
-            // Clear input fields cleanly matching our verified layout IDs
+            // Clear Input Form Fields cleanly matching our verified layout IDs
             document.getElementById('formAmount').value = '';
             document.getElementById('formFees').value = '0';
             document.getElementById('formExpenses').value = '0';
             document.getElementById('formWithholdingAmt').value = '0';
             document.getElementById('formClient').value = '';
+            if (platformToggleEl) platformToggleEl.value = 'No';
             
             if (typeof updateMatrixData === 'function') updateMatrixData();
             extractLogsFromActiveSession();
@@ -208,7 +196,6 @@ const payload = {
         statusText.style.color = '#f87171'; 
         statusText.innerText = "Connection Failed. Check your Deployment Web App URL.";
     } finally {
-        // CLEANUP: Release button interaction blocks and restore styles
         submitBtn.disabled = false;
         submitBtn.innerText = originalBtnText;
         submitBtn.style.borderColor = "";
@@ -216,6 +203,7 @@ const payload = {
         submitBtn.style.boxShadow = "";
     }
 }
+
 // =========================================================================
 // 🚀 UPGRADED: TRUE ZERO-HARDCODING DROPDOWN LOADER WITH ANIMATED SHIMMER
 // =========================================================================

@@ -20,111 +20,106 @@
             <div class="sidebar-header">ADD INCOME ENTRY</div>
             <div class="form-grid">
                 
+                <!-- COLUMN A: Date -->
                 <div class="input-group">
-                    <label>Date</label>
+                    <label>Date (Col A)</label>
                     <input type="date" id="formDate">
                 </div>
                 
+                <!-- COLUMN B: Client Name -->
                 <div class="input-group">
-                    <label>Client Name</label>
+                    <label>Client Name (Col B)</label>
                     <input type="text" id="formClient" placeholder="e.g., Acme Corp">
                 </div>
                 
+                <!-- COLUMN C: Invoice Amount -->
                 <div class="input-group">
-                    <label>Invoice Amount</label>
+                    <label>Invoice Amount (Col C)</label>
                     <input type="number" id="formAmount" placeholder="0.00">
                 </div>
                 
+                <!-- COLUMN D: Currency Received -->
                 <div class="input-group">
-                    <label>Currency Received</label>
+                    <label>Currency Received (Col D)</label>
                     <select id="formCurrency" class="bright-input">
                         <option value="">Loading live markets...</option>
                     </select>
                 </div>
 
-                <!-- ========================================================================= -->
-                <!-- 🚀 UPGRADED: DUAL-MODE TRUE CONVERSION INPUT PORTAL                         -->
-                <!-- ========================================================================= -->
+                <!-- COLUMN E: Withholding Tax Deducted? -->
                 <div class="input-group">
-                    <label>Conversion Input Mode</label>
-                    <select id="formConversionMode" class="bright-input" onchange="toggleConversionInputFields()">
-                        <option value="exact_cash" selected>Option A: Enter Exact Cash Received</option>
+                    <label>Withholding Tax Deducted? (Col E)</label>
+                    <select id="formWithholdingToggle">
+                        <option value="No" selected>No</option>
+                        <option value="Yes">Yes</option>
+                    </select>
+                </div>
+                
+                <!-- COLUMN F: Withholding Amount -->
+                <div class="input-group">
+                    <label>Withholding Amount In Client Currency (Col F)</label>
+                    <input type="number" id="formWithholdingAmt" placeholder="0.00" value="0">
+                </div>
+
+                <!-- COLUMN G: Platform Fees Deducted? -->
+                <div class="input-group">
+                    <label>Platform Fees Deducted? (Col G)</label>
+                    <select id="formPlatformFeesToggle" class="bright-input">
+                        <option value="No" selected>No</option>
+                        <option value="Yes">Yes</option>
+                    </select>
+                </div>
+                
+                <!-- COLUMN H: Platform Fees (%) -->
+                <div class="input-group">
+                    <label>Platform Fees Percentage % (Col H)</label>
+                    <input type="number" id="formFees" placeholder="e.g., 5" value="0">
+                </div>
+
+                <!-- COLUMN I, J, K: Conversion Logic Hub Controls -->
+                <div class="input-group" style="border-left: 2px dashed #1e293b; padding-left: 10px; margin: 15px 0;">
+                    <label style="color: #38bdf8; font-weight: 700;">FX CONVERSION PORTAL (Cols I, J, K)</label>
+                    <select id="formConversionMode" class="bright-input" onchange="toggleConversionInputFields()" style="margin-top: 6px;">
+                        <option value="exact_cash" selected>Option A: Enter Exact Cash Landed</option>
                         <option value="custom_rate">Option B: Enter Custom Exchange Rate</option>
                     </select>
                 </div>
 
-                <!-- Toggle Container 1: Exact Cash Received -->
+                <!-- Option A Sub-Field (Feeds Col K Cash directly, Back-Traces Col J) -->
                 <div class="input-group" id="groupExactCash">
-                    <label>Exact Cash Received (In Home Currency)</label>
+                    <label>Exact Cash Arrived In Home Currency</label>
                     <input type="number" id="formExactCashAmt" placeholder="e.g., 4232.00" value="0">
                 </div>
 
-                <!-- Toggle Container 2: Custom Exchange Rate (Hidden by default) -->
+                <!-- Option B Sub-Field (Feeds Col J FX Rate directly, Multiplies Col K) -->
                 <div class="input-group" id="groupCustomRate" style="display: none;">
                     <label>Custom Bank Exchange Rate</label>
-                    <input type="number" id="formCustomRateVal" placeholder="e.g., 0.9152" step="0.0001" value="1">
+                    <input type="number" id="formCustomRateVal" placeholder="e.g., 1.0850" step="0.0001" value="1">
+                </div>
+                
+                <!-- COLUMN L: Business Expenses -->
+                <div class="input-group">
+                    <label>Business Expenses In Home Currency (Col L)</label>
+                    <input type="number" id="formExpenses" placeholder="0.00" value="0">
                 </div>
 
+                <!-- GLOBAL UTILITY BACKEND METRIC CONFIGURATORS -->
+                <div class="sidebar-header" style="margin-top: 15px;">GLOBAL BASE VALUES</div>
+
                 <div class="input-group">
-                    <label>Home Currency</label>
+                    <label>System Home Currency Base</label>
                     <select id="baseCurrencyConfig" class="bright-input" onchange="updateBaseCurrencySettingsInSheet()">
                         <option value="">Loading base targets...</option>
                     </select>
                 </div>
 
                 <div class="input-group">
-                    <label>Tax Rate (%)</label>
+                    <label>Global Tax Table Rate (%)</label>
                     <input type="number" id="baseTaxRateConfig" value="0" class="bright-input" oninput="updateBaseCurrencySettingsInSheet()">
                 </div>
-                
-                <div class="input-group">
-                    <label>Platform Fees (%)</label>
-                    <input type="number" id="formFees" placeholder="e.g., 5" value="0">
-                </div>
-                
-                <div class="input-group">
-                    <label>Business Expenses</label>
-                    <input type="number" id="formExpenses" placeholder="0.00" value="0">
-                </div>
-                
-                <div class="input-group">
-                    <label>Withholding Tax Deducted?</label>
-                    <select id="formWithholdingToggle">
-                        <option value="No">No</option>
-                        <option value="Yes">Yes</option>
-                    </select>
-                </div>
-                
-                <div class="input-group">
-                    <label>Withholding Amount (In Client Currency)</label>
-                    <input type="number" id="formWithholdingAmt" placeholder="0.00" value="0">
-                </div>
-                
-                <button id="btnSubmit" onclick="dispatchLedgerTransactionBundle()">STREAM TO SHEET</button>
-                <p id="syncStatus" class="status-text"></p>
-                
-                <!-- ========================================================================= -->
-                <!-- 🔎 NEW: SEARCH, FILTER, AND HISTORICAL TRANSACTION LOG VIEW INTERFACE     -->
-                <!-- ========================================================================= -->
-                <div class="sidebar-header" style="margin-top:24px;">TRANSACTION DATABASE LOGS</div>
-                
-                <div class="log-controls">
-                    <input type="text" id="logSearchInput" placeholder="Search client or currency..." oninput="renderHistoricalSidebarLogs()">
-                    <select id="logSortSelect" onchange="renderHistoricalSidebarLogs()" class="bright-input" style="margin-top: 8px;">
-                        <option value="date_desc">Date: Newest First</option>
-                        <option value="date_asc">Date: Oldest First</option>
-                        <option value="amt_desc">Amount: Highest First</option>
-                        <option value="client_asc">Client: A-Z</option>
-                    </select>
-                </div>
-
-                <!-- Dynamic injection targets for cloud database rows tracking array -->
-                <div id="sidebarLogContainer" class="sidebar-records-scroll-tray">
-                    <div class="empty-tray-text">No records streamed yet.</div>
-                </div>
-
 
             </div> <!-- Close form-grid -->
+
         </div> <!-- Close sidebar -->
 
         <!-- RIGHT PANEL: Matrix Simulation Dashboard -->
