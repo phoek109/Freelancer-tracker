@@ -87,22 +87,24 @@ async function dispatchLedgerTransactionBundle() {
     const date = document.getElementById('formDate').value;
     const client = document.getElementById('formClient').value.trim() || "Ledger Entry";
     const amtIncome = parseFloat(document.getElementById('formAmount').value) || 0;
-    const feePercentage = (parseFloat(document.getElementById('formFees').value) || 0) / 100;
+    
+    // Convert percentage entry cleanly to numeric scale coefficient (e.g., 3 -> 0.03)
+    const rawFeeVal = parseFloat(document.getElementById('formFees').value) || 0;
+    const feePercentage = rawFeeVal / 100;
+
     const subIncome = document.getElementById('formCurrency').value;
     const amtExpense = parseFloat(document.getElementById('formExpenses').value) || 0;
     const amtTax = parseFloat(document.getElementById('formWithholdingAmt').value) || 0;
     const isWithholding = document.getElementById('formWithholdingToggle').value;
     
     const platformToggleEl = document.getElementById('formPlatformFeesToggle');
-    const isPlatformFeesDeducted = platformToggleEl ? platformToggleEl.value : (feePercentage > 0 ? "Yes" : "No");
+    const isPlatformFeesDeducted = platformToggleEl ? platformToggleEl.value : (feePercentage > 0 ? "YES" : "NO");
 
     if (amtIncome === 0 && amtExpense === 0 && amtTax === 0) {
         statusText.style.color = '#f87171'; 
         statusText.innerText = "Error: Input an amount in at least one category pipeline!"; 
         return; 
     }
-
-    const calculatedPlatformFeeCurrencyAmount = amtIncome * feePercentage;
 
     const submitBtn = document.getElementById('btnSubmit');
     const originalBtnText = submitBtn.innerText;
@@ -128,9 +130,9 @@ async function dispatchLedgerTransactionBundle() {
             "Invoice Amount": amtIncome,
             "Currency Received": subIncome,
             "Withholding Tax Deducted": isWithholding,
-            "Withholding Amount": isWithholding === "Yes" ? amtTax : 0,
+            "Withholding Amount": isWithholding === "Yes" || isWithholding === "YES" ? amtTax : 0,
             "Platform Fees Deducted": isPlatformFeesDeducted,
-            "Platform Fees": calculatedPlatformFeeCurrencyAmount,
+            "Platform Percentage": feePercentage, // FIXED: Sends percentage coefficient directly
             "Business Expenses": amtExpense,
             "Conversion Mode": convMode,
             "Exact Cash Input": exactCashAmt,
