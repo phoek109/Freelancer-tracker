@@ -84,7 +84,6 @@ async function dispatchLedgerTransactionBundle() {
         return; 
     }
 
-    // Core validation and input harvesting parameters
     const date = document.getElementById('formDate').value;
     const client = document.getElementById('formClient').value.trim() || "Ledger Entry";
     const amtIncome = parseFloat(document.getElementById('formAmount').value) || 0;
@@ -94,21 +93,17 @@ async function dispatchLedgerTransactionBundle() {
     const amtTax = parseFloat(document.getElementById('formWithholdingAmt').value) || 0;
     const isWithholding = document.getElementById('formWithholdingToggle').value;
     
-    // Harvest the newly integrated Platform Fees toggle logic safely
     const platformToggleEl = document.getElementById('formPlatformFeesToggle');
     const isPlatformFeesDeducted = platformToggleEl ? platformToggleEl.value : (feePercentage > 0 ? "Yes" : "No");
 
-    // Block empty payload operations immediately
     if (amtIncome === 0 && amtExpense === 0 && amtTax === 0) {
         statusText.style.color = '#f87171'; 
         statusText.innerText = "Error: Input an amount in at least one category pipeline!"; 
         return; 
     }
 
-    // Process local screen calculations for true absolute fee currency conversions
     const calculatedPlatformFeeCurrencyAmount = amtIncome * feePercentage;
 
-    // UI Loading Transformation Lock
     const submitBtn = document.getElementById('btnSubmit');
     const originalBtnText = submitBtn.innerText;
     
@@ -120,41 +115,21 @@ async function dispatchLedgerTransactionBundle() {
 
     statusText.style.color = '#eab308'; 
     statusText.innerText = "Streaming records to Google Cloud...";
-    
-    const totals = window.localHistoryTotals;
 
-    if (totals.gross === 0 && Object.keys(totals.breakdownValues).length <= 7) {
-        totals.gross = 0; 
-        totals.breakdownValues = {};
-    }
-
-    if (amtIncome > 0) {
-        totals.gross += amtIncome * (1 - feePercentage);
-        if (!totals.breakdownValues[subIncome]) totals.breakdownValues[subIncome] = 0;
-        totals.breakdownValues[subIncome] += amtIncome;
-    }
-    if (amtExpense > 0) {
-        totals.expenses += amtExpense;
-    }
-    if (amtTax > 0 && isWithholding === "Yes") {
-        totals.taxWithheld += amtTax;
-    }
-
-    // Dual-Mode Option Portal Parameters Extraction
     const convMode = document.getElementById('formConversionMode').value;
     const exactCashAmt = parseFloat(document.getElementById('formExactCashAmt').value) || 0;
     const customRateVal = parseFloat(document.getElementById('formCustomRateVal').value) || 1;
 
-    // Package payload structure to exactly match 15-Column Code.gs requirements
+    // STABLE UNIFIED PAYLOAD DATA OBJECT
     const payload = {
         data: {
             "Date": date,
             "Client Name": client,
             "Invoice Amount": amtIncome,
-            "Currency Recieved": subIncome,
-            "Withholding Tax Deducted?": isWithholding,
+            "Currency Received": subIncome,
+            "Withholding Tax Deducted": isWithholding,
             "Withholding Amount": isWithholding === "Yes" ? amtTax : 0,
-            "Platform Fees Deducted?": isPlatformFeesDeducted,
+            "Platform Fees Deducted": isPlatformFeesDeducted,
             "Platform Fees": calculatedPlatformFeeCurrencyAmount,
             "Business Expenses": amtExpense,
             "Conversion Mode": convMode,
@@ -162,7 +137,6 @@ async function dispatchLedgerTransactionBundle() {
             "Custom Rate Input": customRateVal
         }
     };
-
 
     try {
         const response = await fetch(endpoint, { 
@@ -180,7 +154,6 @@ async function dispatchLedgerTransactionBundle() {
                 window.localHistoryTotals = result.summary.totals;
             }
 
-            // Clear Input Form Fields cleanly matching our verified layout IDs
             document.getElementById('formAmount').value = '';
             document.getElementById('formFees').value = '0';
             document.getElementById('formExpenses').value = '0';
