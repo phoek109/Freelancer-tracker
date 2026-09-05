@@ -85,30 +85,48 @@ async function dispatchLedgerTransactionBundle() {
     
     if (!endpoint) {
         statusText.style.color = '#f87171'; 
-        statusText.innerText = "Error: Paste your Google Web App URL first!"; 
+        statusText.innerText = "🛑 Error: Paste your Google Web App URL first!"; 
         return; 
     }
 
-    // Capture Currency selector field safely
     const currencySelectEl = document.getElementById('formCurrency');
     const subIncome = currencySelectEl ? currencySelectEl.value.trim() : "";
 
     if (!subIncome || subIncome === "" || subIncome.includes("COMPUTING") || subIncome.includes("Loading")) {
         statusText.style.color = '#f87171';
-        statusText.innerText = "🛑 Input Error: Currency field cannot be left blank!";
+        statusText.innerText = "🛑 Blocked: Wait for currency selection list to load!";
         return;
     }
 
     const date = document.getElementById('formDate').value;
-    const client = document.getElementById('formClient').value.trim() || "Ledger Entry";
+    const client = document.getElementById('formClient').value.trim();
     const amtIncome = parseFloat(document.getElementById('formAmount').value) || 0;
+    
     const rawFeeVal = parseFloat(document.getElementById('formFees').value) || 0;
     const feePercentage = rawFeeVal / 100;
+
     const amtExpense = parseFloat(document.getElementById('formExpenses').value) || 0;
     const amtTax = parseFloat(document.getElementById('formWithholdingAmt').value) || 0;
     const isWithholding = document.getElementById('formWithholdingToggle').value;
-    const isPlatformFeesDeducted = document.getElementById('formPlatformFeesToggle').value;
+    const platformToggleEl = document.getElementById('formPlatformFeesToggle');
+    const isPlatformFeesDeducted = platformToggleEl ? platformToggleEl.value : (feePercentage > 0 ? "YES" : "NO");
 
+    // 🔎 EXTRACT CONVERSION PORTAL MODE VALUES DIRECTLY FROM SIDEBAR INPUTS
+    const convMode = document.getElementById('formConversionMode').value;
+    const exactCashAmt = parseFloat(document.getElementById('formExactCashAmt').value) || 0;
+    const customRateVal = parseFloat(document.getElementById('formCustomRateVal').value) || 1;
+
+    // 🔎 EXTRACT GLOBAL BASE SETTINGS DIRECTLY FROM CONFIG INPUTS
+    const globalBaseCurrency = document.getElementById('baseCurrencyConfig').value;
+    const globalTaxTableRate  = (parseFloat(document.getElementById('baseTaxRateConfig').value) || 0) / 100;
+
+    if (!date || !client || (amtIncome <= 0 && amtExpense === 0)) {
+        statusText.style.color = '#f87171';
+        statusText.innerText = "🛑 Blocked: Fill out all required fields!";
+        return;
+    }
+
+    // RIGID SECURE INGESTION STRUCTURAL UNIFIED PAYLOAD BUNDLE
     const payload = {
         data: {
             "Date": date,
@@ -119,26 +137,17 @@ async function dispatchLedgerTransactionBundle() {
             "Withholding Amount": amtTax, 
             "Platform Fees Deducted": isPlatformFeesDeducted.toUpperCase().trim(),
             "Platform Percentage": feePercentage, 
-            "Business Expenses": amtExpense
+            "Business Expenses": amtExpense,
+            // FIXED: Added missing conversion and global configurations to the data object
+            "Conversion Mode": convMode,
+            "Exact Cash Input": exactCashAmt,
+            "Custom Rate Input": customRateVal,
+            "Base Currency Config": globalBaseCurrency,
+            "Global Tax Config": globalTaxTableRate
         }
     };
 
-    // =========================================================================
-    // 🔎 FRONT-END LOGCAT ENGINE DIAGNOSTIC TRACE
-    // =========================================================================
-    console.log("=================================================================");
-    console.log("⚡ FRONT-END LOGCAT TRIGGERED: PRE-TRANSMISSION PAYLOAD DETECTED ⚡");
-    console.log("=================================================================");
-    console.log("📅 Extracted Date: ", payload.data["Date"]);
-    console.log("👤 Client Name:   ", payload.data["Client Name"]);
-    console.log("💰 Invoice Cash:   ", payload.data["Invoice Amount"]);
-    console.log("💱 Selected Coin:  ", payload.data["Currency Received"]);
-    console.log("📉 Tax Toggle:    ", payload.data["Withholding Tax Deducted"]);
-    console.log("💸 Withhold Value: ", payload.data["Withholding Amount"]);
-    console.log("🛠️ Platform Pct:   ", payload.data["Platform Percentage"]);
-    console.log("🎒 Biz Expenses:  ", payload.data["Business Expenses"]);
-    console.log("📦 FULL JSON PAYLOAD ARRAY OVERVIEW:\n", JSON.stringify(payload, null, 2));
-    console.log("=================================================================");
+    console.log("⚡ FRONT-END LOGCAT PAYLOAD TRANSMISSION BUNDLE:\n", JSON.stringify(payload, null, 2));
 
     const submitBtn = document.getElementById('btnSubmit');
     submitBtn.disabled = true;
@@ -151,19 +160,24 @@ async function dispatchLedgerTransactionBundle() {
         });
         const result = await response.json();
 
-        // Log what the server replied with
         console.log("🛰️ SERVER RESPONSE RECEIVED: ", JSON.stringify(result, null, 2));
 
         if (result.status === "success") {
             statusText.style.color = '#4ade80'; 
             statusText.innerText = "✔ Success! Inputs verified and logged.";
+            
+            document.getElementById('formAmount').value = '';
+            document.getElementById('formFees').value = '0';
+            document.getElementById('formExpenses').value = '0';
+            document.getElementById('formWithholdingAmt').value = '0';
+            document.getElementById('formClient').value = '';
         } else {
             throw new Error(result.message);
         }
     } catch (err) {
         console.error("🚨 TRANSMISSION CRASH LOG: ", err);
         statusText.style.color = '#f87171'; 
-        statusText.innerText = "Streaming failed. Check logcat traces inside F12 browser console panel!";
+        statusText.innerText = "Streaming failed. Check connection parameter inputs!";
     } finally {
         submitBtn.disabled = false;
         submitBtn.innerText = "STREAM TO SHEET";
