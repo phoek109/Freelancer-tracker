@@ -163,6 +163,7 @@ async function dispatchLedgerTransactionBundle() {
         }
     };
 
+
     try {
         const response = await fetch(endpoint, { 
             method: 'POST', 
