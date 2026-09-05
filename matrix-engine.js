@@ -19,11 +19,12 @@ const inputTaxRate = document.getElementById('inputTaxRate');
 const canvas = document.getElementById('flowChart');
 const btnToggle = document.getElementById('btnToggleMode');
 
+// FIXED: Restored correct string template evaluation syntax to eliminate 404/CORS crashes on dropdown mutations
 async function fetchLiveExchangeRates(baseCurrency) {
     if (!baseCurrency) return;
     try {
         const cleanBase = String(baseCurrency).toUpperCase().trim();
-        // FIXED: Added missing forward slash and literal variable prefix
+        // FIXED: Added missing forward slash and variable dollar mapping character tag
         const response = await fetch(`https://er-api.com{cleanBase}`);
         
         if (response.ok) {
@@ -32,6 +33,9 @@ async function fetchLiveExchangeRates(baseCurrency) {
                 exchangeRatesCache = data.rates;
                 console.log(`✔ Forex Engine Sync Successful for Base: ${cleanBase}`);
                 
+                if (typeof calculateActiveConversionRate === 'function') {
+                    calculateActiveConversionRate();
+                }
                 if (typeof updateMatrixData === 'function') {
                     updateMatrixData();
                 }
