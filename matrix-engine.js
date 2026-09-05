@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const receivedEl = document.getElementById('formCurrency');
     const homeEl = document.getElementById('baseCurrencyConfig');
     
-    if (receivedEl) receivedEl.addEventListener('change', calculateActiveConversionRate);
+    if (receivedEl) receivedEl.addEventListener('change');
     if (homeEl) homeEl.addEventListener('change', () => {
         updateBaseCurrencyConfigSymbols();
     });
