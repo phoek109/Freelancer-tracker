@@ -25,24 +25,27 @@ const btnToggle = document.getElementById('btnToggleMode');
 // 🚀 FIXED: RESTORED CORRECT EXCHANGE RATE API ROUTE PATH & SYNTAX
 // =========================================================================
 async function fetchLiveExchangeRates(baseCurrency) {
+    if (!baseCurrency) return;
     try {
-        // FIXED: Added proper version directories and variable interpolation syntax
-        const response = await fetch(`https://er-api.com{baseCurrency}`);
+        const cleanBase = String(baseCurrency).toUpperCase().trim();
+        const response = await fetch(`https://er-api.com{cleanBase}`);
         
         if (response.ok) {
             const data = await response.json();
-            exchangeRatesCache = data.rates;
-            
-            // Re-evaluates conversion labels instantly with fresh live production data!
-            if (typeof calculateActiveConversionRate === 'function') {
-                calculateActiveConversionRate();
-            }
-            if (typeof updateMatrixData === 'function') {
-                updateMatrixData();
+            if (data && data.rates) {
+                exchangeRatesCache = data.rates;
+                console.log(`✔ Forex Engine Sync Successful for Base: ${cleanBase}`);
+                
+                if (typeof calculateActiveConversionRate === 'function') {
+                    calculateActiveConversionRate();
+                }
+                if (typeof updateMatrixData === 'function') {
+                    updateMatrixData();
+                }
             }
         }
     } catch (e) {
-        console.log("Forex API offline. Falling back to local tracking variables cache.");
+        console.warn("Forex Cloud Matrix Offline. Dropping into local recovery variables cache.", e);
     }
 }
 
