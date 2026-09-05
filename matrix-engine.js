@@ -182,32 +182,31 @@ function updateMatrixData() {
     let gross, expRatio, taxRate;
     let incomePct, expensePct, taxPct;
     
+    const totals = window.localHistoryTotals;
     const sheetMetrics = window.liveSheetMetrics || {
-        activeRatio: 0.50,       // Default 50% split fallback metric balance
-        bizExpRatio: 0.50,       // Default 50% split fallback metric balance
-        incomeTaxRatio: 0.50,    // Default 50% split fallback metric balance
+        activeRatio: 0.65, bizExpRatio: 0.60, incomeTaxRatio: 0.80,
         totals: { gross: 0, expenses: 0, taxWithheld: 0 }
     };
 
-
     if (isLiveTrackingMode) {
-        // 1. LIVE MODE: Lock to real data coming from Google Sheets
+        // 1. LIVE MODE: Read true metric parameters from historical totals
         gross = totals.gross;
         expRatio = gross > 0 ? (totals.expenses / gross) : 0;
         taxRate = parseFloat(inputTaxRate.value) / 100;
 
-        incomePct = sheetMetrics.activeRatio;
-        expensePct = sheetMetrics.bizExpRatio;
-        taxPct = sheetMetrics.incomeTaxRatio;
+        incomePct = sheetMetrics.activeRatio || 0.65;
+        expensePct = sheetMetrics.bizExpRatio || 0.60;
+        taxPct = sheetMetrics.incomeTaxRatio || 0.80;
 
-        // Keep sliders updated with live backend values safely
+        //  FIXES INPUT OVERWRITE LOGIC:
+        // Only mirror data down to your PREDICTIVE range sliders, NEVER touch the sidebar form inputs!
         if (inputRevenue) inputRevenue.value = gross;
         if (inputRatio) inputRatio.value = Math.round(expRatio * 100);
         if (inputIncomeSplit) inputIncomeSplit.value = Math.round(incomePct * 100);
         if (inputExpenseSplit) inputExpenseSplit.value = Math.round(expensePct * 100);
         if (inputTaxSplit) inputTaxSplit.value = Math.round(taxPct * 100);
     } else {
-        // 2. PREDICTIVE MODE: User shapes the future math with the slider panel
+        // 2. PREDICTIVE MODE: Shape variables directly using the slider positions
         gross = parseFloat(inputRevenue.value) || 0;
         expRatio = (parseFloat(inputRatio.value) || 0) / 100;
         taxRate = (parseFloat(inputTaxRate.value) || 0) / 100;
