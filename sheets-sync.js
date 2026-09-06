@@ -415,16 +415,95 @@ function extractLogsFromActiveSession() {
     }
 }
 
+// Re-maps your form properties array fields dynamically
+function toggleSidebarFormEditingState(shouldLock) {
+    const inputIds = [
+        'formDate', 'formClient', 'formAmount', 'formCurrency', 
+        'formWithholdingToggle', 'formWithholdingAmt', 
+        'formPlatformFeesToggle', 'formFees', 
+        'formConversionMode', 'formExactCashAmt', 'formCustomRateVal', 
+        'formExpenses'
+    ];
+    
+    inputIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.disabled = shouldLock;
+            // Add visual cue highlighting uneditable status profiles
+            if (shouldLock) {
+                el.style.opacity = "0.6";
+                el.style.cursor = "not-allowed";
+                el.style.backgroundColor = "#0f172a";
+            } else {
+                el.style.opacity = "";
+                el.style.cursor = "";
+                el.style.backgroundColor = "";
+            }
+        }
+    });
+
+    const submitBtn = document.getElementById('btnSubmit');
+    if (submitBtn) {
+        if (shouldLock) {
+            submitBtn.disabled = true;
+            submitBtn.innerText = "LOCKED VIEW";
+            submitBtn.style.borderColor = "#a855f7";
+            submitBtn.style.color = "#a855f7";
+            submitBtn.style.boxShadow = "none";
+        } else {
+            submitBtn.disabled = false;
+            submitBtn.innerText = "STREAM TO SHEET";
+            submitBtn.style.borderColor = "";
+            submitBtn.style.color = "";
+        }
+    }
+}
+
 function selectAndPinHistoricalLogCard(index) {
     if (window.currentlyPinnedLogIndex === index) {
+        // SCENARIO A: Release pin lock and restore standard entry states
         window.currentlyPinnedLogIndex = null;
         console.log("Database drill-down lock released. Restoring active tracking profiles.");
+        
+        // Clean out form text blocks safely
+        document.getElementById('formClient').value = '';
+        document.getElementById('formAmount').value = '';
+        document.getElementById('formWithholdingAmt').value = '0';
+        document.getElementById('formFees').value = '0';
+        document.getElementById('formExpenses').value = '0';
+        document.getElementById('formExactCashAmt').value = '0';
+        document.getElementById('formCustomRateVal').value = '1';
+        document.getElementById('formDate').valueAsDate = new Date();
+        
+        toggleSidebarFormEditingState(false);
     } else {
+        // SCENARIO B: Lock matrix console onto historical transaction row variables array
         window.currentlyPinnedLogIndex = index;
-        console.log(`Matrix console locked on historical transaction row: Index [${index}]`);
+        const logItem = window.cachedHistoricalLogs[index];
+        console.log(`Matrix console locked on historical transaction row index: [${index}]`);
+        
+        // Populate inputs with original logging attributes explicitly
+        if (document.getElementById('formDate')) document.getElementById('formDate').value = logItem.date;
+        if (document.getElementById('formClient')) document.getElementById('formClient').value = logItem.client;
+        if (document.getElementById('formAmount')) document.getElementById('formAmount').value = logItem.amount;
+        if (document.getElementById('formCurrency')) document.getElementById('formCurrency').value = logItem.currency;
+        
+        // Populate custom conversion logic inputs safely from cached row log parameters
+        if (document.getElementById('formConversionMode')) document.getElementById('formConversionMode').value = logItem.conversionMode || "exact_cash";
+        if (document.getElementById('formExactCashAmt')) document.getElementById('formExactCashAmt').value = logItem.exactCashInput || 0;
+        if (document.getElementById('formCustomRateVal')) document.getElementById('formCustomRateVal').value = logItem.customRateInput || 1;
+        if (document.getElementById('formExpenses')) document.getElementById('formExpenses').value = logItem.bizExpense || 0;
+        if (document.getElementById('formWithholdingAmt')) document.getElementById('formWithholdingAmt').value = logItem.withholdAmt || 0;
+        if (document.getElementById('formFees')) document.getElementById('formFees').value = (logItem.platformPct || 0) * 100;
+        
+        if (document.getElementById('formWithholdingToggle')) document.getElementById('formWithholdingToggle').value = logItem.withholdAmt > 0 ? "Yes" : "No";
+        if (document.getElementById('formPlatformFeesToggle')) document.getElementById('formPlatformFeesToggle').value = logItem.platformPct > 0 ? "Yes" : "No";
+
+        // Hard-lock sidebar fields to prevent updates
+        toggleSidebarFormEditingState(true);
     }
 
-    window.updateMatrixData();
+    if (typeof updateMatrixData === 'function') updateMatrixData();
     renderHistoricalSidebarLogs();
 }
 
@@ -472,6 +551,9 @@ function renderHistoricalSidebarLogs() {
         card.setAttribute('onclick', `selectAndPinHistoricalLogCard(${item.id})`);
         card.style.cursor = "pointer";
 
+        // Resolve symbol formats safely
+        const displaySymbol = typeof getGlobalCurrencySymbolCharacter === 'function' ? getGlobalCurrencySymbolCharacter(log.currency) : "$ ";
+
         card.innerHTML = `
             <div class="card-row-top">
                 <span>${log.date} ${isPinned ? '<strong style="color:#a855f7;">[PINNED]</strong>' : ''}</span>
@@ -479,8 +561,8 @@ function renderHistoricalSidebarLogs() {
             </div>
             <div class="card-client-title">${log.client}</div>
             <div class="card-row-metrics">
-                <span>Invoice: <strong style="color:#f8fafc;">${log.amount.toLocaleString(undefined,{minimumFractionDigits:2})}</strong></span>
-                <span>Net Base: <strong style="color:#4ade80;">${window.currentCurrency}${log.homeIncome.toLocaleString(undefined,{maximumFractionDigits:0})}</strong></span>
+                <span>Invoice: <strong style="color:#f8fafc;">${displaySymbol}${log.amount.toLocaleString(undefined,{minimumFractionDigits:2})}</strong></span>
+                <span>Net Home: <strong style="color:#4ade80;">${window.currentCurrency || '$ '}${log.homeIncome.toLocaleString(undefined,{maximumFractionDigits:0})}</strong></span>
             </div>
         `;
         container.appendChild(card);
