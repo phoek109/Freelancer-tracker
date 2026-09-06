@@ -240,6 +240,14 @@ function updateMatrixData() {
         if (document.getElementById('taxDisplay')) document.getElementById('taxDisplay').innerText = `${activeSymbol}${computedFinalTax.toLocaleString(undefined, {maximumFractionDigits:0})}`;
         if (document.getElementById('takeHomeDisplay')) document.getElementById('takeHomeDisplay').innerText = `${activeSymbol}${computedTakeHome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
 
+        // HYDRATE DETAILED BREAKDOWN VALUES FOR SINGLE LOG VIEW
+        if (document.getElementById('incActive')) document.getElementById('incActive').innerText = `${activeSymbol}${gross.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('incOthers')) document.getElementById('incOthers').innerText = `${activeSymbol}0.00`;
+        if (document.getElementById('expBusinessExpenses')) document.getElementById('expBusinessExpenses').innerText = `${activeSymbol}${bizExpenseAmt.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('expPlatformFees')) document.getElementById('expPlatformFees').innerText = `${activeSymbol}${computedPlatformFeeHome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('taxIncome')) document.getElementById('taxIncome').innerText = `${activeSymbol}${computedFinalTax.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('taxWithholding')) document.getElementById('taxWithholding').innerText = `${activeSymbol}${withholdAmtVal.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+
         // 3. Dynamically update your split progress bar indicators layout view
         if (gross > 0) {
             if (document.getElementById('barExpenses')) document.getElementById('barExpenses').style.width = `${(logTotalExpenses / gross) * 100}%`;
@@ -258,7 +266,6 @@ function updateMatrixData() {
         }
         return; // Halt routine loop tracking processing here to prevent live variables spillover!
     }
-
     // --- STANDARD PIPELINE MANAGEMENT FOR LIVE CHANNELS TRACKING ---
     if (isLiveTrackingMode) {
         gross = totals.gross;
@@ -290,6 +297,23 @@ function updateMatrixData() {
     if (document.getElementById('expensesDisplay')) document.getElementById('expensesDisplay').innerText = `${activeSymbol}${totalExpenses.toLocaleString(undefined, {maximumFractionDigits:0})}`;
     if (document.getElementById('taxDisplay')) document.getElementById('taxDisplay').innerText = `${activeSymbol}${taxReserve.toLocaleString(undefined, {maximumFractionDigits:0})}`;
     if (document.getElementById('takeHomeDisplay')) document.getElementById('takeHomeDisplay').innerText = `${activeSymbol}${takeHome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+
+    // HYDRATE DETAILED BREAKDOWN VALUES FOR GLOBAL LIVE/PREDICTIVE VIEW
+    if (isLiveTrackingMode) {
+        if (document.getElementById('incActive')) document.getElementById('incActive').innerText = `${activeSymbol}${(sheetMetrics.incActive || 0).toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('incOthers')) document.getElementById('incOthers').innerText = `${activeSymbol}${(sheetMetrics.incOthers || 0).toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('expBusinessExpenses')) document.getElementById('expBusinessExpenses').innerText = `${activeSymbol}${(sheetMetrics.BusinessExpenses || 0).toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('expPlatformFees')) document.getElementById('expPlatformFees').innerText = `${activeSymbol}${(sheetMetrics.PlatformFees || 0).toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('taxIncome')) document.getElementById('taxIncome').innerText = `${activeSymbol}${(sheetMetrics.taxIncome || 0).toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('taxWithholding')) document.getElementById('taxWithholding').innerText = `${activeSymbol}${(sheetMetrics.taxWithholding || 0).toLocaleString(undefined, {maximumFractionDigits:0})}`;
+    } else {
+        if (document.getElementById('incActive')) document.getElementById('incActive').innerText = `${activeSymbol}${(gross * incomePct).toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('incOthers')) document.getElementById('incOthers').innerText = `${activeSymbol}${(gross * (1 - incomePct)).toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('expBusinessExpenses')) document.getElementById('expBusinessExpenses').innerText = `${activeSymbol}${(totalExpenses * expensePct).toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('expPlatformFees')) document.getElementById('expPlatformFees').innerText = `${activeSymbol}${(totalExpenses * (1 - expensePct)).toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('taxIncome')) document.getElementById('taxIncome').innerText = `${activeSymbol}${(taxReserve * taxPct).toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('taxWithholding')) document.getElementById('taxWithholding').innerText = `${activeSymbol}${(taxReserve * (1 - taxPct)).toLocaleString(undefined, {maximumFractionDigits:0})}`;
+    }
 
     if (gross > 0) {
         if (document.getElementById('barExpenses')) document.getElementById('barExpenses').style.width = `${(totalExpenses / gross) * 100}%`;
