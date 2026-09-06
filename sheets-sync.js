@@ -467,7 +467,7 @@ function selectAndPinHistoricalLogCard(index) {
         window.currentlyPinnedLogIndex = null;
         console.log("Database drill-down lock released. Restoring active tracking profiles.");
         
-        // Clean out form text blocks safely
+        // Clean out form text blocks safely (Your verified complete property stack)
         document.getElementById('formClient').value = '';
         document.getElementById('formAmount').value = '';
         document.getElementById('formWithholdingAmt').value = '0';
@@ -477,6 +477,12 @@ function selectAndPinHistoricalLogCard(index) {
         document.getElementById('formCustomRateVal').value = '1';
         document.getElementById('formDate').valueAsDate = new Date();
         
+        // Reset toggle selections back to standard layout properties states
+        if (document.getElementById('formWithholdingToggle')) document.getElementById('formWithholdingToggle').value = "No";
+        if (document.getElementById('formPlatformFeesToggle')) document.getElementById('formPlatformFeesToggle').value = "No";
+        if (document.getElementById('formConversionMode')) document.getElementById('formConversionMode').value = "exact_cash";
+        
+        // Unfreeze input attributes natively
         toggleSidebarFormEditingState(false);
     } else {
         // SCENARIO B: Lock matrix console onto historical transaction row variables array
@@ -505,6 +511,7 @@ function selectAndPinHistoricalLogCard(index) {
         toggleSidebarFormEditingState(true);
     }
 
+    // Force right-hand metrics calculation drivers to redraw canvas dashboards loops instantly!
     if (typeof updateMatrixData === 'function') updateMatrixData();
     renderHistoricalSidebarLogs();
 }
