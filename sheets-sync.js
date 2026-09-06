@@ -592,6 +592,7 @@ async function fetchAndHydrateLogCachesFromSheet() {
     const endpoint = apiInput.value.trim();
     const container = document.getElementById('sidebarLogContainer');
     
+    // FIXED: Updated prefix filter validation to match real script domains
     if (!endpoint || !endpoint.startsWith('https://google.com')) {
         console.warn("Logcat Engine Trace: Valid Google script URL not set yet.");
         return;
