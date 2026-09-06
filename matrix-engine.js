@@ -195,45 +195,71 @@ function updateMatrixData() {
     };
 
     // =========================================================================
-    // 🔎 HISTORICAL LOCK HOOK: OVERRIDE TELEMETRY WITH RECORDED VALUES
+    // ⚡ FIXED HISTORICAL LOCK DRILL-DOWN: ARITHMETIC WITH SAFETIES
     // =========================================================================
     if (window.currentlyPinnedLogIndex !== null && window.cachedHistoricalLogs && window.cachedHistoricalLogs[window.currentlyPinnedLogIndex]) {
         const logItem = window.cachedHistoricalLogs[window.currentlyPinnedLogIndex];
         
-        gross = logItem.homeIncome; // Net Home income acts as gross baseline target
+        // 1. Pull verified values straight from your raw metadata attributes cache
+        const invoiceAmt     = parseFloat(logItem.amount) || 0;
+        const platformPctVal = parseFloat(logItem.platformPct) || 0;
+        const fxRateVal      = parseFloat(logItem.fxRate) || 1;
+        const withholdAmtVal = parseFloat(logItem.withholdAmt) || 0;
+        const bizExpenseAmt  = parseFloat(logItem.bizExpense) || 0;
         
-        // Calculate true expense and tax ratios dynamically from recorded row outputs
-        const logTotalExpenses = logItem.bizExpense + (logItem.amount * logItem.platformPct * logItem.fxRate || 0);
-        expRatio = gross > 0 ? (logTotalExpenses / gross) : 0;
-        taxRate = parseFloat(document.getElementById('baseTaxRateConfig') ? document.getElementById('baseTaxRateConfig').value : 15) / 100;
-        
-        const netProfit = gross - logTotalExpenses;
-        const taxReserve = logItem.finalTaxOwed || 0;
-        const takeHome = logItem.takeHomePay || (gross - logTotalExpenses - taxReserve);
+        // Fetch current global tax rate setting from configuration inputs
+        const targetTaxRateInputEl = document.getElementById('baseTaxRateConfig');
+        const systemTaxRateConfigVal = targetTaxRateInputEl ? (parseFloat(targetTaxRateInputEl.value) / 100) : 0.15;
 
-        // Update Right Hand Metric Cards directly using exact variables
-        const activeSymbol = window.currentCurrency || '$';
+        // Formula I Equivalent: Calculated Net Foreign cash flow amount
+        const computedNetForeign = invoiceAmt - withholdAmtVal - (invoiceAmt * platformPctVal);
+        
+        // Formula K Equivalent: Net Home Income (Becomes your exclusive Gross Input baseline)
+        gross = parseFloat(logItem.homeIncome) || (computedNetForeign * fxRateVal);
+
+        // Formula H Equivalent: Platform fees calculated flat amount translated to home currency values
+        const computedPlatformFeeHome = invoiceAmt * platformPctVal * fxRateVal;
+        
+        // Formula L Total Equivalent: Total Row Expenses (Biz overheads + Platform fees cash value)
+        const logTotalExpenses = bizExpenseAmt + computedPlatformFeeHome;
+        
+        // Formula M Equivalent: Taxable net row margins profit profiles
+        const computedNetProfit = gross - bizExpenseAmt; 
+
+        // Formula N Equivalent: Final calculated tax owed matrix
+        const computedFinalTax = computedNetProfit > 0 ? (computedNetProfit * systemTaxRateConfigVal) : 0;
+        
+        // Formula O Equivalent: Final true net take home row pay
+        const computedTakeHome = gross - logTotalExpenses - computedFinalTax;
+
+        // 2. Safely populate every single right hand metrics card text element
+        const activeSymbol = window.currentCurrency || '$ ';
         
         if (document.getElementById('grossDisplay')) document.getElementById('grossDisplay').innerText = `${activeSymbol}${gross.toLocaleString(undefined, {maximumFractionDigits:0})}`;
         if (document.getElementById('expensesDisplay')) document.getElementById('expensesDisplay').innerText = `${activeSymbol}${logTotalExpenses.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-        if (document.getElementById('taxDisplay')) document.getElementById('taxDisplay').innerText = `${activeSymbol}${taxReserve.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-        if (document.getElementById('takeHomeDisplay')) document.getElementById('takeHomeDisplay').innerText = `${activeSymbol}${takeHome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('taxDisplay')) document.getElementById('taxDisplay').innerText = `${activeSymbol}${computedFinalTax.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('takeHomeDisplay')) document.getElementById('takeHomeDisplay').innerText = `${activeSymbol}${computedTakeHome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
 
-        // Render visual progress bars matching historical transaction splits
+        // 3. Dynamically update your split progress bar indicators layout view
         if (gross > 0) {
             if (document.getElementById('barExpenses')) document.getElementById('barExpenses').style.width = `${(logTotalExpenses / gross) * 100}%`;
-            if (document.getElementById('barTax')) document.getElementById('barTax').style.width = `${(taxReserve / gross) * 100}%`;
-            if (document.getElementById('barTakeHome')) document.getElementById('barTakeHome').style.width = `${(takeHome / gross) * 100}%`;
+            if (document.getElementById('barTax')) document.getElementById('barTax').style.width = `${(computedFinalTax / gross) * 100}%`;
+            if (document.getElementById('barTakeHome')) document.getElementById('barTakeHome').style.width = `${(computedTakeHome / gross) * 100}%`;
+        } else {
+            if (document.getElementById('barExpenses')) document.getElementById('barExpenses').style.width = `0%`;
+            if (document.getElementById('barTax')) document.getElementById('barTax').style.width = `0%`;
+            if (document.getElementById('barTakeHome')) document.getElementById('barTakeHome').style.width = `0%`;
         }
         
-        // Refresh dynamic canvas chart curves
+        // 4. Repaint your live Flow Matrix canvas charts Bezier curves
+        expRatio = gross > 0 ? (logTotalExpenses / gross) : 0;
         if (typeof drawFlowLines === 'function') {
-            drawFlowLines(expRatio, taxRate, netProfit, gross);
+            drawFlowLines(expRatio, systemTaxRateConfigVal, computedNetProfit, gross);
         }
-        return; // Halt tracking here to block configuration overrides!
+        return; // Halt routine loop tracking processing here to prevent live variables spillover!
     }
 
-    // --- STANDARD OPERATIONS PIPELINE FOR LIVE / PREDICTIVE MODES ---
+    // --- STANDARD PIPELINE MANAGEMENT FOR LIVE CHANNELS TRACKING ---
     if (isLiveTrackingMode) {
         gross = totals.gross;
         expRatio = gross > 0 ? (totals.expenses / gross) : 0;
@@ -258,7 +284,7 @@ function updateMatrixData() {
     const taxReserve = (netProfit > 0 ? netProfit * taxRate : 0) + (isLiveTrackingMode ? totals.taxWithheld : 0);
     const takeHome = gross - totalExpenses - taxReserve;
 
-    const activeSymbol = window.currentCurrency || '$';
+    const activeSymbol = window.currentCurrency || '$ ';
 
     if (document.getElementById('grossDisplay')) document.getElementById('grossDisplay').innerText = `${activeSymbol}${gross.toLocaleString(undefined, {maximumFractionDigits:0})}`;
     if (document.getElementById('expensesDisplay')) document.getElementById('expensesDisplay').innerText = `${activeSymbol}${totalExpenses.toLocaleString(undefined, {maximumFractionDigits:0})}`;
