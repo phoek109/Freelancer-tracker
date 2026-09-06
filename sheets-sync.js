@@ -27,7 +27,7 @@ window.addEventListener('DOMContentLoaded', () => {
         
         // 🚀 CRUCIAL INITIALIZATION FIX: Enforce instant log card pulling on launch!
         fetchAndHydrateLogCachesFromSheet();
-    }, 100);
+    }, 50);
 });
 
 // Also force it to run immediately if a buyer updates or pastes a new URL in the setup input field box
