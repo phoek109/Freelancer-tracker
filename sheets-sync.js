@@ -634,8 +634,9 @@ async function fetchAndHydrateLogCachesFromSheet() {
     const endpoint = apiInput.value.trim();
     const container = document.getElementById('sidebarLogContainer');
     
-    if (!endpoint || !endpoint.startsWith('https://google.com')) {
-        console.warn("Logcat Engine Trace: Please paste a valid Google Web App URL.");
+    // UPDATED VALIDATION PREFIX: Now safely accepts script.google.com deployments
+    if (!endpoint || !endpoint.startsWith('https://script.google.com')) {
+        console.warn("Logcat Engine Trace: Please paste a valid Google Web App URL (must start with https://script.google.com).");
         if (container) {
             container.innerHTML = `<div class="empty-tray-text" style="color: #64748b;">Waiting for a valid Google Script Web App URL...</div>`;
         }
