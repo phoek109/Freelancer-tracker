@@ -518,24 +518,28 @@ function selectAndPinHistoricalLogCard(index) {
 
 function renderHistoricalSidebarLogs() {
     const container = document.getElementById('sidebarLogContainer');
-    const searchQuery = document.getElementById('logSearchInput') ? document.getElementById('logSearchInput').value.toLowerCase().trim() : '';
-    const sortMode = document.getElementById('logSortSelect') ? document.getElementById('logSortSelect').value : 'date_desc';
-    
     if (!container) return;
     container.innerHTML = "";
 
+    // Safely look up if the cache holds rows array profiles
     if (!window.cachedHistoricalLogs || window.cachedHistoricalLogs.length === 0) {
         container.innerHTML = `<div class="empty-tray-text">No records streamed yet.</div>`;
         return;
     }
 
+    const searchQuery = document.getElementById('logSearchInput') ? document.getElementById('logSearchInput').value.toLowerCase().trim() : '';
+    const sortMode = document.getElementById('logSortSelect') ? document.getElementById('logSortSelect').value : 'date_desc';
+
+    // Build indexing links maps
     let logItemsWithIndices = window.cachedHistoricalLogs.map((item, originalIndex) => {
         return { data: item, id: originalIndex };
     });
 
+    // Execute Search filters criteria variables safe
     let filtered = logItemsWithIndices.filter(item => {
-        return item.data.client.toLowerCase().includes(searchQuery) || 
-               item.data.currency.toLowerCase().includes(searchQuery);
+        const clientMatch = item.data.client ? item.data.client.toLowerCase().includes(searchQuery) : false;
+        const currencyMatch = item.data.currency ? item.data.currency.toLowerCase().includes(searchQuery) : false;
+        return clientMatch || currencyMatch;
     });
 
     if (filtered.length === 0) {
@@ -543,35 +547,38 @@ function renderHistoricalSidebarLogs() {
         return;
     }
 
+    // Sort matching algorithms framework configurations
     filtered.sort((a, b) => {
         if (sortMode === "date_desc") return new Date(b.data.date) - new Date(a.data.date);
         if (sortMode === "date_asc") return new Date(a.data.date) - new Date(b.data.date);
-        if (sortMode === "amt_desc") return b.data.amount - a.data.amount;
-        if (sortMode === "client_asc") return a.data.client.localeCompare(b.data.client);
+        if (sortMode === "amt_desc") return (b.data.amount || 0) - (a.data.amount || 0);
+        if (sortMode === "client_asc") return String(a.data.client).localeCompare(String(b.data.client));
         return 0;
     });
 
     filtered.forEach(item => {
         const log = item.data;
         const card = document.createElement('div');
-        
         const isPinned = (window.currentlyPinnedLogIndex === item.id);
+        
         card.className = `transaction-card ${isPinned ? 'pinned-active' : ''}`;
         card.setAttribute('onclick', `selectAndPinHistoricalLogCard(${item.id})`);
         card.style.cursor = "pointer";
 
-        // Resolve symbol formats safely
-        const displaySymbol = typeof getGlobalCurrencySymbolCharacter === 'function' ? getGlobalCurrencySymbolCharacter(log.currency) : "$ ";
+        // FIXED: Added safe fallbacks for camelCase properties matching your console log layout view
+        const rawAmt = parseFloat(log.amount) || 0;
+        const rawHomeIncome = parseFloat(log.homeIncome) || 0;
+        const displayCurrency = String(log.currency || "USD").toUpperCase().trim();
 
         card.innerHTML = `
             <div class="card-row-top">
-                <span>${log.date} ${isPinned ? '<strong style="color:#a855f7;">[PINNED]</strong>' : ''}</span>
-                <span style="color:#38bdf8; font-weight:700;">${log.currency}</span>
+                <span>${log.date || "2026-09-06"} ${isPinned ? '<strong style="color:#a855f7;">[PINNED]</strong>' : ''}</span>
+                <span style="color:#38bdf8; font-weight:700;">${displayCurrency}</span>
             </div>
-            <div class="card-client-title">${log.client}</div>
+            <div class="card-client-title">${log.client || "Ledger Entry"}</div>
             <div class="card-row-metrics">
-                <span>Invoice: <strong style="color:#f8fafc;">${displaySymbol}${log.amount.toLocaleString(undefined,{minimumFractionDigits:2})}</strong></span>
-                <span>Net Home: <strong style="color:#4ade80;">${window.currentCurrency || '$ '}${log.homeIncome.toLocaleString(undefined,{maximumFractionDigits:0})}</strong></span>
+                <span>Invoice: <strong>${rawAmt.toLocaleString(undefined, {minimumFractionDigits:2})}</strong></span>
+                <span>Net Home: <strong style="color:#4ade80;">${window.currentCurrency || '$ '}${rawHomeIncome.toLocaleString(undefined, {maximumFractionDigits:0})}</strong></span>
             </div>
         `;
         container.appendChild(card);
