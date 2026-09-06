@@ -194,6 +194,75 @@ function updateMatrixData() {
         activeRatio: 0.65, bizExpRatio: 0.60, incomeTaxRatio: 0.80,
         totals: { gross: 0, expenses: 0, taxWithheld: 0 }
     };
+    // =========================================================================
+    // ⚡ FIXED HISTORICAL LOCK DRILL-DOWN: ARITHMETIC WITH SAFETIES
+    // =========================================================================
+    if (window.currentlyPinnedLogIndex !== null && window.cachedHistoricalLogs && window.cachedHistoricalLogs[window.currentlyPinnedLogIndex]) {
+        const logItem = window.cachedHistoricalLogs[window.currentlyPinnedLogIndex];
+        
+        // 1. Pull verified values straight from your raw metadata attributes cache
+        const invoiceAmt     = parseFloat(logItem.amount) || 0;
+        const platformPctVal = parseFloat(logItem.platformPct) || 0;
+        const fxRateVal      = parseFloat(logItem.fxRate) || 1;
+        const withholdAmtVal = parseFloat(logItem.withholdAmt) || 0;
+        const bizExpenseAmt  = parseFloat(logItem.bizExpense) || 0;
+        
+        // 🚀 FIXED: Read the exact historical final tax owed directly from the row dataset instead of the live input box
+        const computedFinalTax = parseFloat(logItem.finalTaxOwed) || 0;
+
+        // Formula I Equivalent: Calculated Net Foreign cash flow amount
+        const computedNetForeign = invoiceAmt - withholdAmtVal - (invoiceAmt * platformPctVal);
+        
+        // Formula K Equivalent: Net Home Income (Becomes your exclusive Gross Input baseline)
+        gross = parseFloat(logItem.homeIncome) || (computedNetForeign * fxRateVal);
+
+        // Formula H Equivalent: Platform fees calculated flat amount translated to home currency values
+        const computedPlatformFeeHome = invoiceAmt * platformPctVal * fxRateVal;
+        
+        // Formula L Total Equivalent: Total Row Expenses (Biz overheads + Platform fees cash value)
+        const logTotalExpenses = bizExpenseAmt + computedPlatformFeeHome;
+        
+        // Formula M Equivalent: Taxable net row margins profit profiles
+        const computedNetProfit = gross - bizExpenseAmt; 
+
+        // Formula O Equivalent: Final true net take home row pay calculated using the historical tax figure
+        const computedTakeHome = gross - logTotalExpenses - computedFinalTax;
+
+        // 2. Safely populate every single right hand metrics card text element
+        const activeSymbol = window.currentCurrency || '$ ';
+        if (document.getElementById('grossDisplay')) document.getElementById('grossDisplay').innerText = `${activeSymbol}${gross.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('expensesDisplay')) document.getElementById('expensesDisplay').innerText = `${activeSymbol}${logTotalExpenses.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('taxDisplay')) document.getElementById('taxDisplay').innerText = `${activeSymbol}${computedFinalTax.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('takeHomeDisplay')) document.getElementById('takeHomeDisplay').innerText = `${activeSymbol}${computedTakeHome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+
+        // HYDRATE DETAILED BREAKDOWN VALUES FOR SINGLE LOG VIEW
+        if (document.getElementById('incActive')) document.getElementById('incActive').innerText = `${activeSymbol}${gross.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('incOthers')) document.getElementById('incOthers').innerText = `${activeSymbol}0.00`;
+        if (document.getElementById('expBusinessExpenses')) document.getElementById('expBusinessExpenses').innerText = `${activeSymbol}${bizExpenseAmt.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('expPlatformFees')) document.getElementById('expPlatformFees').innerText = `${activeSymbol}${computedPlatformFeeHome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('taxIncome')) document.getElementById('taxIncome').innerText = `${activeSymbol}${computedFinalTax.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('taxWithholding')) document.getElementById('taxWithholding').innerText = `${activeSymbol}${withholdAmtVal.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+
+        // 3. Dynamically update your split progress bar indicators layout view
+        if (gross > 0) {
+            if (document.getElementById('barExpenses')) document.getElementById('barExpenses').style.width = `${(logTotalExpenses / gross) * 100}%`;
+            if (document.getElementById('barTax')) document.getElementById('barTax').style.width = `${(computedFinalTax / gross) * 100}%`;
+            if (document.getElementById('barTakeHome')) document.getElementById('barTakeHome').style.width = `${(computedTakeHome / gross) * 100}%`;
+        } else {
+            if (document.getElementById('barExpenses')) document.getElementById('barExpenses').style.width = `0%`;
+            if (document.getElementById('barTax')) document.getElementById('barTax').style.width = `0%`;
+            if (document.getElementById('barTakeHome')) document.getElementById('barTakeHome').style.width = `0%`;
+        }
+        
+        // 4. Repaint your live Flow Matrix canvas charts Bezier curves using historical weight allocations
+        expRatio = gross > 0 ? (logTotalExpenses / gross) : 0;
+        const historicalTaxRateProportion = computedNetProfit > 0 ? (computedFinalTax / computedNetProfit) : 0.15;
+        
+        if (typeof drawFlowLines === 'function') {
+            drawFlowLines(expRatio, historicalTaxRateProportion, computedNetProfit, gross);
+        }
+        return; // Halt routine loop tracking processing here to prevent live variables spillover!
+    }
 
     // =========================================================================
     // ⚡ FIXED HISTORICAL LOCK DRILL-DOWN: ARITHMETIC WITH SAFETIES
@@ -267,6 +336,8 @@ function updateMatrixData() {
         }
         return; // Halt routine loop tracking processing here to prevent live variables spillover!
     }
+
+
     // --- STANDARD PIPELINE MANAGEMENT FOR LIVE CHANNELS TRACKING ---
     if (isLiveTrackingMode) {
         gross = totals.gross;
