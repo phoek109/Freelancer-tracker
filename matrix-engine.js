@@ -442,7 +442,34 @@ document.querySelectorAll('.curr-btn').forEach(btn => {
         updateMatrixData();
     });
 });
-// Safe execution window size adjustment intercept hook mapping tracker
+// =========================================================================
+// 🚀 PASTE THE NEW DRAG DRIVERS RIGHT HERE:
+// =========================================================================
+if (inputRatio) {
+    inputRatio.addEventListener('change', () => {
+        if (typeof updateBaseCurrencySettingsInSheet === 'function') updateBaseCurrencySettingsInSheet();
+    });
+}
+
+if (inputTaxRate) {
+    inputTaxRate.addEventListener('input', (e) => {
+        const valText = document.getElementById('valTaxRate');
+        if (valText) valText.innerText = `${parseFloat(e.target.value).toFixed(1)}%`;
+        
+        const baseTaxInputBox = document.getElementById('baseTaxRateConfig');
+        if (baseTaxInputBox) baseTaxInputBox.value = e.target.value;
+        
+        if (typeof window.updateMatrixData === 'function') window.updateMatrixData();
+    });
+    
+    inputTaxRate.addEventListener('change', () => {
+        if (typeof updateBaseCurrencySettingsInSheet === 'function') updateBaseCurrencySettingsInSheet();
+    });
+}
+
+// =========================================================================
+// THIS IS THE ORIGINAL RESIZE HOOK THAT CLOSES THE FILE (LEAVE THIS AT THE BOTTOM)
+// =========================================================================
 window.onresize = () => { 
     if (typeof resizeCanvas === 'function') resizeCanvas(); 
     if (typeof window.updateMatrixData === 'function') window.updateMatrixData(); 

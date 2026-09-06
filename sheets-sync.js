@@ -12,21 +12,37 @@ window.addEventListener('DOMContentLoaded', () => {
     if (localStorage.getItem('userBaseCurrencyConfig')) {
         document.getElementById('baseCurrencyConfig').value = localStorage.getItem('userBaseCurrencyConfig');
     }
-    if (localStorage.getItem('userBaseTaxRateConfig')) {
-        document.getElementById('baseTaxRateConfig').value = localStorage.getItem('userBaseTaxRateConfig');
-    }
     
-    document.getElementById('formDate').valueAsDate = new Date();
+    // REPAIRED INITIALIZATION SYNC TRACK:
+    if (localStorage.getItem('userBaseTaxRateConfig')) {
+        const cachedTax = localStorage.getItem('userBaseTaxRateConfig');
+        
+        // 1. Force the sidebar setup text field value to match memory cache
+        if (document.getElementById('baseTaxRateConfig')) {
+            document.getElementById('baseTaxRateConfig').value = cachedTax;
+        }
+        // 2. Force the predictive slider handle position to match memory cache
+        if (document.getElementById('inputTaxRate')) {
+            document.getElementById('inputTaxRate').value = cachedTax;
+        }
+        // 3. Force the dashboard percentage status label to match memory cache
+        if (document.getElementById('valTaxRate')) {
+            document.getElementById('valTaxRate').innerText = `${parseFloat(cachedTax).toFixed(1)}%`;
+        }
+    }
+    // Set standard calendar defaults to active current date format parameters
+    if (document.getElementById('formDate')) {
+        document.getElementById('formDate').valueAsDate = new Date();
+    }
     
     if (typeof resizeCanvas === 'function') resizeCanvas();
     if (typeof updateBaseCurrencyConfigSymbols === 'function') updateBaseCurrencyConfigSymbols();
 
+    // Safety timeout framework execution routines to launch your tickers
     setTimeout(() => {
         if (typeof resizeCanvas === 'function') resizeCanvas();
-        dynamicallyHydrateGlobalCurrencies();
-        
-        // 🚀 CRUCIAL INITIALIZATION FIX: Enforce instant log card pulling on launch!
-        fetchAndHydrateLogCachesFromSheet();
+        if (typeof dynamicallyHydrateGlobalCurrencies === 'function') dynamicallyHydrateGlobalCurrencies();
+        if (typeof fetchAndHydrateLogCachesFromSheet === 'function') fetchAndHydrateLogCachesFromSheet();
     }, 50);
 });
 
