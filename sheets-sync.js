@@ -634,9 +634,9 @@ async function fetchAndHydrateLogCachesFromSheet() {
     const endpoint = apiInput.value.trim();
     const container = document.getElementById('sidebarLogContainer');
     
-    // UPDATED VALIDATION PREFIX: Now safely accepts script.google.com deployments
+    // REPAIRED VALIDATION MATCH: Now correctly checks for script.google.com URLs
     if (!endpoint || !endpoint.startsWith('https://script.google.com')) {
-        console.warn("Logcat Engine Trace: Please paste a valid Google Web App URL (must start with https://script.google.com).");
+        console.warn("⚠️ Logcat Engine Trace: Please paste a valid Google Web App URL.");
         if (container) {
             container.innerHTML = `<div class="empty-tray-text" style="color: #64748b;">Waiting for a valid Google Script Web App URL...</div>`;
         }
@@ -669,7 +669,7 @@ async function fetchAndHydrateLogCachesFromSheet() {
             if (typeof updateMatrixData === 'function') updateMatrixData();
             if (typeof renderHistoricalSidebarLogs === 'function') renderHistoricalSidebarLogs();
         } else {
-            // Configuration recovery frame fallback fallback handling loop
+            // Configuration recovery frame fallback handling loop
             const postResponse = await fetch(endpoint, { 
                 method: 'POST', 
                 body: JSON.stringify({ configUpdate: false, data: null }) 
@@ -699,3 +699,4 @@ async function fetchAndHydrateLogCachesFromSheet() {
         if (typeof updateSyncSpinnerState === 'function') updateSyncSpinnerState("error");
     }
 }
+
