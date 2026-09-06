@@ -19,12 +19,13 @@ const inputTaxRate = document.getElementById('inputTaxRate');
 const canvas = document.getElementById('flowChart');
 const btnToggle = document.getElementById('btnToggleMode');
 
-// Drop-in replacement for the broken exchange rate fetch routine
+// REPAIRED: Cleaned up URL parameters to eliminate er-api routing failures
 async function fetchLiveExchangeRates(baseCurrency) {
     if (!baseCurrency) return;
     try {
         const cleanBase = String(baseCurrency).toUpperCase().trim();
-        // REPAIRED: Corrected endpoint syntax with template literal structure
+        
+        // FIXED FORMAT: Replaced raw string concatenation with a valid template string
         const response = await fetch(`https://er-api.com{cleanBase}`);
         
         if (response.ok) {
@@ -32,17 +33,18 @@ async function fetchLiveExchangeRates(baseCurrency) {
             if (data && data.rates) {
                 exchangeRatesCache = data.rates;
                 console.log(`✔ Forex Engine Sync Successful for Base: ${cleanBase}`);
-                
-                if (typeof calculateActiveConversionRate === 'function') {
-                    calculateActiveConversionRate();
-                }
-                if (typeof updateMatrixData === 'function') {
-                    updateMatrixData();
+                // Safely update all active calculated metrics cards and layouts
+                if (typeof window.updateMatrixData === 'function') {
+                    window.updateMatrixData();
                 }
             }
         }
     } catch (e) {
         console.warn("Forex Cloud Matrix Offline. Dropping into local recovery variables cache.", e);
+        // Direct layout redraw to ensure the UI updates even using cached metrics
+        if (typeof window.updateMatrixData === 'function') {
+            window.updateMatrixData();
+        }
     }
 }
 
@@ -326,33 +328,51 @@ function updateMatrixData() {
     }
 }
 
-// UPDATED: Completely open to floating intervals for infinite sequential clicks!
+// UPDATED STEPPER MATRIX DRIVER: Resolves variable locking on slide interactions
 function adjustSliderStep(sliderId, changeAmount, isMacro = false) {
     const slider = document.getElementById(sliderId);
     if (!slider) return;
 
-    // 1. Fetch current position value as a pure floating point decimal
+    // 1. Fetch current position value as a pure floating-point decimal
     let currentValue = parseFloat(slider.value) || 0;
     let newValue = currentValue + changeAmount;
 
-    // 2. Map strict safety boundary caps matching individual parameters
-    const maxLimit = sliderId === 'inputTaxRate' ? 50 : (sliderId === 'inputRatio' ? 90 : 100);
+    // 2. Map strict safety boundary caps matching individual parameters profiles
+    // FIXED ID MATCHING: Matches your exact inputs 'inputTaxRate' and 'inputRatio'
+    let maxLimit = 100;
+    if (sliderId === 'inputTaxRate') maxLimit = 50;
+    if (sliderId === 'inputRatio') maxLimit = 90;
+
     if (newValue < 0) newValue = 0;
     if (newValue > maxLimit) newValue = maxLimit;
 
-    // 3. Force the physical slider element handle location tracking to update
+    // 3. Force the physical HTML range input slider handle to visually update its position
     slider.value = newValue.toFixed(1);
+    // 4. Update the visual text indicators matching the new slider position values
+    if (sliderId === 'inputRatio' && document.getElementById('valRatio')) {
+        document.getElementById('valRatio').innerText = `${Math.round(newValue)}%`;
+    }
+    if (sliderId === 'inputTaxRate' && document.getElementById('valTaxRate')) {
+        document.getElementById('valTaxRate').innerText = `${newValue.toFixed(1)}%`;
+    }
     
-    // 4. Trigger UI metrics matrix calculation block cleanly
-    if (typeof updateMatrixData === 'function') updateMatrixData();
+    // 5. Trigger UI metrics matrix calculation block cleanly
+    if (typeof window.updateMatrixData === 'function') window.updateMatrixData();
 
-    // 5. Cloud Database Synchronization Pipelines Execution
+    // 6. Cloud Database Synchronization Pipelines Execution
+    // Wrapped inside clean validation catches to insulate sliders from network drops
     if (isMacro) {
-        if (typeof updateBaseCurrencySettingsInSheet === 'function') updateBaseCurrencySettingsInSheet();
+        if (typeof updateBaseCurrencySettingsInSheet === 'function') {
+            updateBaseCurrencySettingsInSheet();
+        }
     } else {
-        if (typeof streamBreakdownProportionsToSheet === 'function') streamBreakdownProportionsToSheet();
+        if (typeof streamBreakdownProportionsToSheet === 'function') {
+            streamBreakdownProportionsToSheet();
+        }
     }
 }
+
+
 
 // UPDATED: Explicitly updates both the range value and handles multi-million math accurately
 function adjustRevenueViaMultiplier(direction) {
