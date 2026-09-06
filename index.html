@@ -10,16 +10,17 @@
     <div class="app-layout">
         
         <!-- LEFT SIDEBAR: Ledger Entry Form & Backend Configuration -->
-        <div class="sidebar-header">DATABASE SETUP</div>
-        <div class="form-block">
-            <div class="url-input-container" style="position: relative; display: flex; align-items: center; width: 100%;">
-                <input type="text" id="apiEndpoint" placeholder="Paste Google Web App URL here..." value="" style="padding-right: 40px;">
-                
-                <!-- DYNAMIC NEON STATUS SPINNER TARGET ANCHOR -->
-                <div id="syncSpinner" class="neon-spinner" style="display: none; position: absolute; right: 12px; width: 16px; height: 16px; border: 2px solid rgba(56, 189, 248, 0.2); border-top-color: #38bdf8; border-radius: 50%;"></div>
+        <div class="sidebar">
+            <div class="sidebar-header">DATABASE SETUP</div>
+            <div class="form-block">
+                <div class="url-input-container" style="position: relative; display: flex; align-items: center; width: 100%;">
+                    <input type="text" id="apiEndpoint" placeholder="Paste Google Web App URL here..." value="" style="padding-right: 40px;">
+                    
+                    <!-- DYNAMIC NEON STATUS SPINNER TARGET ANCHOR -->
+                    <div id="syncSpinner" class="neon-spinner-ring state-idle" style="display: none; position: absolute; right: 12px; width: 16px; height: 16px;"></div>
+                </div>
+                <small class="help-text">Deploy your Google Sheet script to get an unlimited backend link.</small>
             </div>
-            <small class="help-text">Deploy your Google Sheet script to get an unlimited backend link.</small>
-        </div>
 
             <div class="sidebar-header">ADD INCOME ENTRY</div>
             <div class="form-grid">
@@ -83,19 +84,19 @@
                 <!-- COLUMN I, J, K: Conversion Logic Hub Controls -->
                 <div class="input-group" style="border-left: 2px dashed #1e293b; padding-left: 10px; margin: 15px 0;">
                     <label style="color: #38bdf8; font-weight: 700;">FX CONVERSION PORTAL (Cols I, J, K)</label>
-                    <select id="formConversionMode" class="bright-input" onchange="toggleConversionInputFields()" style="margin-top: 6px;">
+                    <select id="formConversionMode" class="bright-input" style="margin-top: 6px;">
                         <option value="exact_cash" selected>Option A: Enter Exact Cash Landed</option>
                         <option value="custom_rate">Option B: Enter Custom Exchange Rate</option>
                     </select>
                 </div>
 
-                <!-- Option A Sub-Field (Feeds Col K Cash directly, Back-Traces Col J) -->
+                <!-- Option A Sub-Field -->
                 <div class="input-group" id="groupExactCash">
                     <label>Exact Cash Arrived In Home Currency</label>
                     <input type="number" id="formExactCashAmt" placeholder="e.g., 4232.00" value="0">
                 </div>
 
-                <!-- Option B Sub-Field (Feeds Col J FX Rate directly, Multiplies Col K) -->
+                <!-- Option B Sub-Field -->
                 <div class="input-group" id="groupCustomRate" style="display: none;">
                     <label>Custom Bank Exchange Rate</label>
                     <input type="number" id="formCustomRateVal" placeholder="e.g., 1.0850" step="0.0001" value="1">
@@ -112,22 +113,20 @@
 
                 <div class="input-group">
                     <label>System Home Currency Base</label>
-                    <select id="baseCurrencyConfig" class="bright-input" onchange="updateBaseCurrencySettingsInSheet()">
+                    <select id="baseCurrencyConfig" class="bright-input">
                         <option value="">Loading base targets...</option>
                     </select>
                 </div>
 
                 <div class="input-group">
                     <label>Global Tax Table Rate (%)</label>
-                    <input type="number" id="baseTaxRateConfig" value="0" class="bright-input" oninput="updateBaseCurrencySettingsInSheet()">
+                    <input type="number" id="baseTaxRateConfig" value="0" class="bright-input">
                 </div>
                 
                 <button id="btnSubmit" onclick="dispatchLedgerTransactionBundle()">STREAM TO SHEET</button>
                 <p id="syncStatus" class="status-text"></p>
                 
-                <!-- ========================================================================= -->
-                <!-- 🔎 NEW: SEARCH, FILTER, AND HISTORICAL TRANSACTION LOG VIEW INTERFACE     -->
-                <!-- ========================================================================= -->
+                <!-- TRANSACTION LOG PANELS -->
                 <div class="sidebar-header" style="margin-top:24px;">TRANSACTION DATABASE LOGS</div>
                 
                 <div class="log-controls">
@@ -140,15 +139,12 @@
                     </select>
                 </div>
 
-                <!-- Dynamic injection targets for cloud database rows tracking array -->
                 <div id="sidebarLogContainer" class="sidebar-records-scroll-tray">
                     <div class="empty-tray-text">No records streamed yet.</div>
                 </div>
 
-
             </div> <!-- Close form-grid -->
         </div> <!-- Close sidebar -->
-
         <!-- RIGHT PANEL: Matrix Simulation Dashboard -->
         <div class="main-content">
             <div class="matrix-container">
@@ -182,7 +178,7 @@
                     </div>
                 </div>
 
-                <!-- Upgraded Legend Layout Section -->
+                <!-- Dashboard Metrics Legend Breakdown -->
                 <div class="dashboard-breakdowns">
                     <div class="breakdown-box">
                         <span class="breakdown-title">INCOME BREAKDOWN:</span>
@@ -200,15 +196,14 @@
                         <span class="dot dot-withholding"></span> Withholding Balance: <strong id="taxWithholding">$0.00</strong>
                     </div>
                 </div>
-                <!-- ========================================================================= -->
-                <!-- 🚀 FIXED: STRIPPED HARDCODED SIGNS FROM MULTIPLIER SELECTION MATRIX        -->
-                <!-- ========================================================================= -->
+
+                <!-- Annual Revenue Weight Controls -->
                 <div class="full-width-control">
                     <div class="control-header">
                         <span>ANNUAL REVENUE CONFIGURATION (UP TO 1 BILLION)</span>
                         <div class="multiplier-box" style="display: flex; align-items: center; gap: 8px;">
                             <label for="revenueStepSelect">STEP WEIGHT:</label>
-                            <select id="revenueStepSelect" class="cyber-mini-select upgraded-macro-select" onchange="updateMatrixData()">
+                            <select id="revenueStepSelect" class="cyber-mini-select upgraded-macro-select" onchange="window.updateMatrixData()">
                                 <option value="1"> 1 </option>
                                 <option value="10"> 10  </option>
                                 <option value="100"> 100  </option>
@@ -229,45 +224,34 @@
                     </div>  
                 </div>
 
-                <!-- UPDATE: Precise Macro Sliders with 1% and 0.1% Button Steppers -->
-                <div class="settings-grid" style="margin-bottom: 24px;">
-                    
-                <!-- 2. Expenses Ratio Slider -->
-                <div class="control-block">
-                    <div class="control-header">
-                        <span>EXPENSES RATIO</span>
-                        <span id="valRatio" class="text-red">30%</span>
-                    </div>
-                    <div class="stepper-wrapper">
-                        <button class="step-btn" onclick="adjustSliderStep('inputRatio', -0.1, true)">-</button>
-                        <input type="range" id="inputRatio" min="0" max="90" step="0.1" value="30" class="slider slider-red">
-                        <button class="step-btn" onclick="adjustSliderStep('inputRatio', 0.1, true)">+</button>
-                    </div>
-                </div>
-
-                <!-- 3. Base Target Tax Rate Slider -->
-                <div class="control-block">
-                    <div class="control-header">
-                        <span>BASE TARGET TAX RATE</span>
-                        <span id="valTaxRate" class="text-yellow">15%</span>
-                    </div>
-                    <div class="stepper-wrapper">
-                        <button class="step-btn" onclick="adjustSliderStep('inputTaxRate', -0.1, true)">-</button>
-                        <input type="range" id="inputTaxRate" min="0" max="50" step="0.1" value="15" class="slider slider-yellow">
-                        <button class="step-btn" onclick="adjustSliderStep('inputTaxRate', 0.1, true)">+</button>
-                    </div>
-                </div>
-                </div>
-
-                <!-- ========================================================================= -->
-                <!-- 2. THE 6 CORRECTED SUB-BREAKDOWN SLIDERS (3 Dual-Action Balanced Inputs) -->
-                <!-- ========================================================================= -->
+                <!-- Predictive Breakdown Allocations Sliders -->
                 <div class="sidebar-header" style="margin-bottom: 12px; letter-spacing: 2px;">PREDICTIVE BREAKDOWN ALLOCATIONS</div>
                 <div class="settings-grid">
                     
-                    <!-- SEARCH AND REPLACE THESE LINES FURTHER DOWN INSIDE INDEX.HTML -->
+                    <div class="control-block">
+                        <div class="control-header">
+                            <span>EXPENSES RATIO</span>
+                            <span id="valRatio" class="text-red">30%</span>
+                        </div>
+                        <div class="stepper-wrapper">
+                            <button class="step-btn" onclick="adjustSliderStep('inputRatio', -0.1, true)">-</button>
+                            <input type="range" id="inputRatio" min="0" max="90" step="0.1" value="30" class="slider slider-red">
+                            <button class="step-btn" onclick="adjustSliderStep('inputRatio', 0.1, true)">+</button>
+                        </div>
+                    </div>
 
-                    <!-- 4. Income Split Slider -->
+                    <div class="control-block">
+                        <div class="control-header">
+                            <span>BASE TARGET TAX RATE</span>
+                            <span id="valTaxRate" class="text-yellow">15%</span>
+                        </div>
+                        <div class="stepper-wrapper">
+                            <button class="step-btn" onclick="adjustSliderStep('inputTaxRate', -0.1, true)">-</button>
+                            <input type="range" id="inputTaxRate" min="0" max="50" step="0.1" value="15" class="slider slider-yellow">
+                            <button class="step-btn" onclick="adjustSliderStep('inputTaxRate', 0.1, true)">+</button>
+                        </div>
+                    </div>
+
                     <div class="control-block">
                         <div class="control-header">
                             <span>INCOME: ACTIVE vs OTHERS MIX</span>
@@ -280,7 +264,6 @@
                         </div>
                     </div>
 
-                    <!-- 5. Expense Split Slider -->
                     <div class="control-block">
                         <div class="control-header">
                             <span>EXPENSES: BIZ EXPENSES vs PLATFORM FEES MIX</span>
@@ -293,7 +276,6 @@
                         </div>
                     </div>
 
-                    <!-- 6. Tax Split Slider -->
                     <div class="control-block">
                         <div class="control-header">
                             <span>TAX VAULT: INCOME TAX vs WITHHOLDING MIX</span>
@@ -306,31 +288,25 @@
                         </div>
                     </div>
 
-
-                </div>
-
-
-                    <!-- ========================================================================= -->
-                    <!-- 🔄 UPGRADED: DUAL-ACTION CONTROL PANEL CURRENCY ELEMENT CONTROLLERS      -->
-                    <!-- ========================================================================= -->
                     <div class="control-block">
                         <div class="control-header" id="displayBaseCurrencyTitle">DISPLAY BASE CURRENCY CONTROL PANEL</div>
                         <div class="currency-btn-group" id="dualCurrencyControlGrid" style="display: flex; gap: 8px; background: #070a13; padding: 4px; border-radius: 10px; border: 1px solid #1e293b;">
-                            <!-- Dynamically generated as two distinct parallel toggles by sheets-sync.js -->
+                            <!-- Handled dynamically by scripts -->
                         </div>
                     </div>
 
-                    
                     <div class="control-block">
                         <div class="control-header">LEDGER INTEGRATION</div>
                         <button id="btnToggleMode" onclick="toggleDatabaseMode()" class="toggle-mode-btn">MODE: LIVE TRACKING</button>
                     </div>
-                </div>
-            </div>
-        </div>
 
-    </div>
+                </div> <!-- Close settings-grid -->
+            </div> <!-- Close matrix-container -->
+        </div> <!-- Close main-content -->
+
+    </div> <!-- Close app-layout -->
     
+
 
 
     <script src="matrix-engine.js"></script>
