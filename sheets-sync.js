@@ -405,6 +405,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Upgraded matrix driver intercept loop inside matrix-engine.js to cleanly strip hardcoded behaviors
 const originalUpdateMatrixData = window.updateMatrixData;
 // Upgraded matrix driver intercept loop inside sheets-sync.js cleanly patched
+// Upgraded matrix driver intercept loop inside sheets-sync.js cleanly patched
 window.updateMatrixData = function() {
     const receivedSelect = document.getElementById('formCurrency');
     const homeSelect = document.getElementById('baseCurrencyConfig');
@@ -418,22 +419,47 @@ window.updateMatrixData = function() {
 
         window.currentCurrency = logSymbol;
 
-        // FIXED: Corrected template string interpolation formatting parameters and fixed truncated toLocaleString calls
         const rawHomeIncome = parseFloat(logItem.homeIncome) || parseFloat(logItem.netHomeIncome) || 0;
+        const bizExpenseAmt = parseFloat(logItem.bizExpense) || 0;
+        const platformPctVal = parseFloat(logItem.platformPct) || 0;
+        const invoiceAmt = parseFloat(logItem.amount) || 0;
+        const fxRateVal = parseFloat(logItem.fxRate) || 1;
 
-        if (document.getElementById('grossDisplay')) document.getElementById('grossDisplay').innerText = `${logSymbol}${rawHomeIncome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-        if (document.getElementById('takeHomeDisplay')) document.getElementById('takeHomeDisplay').innerText = `${logSymbol}${(parseFloat(logItem.takeHomePay) || 0).toLocaleString(undefined, {maximumFractionDigits:0})}`;
-        if (document.getElementById('valRevenue')) document.getElementById('valRevenue').innerText = `${logSymbol}${rawHomeIncome.toLocaleString()}`;
-        if (document.getElementById('inputRevenue')) document.getElementById('inputRevenue').value = rawHomeIncome;
-
-        const canvasEl = document.getElementById('flowChart');
+        // Formula H & L Total Equivalents
+        const computedPlatformFeeHome = invoiceAmt * platformPctVal * fxRateVal;
+        const logTotalExpenses = bizExpenseAmt + computedPlatformFeeHome;
+        
+        // Formula M & N & O Equivalents for single row parameters
         const taxRateConfigEl = document.getElementById('baseTaxRateConfig');
         const systemTaxRate = taxRateConfigEl ? (parseFloat(taxRateConfigEl.value) / 100) : 0.15;
+        const computedNetProfit = rawHomeIncome - bizExpenseAmt;
+        const computedFinalTax = computedNetProfit > 0 ? (computedNetProfit * systemTaxRate) : 0;
+        const computedTakeHome = rawHomeIncome - logTotalExpenses - computedFinalTax;
 
+        if (document.getElementById('grossDisplay')) document.getElementById('grossDisplay').innerText = `${logSymbol}${rawHomeIncome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('expensesDisplay')) document.getElementById('expensesDisplay').innerText = `${logSymbol}${logTotalExpenses.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('taxDisplay')) document.getElementById('taxDisplay').innerText = `${logSymbol}${computedFinalTax.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('takeHomeDisplay')) document.getElementById('takeHomeDisplay').innerText = `${logSymbol}${computedTakeHome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('valRevenue')) document.getElementById('valRevenue').innerText = `${logSymbol}${rawHomeIncome.toLocaleString()}`;
+        if (document.getElementById('inputRevenue')) document.getElementById('inputRevenue').value = rawHomeIncome;
+        // 🚀 FIXED: DYNAMICALLY HOOK THE REMAINING SUB-BREAKDOWN LABELS TO LOG ROW ATTRIBUTES
+        if (document.getElementById('incActive')) document.getElementById('incActive').innerText = `${logSymbol}${rawHomeIncome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('incOthers')) document.getElementById('incOthers').innerText = `${logSymbol}0`;
+        if (document.getElementById('expBusinessExpenses')) document.getElementById('expBusinessExpenses').innerText = `${logSymbol}${bizExpenseAmt.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('expPlatformFees')) document.getElementById('expPlatformFees').innerText = `${logSymbol}${computedPlatformFeeHome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('taxIncome')) document.getElementById('taxIncome').innerText = `${logSymbol}${computedFinalTax.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('taxWithholding')) document.getElementById('taxWithholding').innerText = `${logSymbol}${(parseFloat(logItem.withholdAmt) || 0).toLocaleString(undefined, {maximumFractionDigits:0})}`;
+
+        // Update progress visualization segments for single card selection
+        if (rawHomeIncome > 0) {
+            if (document.getElementById('barExpenses')) document.getElementById('barExpenses').style.width = `${(logTotalExpenses / rawHomeIncome) * 100}%`;
+            if (document.getElementById('barTax')) document.getElementById('barTax').style.width = `${(computedFinalTax / rawHomeIncome) * 100}%`;
+            if (document.getElementById('barTakeHome')) document.getElementById('barTakeHome').style.width = `${(computedTakeHome / rawHomeIncome) * 100}%`;
+        }
+
+        const canvasEl = document.getElementById('flowChart');
         if (canvasEl && typeof drawFlowLines === 'function') {
-            const bizExpenseAmt = parseFloat(logItem.bizExpense) || 0;
-            const computedNetProfit = rawHomeIncome - bizExpenseAmt;
-            const expRatio = rawHomeIncome > 0 ? ((bizExpenseAmt + (parseFloat(logItem.amount) * (parseFloat(logItem.platformPct) || 0) * (parseFloat(logItem.fxRate) || 1))) / rawHomeIncome) : 0;
+            const expRatio = rawHomeIncome > 0 ? (logTotalExpenses / rawHomeIncome) : 0;
             drawFlowLines(expRatio, systemTaxRate, computedNetProfit, rawHomeIncome);
         }
         
@@ -453,6 +479,9 @@ window.updateMatrixData = function() {
     
     if (typeof synchronizeDualCurrencyActionButtons === 'function') synchronizeDualCurrencyActionButtons();
 };
+
+
+
 
 // Force custom injector hooks to re-draw elements immediately upon completing dropdown hydration runs
 const originalHydrateGlobalCurrencies = window.dynamicallyHydrateGlobalCurrencies;
