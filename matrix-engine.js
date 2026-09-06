@@ -398,5 +398,10 @@ document.querySelectorAll('.curr-btn').forEach(btn => {
         updateMatrixData();
     });
 });
-window.onresize = () => { resizeCanvas(); updateMatrixData(); };
+// Safe execution window size adjustment intercept hook mapping tracker
+window.onresize = () => { 
+    if (typeof resizeCanvas === 'function') resizeCanvas(); 
+    if (typeof window.updateMatrixData === 'function') window.updateMatrixData(); 
+    if (typeof renderHistoricalSidebarLogs === 'function') renderHistoricalSidebarLogs();
+};
 
