@@ -5,9 +5,6 @@ window.activeMatrixCurrencyScopeMode = "home"; // Toggles between "received" or 
 window.currentlyPinnedLogIndex = null;
 window.cachedHistoricalLogs = [];
 
-// =========================================================================
-// 🚀 FIXED: IMMEDIATE LOCAL HYDRATION ENFORCED UPON LAUNCHING CORES
-// =========================================================================
 window.addEventListener('DOMContentLoaded', () => {
     if (localStorage.getItem('userSheetDB')) {
         apiInput.value = localStorage.getItem('userSheetDB');
@@ -21,20 +18,25 @@ window.addEventListener('DOMContentLoaded', () => {
     
     document.getElementById('formDate').valueAsDate = new Date();
     
-    if (typeof resizeCanvas === 'function') {
-        resizeCanvas(); 
-    }
-    if (typeof updateBaseCurrencyConfigSymbols === 'function') {
-        updateBaseCurrencyConfigSymbols(); 
-    }
+    if (typeof resizeCanvas === 'function') resizeCanvas();
+    if (typeof updateBaseCurrencyConfigSymbols === 'function') updateBaseCurrencyConfigSymbols();
 
     setTimeout(() => {
         if (typeof resizeCanvas === 'function') resizeCanvas();
-        if (typeof refreshAllDropdowns === 'function') refreshAllDropdowns();
-        
-        // CRUCIAL: Force browser-locale generation to execute immediately on boot!
         dynamicallyHydrateGlobalCurrencies();
-    }, 50);
+        
+        // 🚀 CRUCIAL INITIALIZATION FIX: Enforce instant log card pulling on launch!
+        fetchAndHydrateLogCachesFromSheet();
+    }, 100);
+});
+
+// Also force it to run immediately if a buyer updates or pastes a new URL in the setup input field box
+apiInput.addEventListener('input', (e) => {
+    const urlValue = e.target.value.trim();
+    localStorage.setItem('userSheetDB', urlValue);
+    if (urlValue.startsWith('https://google.com')) {
+        fetchAndHydrateLogCachesFromSheet();
+    }
 });
 
 apiInput.addEventListener('input', (e) => {
@@ -567,4 +569,62 @@ function renderHistoricalSidebarLogs() {
         `;
         container.appendChild(card);
     });
+}
+
+// =========================================================================
+// 🚀 AUTOMATED RE-HYDRATION CORE: FORCES INITIAL LOG DATA ON BOOTUP
+// =========================================================================
+async function fetchAndHydrateLogCachesFromSheet() {
+    const endpoint = apiInput.value.trim();
+    const container = document.getElementById('sidebarLogContainer');
+    
+    if (!endpoint || !endpoint.startsWith('https://google.com')) {
+        console.warn("Logcat Engine Trace: Valid Google script URL not set yet.");
+        return;
+    }
+
+    if (container) {
+        container.innerHTML = `<div class="empty-tray-text" style="color: #38bdf8;">LOADING LEDGER FROM CLOUD...</div>`;
+    }
+
+    console.log("⚡ Boot Sync Engine: Requesting historical spreadsheet records cache...");
+
+    try {
+        // A clean GET request to your deployment app activates your doGet handler route loop
+        const response = await fetch(endpoint, { method: 'GET' });
+        const result = await response.json();
+
+        // If your server is on the production script framework, it returns your logs summary array!
+        if (result.status === "success" && result.summary) {
+            window.liveSheetMetrics = result.summary;
+            window.localHistoryTotals = result.summary.totals;
+            window.cachedHistoricalLogs = result.summary.logs || [];
+            
+            console.log(`✔ Boot Sync Engine: Loaded ${window.cachedHistoricalLogs.length} historical entries smoothly.`);
+            
+            // Force your visual charts and card panels to redraw automatically on launch
+            if (typeof updateMatrixData === 'function') updateMatrixData();
+            if (typeof renderHistoricalSidebarLogs === 'function') renderHistoricalSidebarLogs();
+        } else {
+            // If the backend returns a mock string layout, trigger a parallel POST setup frame block
+            const postResponse = await fetch(endpoint, { 
+                method: 'POST', 
+                body: JSON.stringify({ configUpdate: false, data: null }) 
+            });
+            const postResult = await postResponse.json();
+            
+            if (postResult.summary) {
+                window.liveSheetMetrics = postResult.summary;
+                window.localHistoryTotals = postResult.summary.totals;
+                window.cachedHistoricalLogs = postResult.summary.logs || [];
+                if (typeof updateMatrixData === 'function') updateMatrixData();
+                if (typeof renderHistoricalSidebarLogs === 'function') renderHistoricalSidebarLogs();
+            }
+        }
+    } catch (err) {
+        console.error("🚨 Boot Sync Engine Failure: ", err);
+        if (container) {
+            container.innerHTML = `<div class="empty-tray-text" style="color: #f87171;">Database Sync Failed. Check URL connection parameters!</div>`;
+        }
+    }
 }
