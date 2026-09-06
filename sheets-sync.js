@@ -30,6 +30,32 @@ window.addEventListener('DOMContentLoaded', () => {
     }, 50);
 });
 
+// Helper utility to safely toggle your existing cyberpunk loader states
+function updateSyncSpinnerState(state) {
+    const spinner = document.getElementById('syncSpinner');
+    if (!spinner) return;
+    
+    // Reset core css configuration framework classes
+    spinner.className = "neon-spinner-ring";
+    
+    if (state === "hide") {
+        spinner.style.display = "none";
+        return;
+    }
+    
+    spinner.style.display = "block";
+    if (state === "loading") spinner.classList.add('state-loading');
+    if (state === "success") {
+        spinner.classList.add('state-success');
+        setTimeout(() => updateSyncSpinnerState("hide"), 2000);
+    }
+    if (state === "error") {
+        spinner.classList.add('state-error');
+        setTimeout(() => updateSyncSpinnerState("hide"), 4000);
+    }
+}
+
+
 // Also force it to run immediately if a buyer updates or pastes a new URL in the setup input field box
 apiInput.addEventListener('input', (e) => {
     const urlValue = e.target.value.trim();
@@ -63,21 +89,29 @@ async function updateBaseCurrencySettingsInSheet() {
     localStorage.setItem('userBaseCurrencyConfig', baseCurrencyValue);
     localStorage.setItem('userBaseTaxRateConfig', document.getElementById('baseTaxRateConfig').value);
 
-    // FIXED: Formatted the settings backup block correctly to prevent 404/CORS crashes
     const payload = {
         configUpdate: true,
         "Base Currency": baseCurrencyValue,
         "Tax Rate": targetTaxRateValue
     };
 
+    // SPINNER ACTIVATION HOOK
+    if (typeof updateSyncSpinnerState === 'function') updateSyncSpinnerState("loading");
+
     try {
         const response = await fetch(endpoint, { method: 'POST', body: JSON.stringify(payload) });
         const result = await response.json();
         if (result.status === "success") {
             console.log("⚡ Logcat Core: Global base configuration values saved.");
+            // SPINNER SUCCESS HOOK
+            if (typeof updateSyncSpinnerState === 'function') updateSyncSpinnerState("success");
+        } else {
+            if (typeof updateSyncSpinnerState === 'function') updateSyncSpinnerState("error");
         }
     } catch (e) {
         console.log("Configuration tracking network sync lag error.");
+        // SPINNER ERROR HOOK
+        if (typeof updateSyncSpinnerState === 'function') updateSyncSpinnerState("error");
     }
 }
 
@@ -113,7 +147,6 @@ async function dispatchLedgerTransactionBundle() {
     const platformToggleEl = document.getElementById('formPlatformFeesToggle');
     const isPlatformFeesDeducted = platformToggleEl ? platformToggleEl.value : (feePercentage > 0 ? "YES" : "NO");
 
-    // EXTRACT CONVERSION SYSTEM VALUES FROM THE FORM HANDLE OBJECTS
     const convMode = document.getElementById('formConversionMode').value;
     const exactCashAmt = parseFloat(document.getElementById('formExactCashAmt').value) || 0;
     const customRateVal = parseFloat(document.getElementById('formCustomRateVal').value) || 1;
@@ -124,7 +157,6 @@ async function dispatchLedgerTransactionBundle() {
         return;
     }
 
-    // RIGID SECURE INGESTION STRUCTURAL UNIFIED PAYLOAD BUNDLE
     const payload = {
         data: {
             "Date": date,
@@ -136,18 +168,18 @@ async function dispatchLedgerTransactionBundle() {
             "Platform Fees Deducted": isPlatformFeesDeducted.toUpperCase().trim(),
             "Platform Percentage": feePercentage, 
             "Business Expenses": amtExpense,
-            // FIXED: Added missing conversion properties to the payload object properties mapping track
             "Conversion Mode": convMode,
             "Exact Cash Input": exactCashAmt,
             "Custom Rate Input": customRateVal
         }
     };
 
-    console.log("⚡ FRONT-END LOGCAT PAYLOAD TRANSMISSION BUNDLE:\n", JSON.stringify(payload, null, 2));
-
     const submitBtn = document.getElementById('btnSubmit');
     submitBtn.disabled = true;
     submitBtn.innerText = "SAVING...";
+    
+    // SPINNER ACTIVATIONHOOK
+    updateSyncSpinnerState("loading");
 
     try {
         const response = await fetch(endpoint, { 
@@ -156,17 +188,27 @@ async function dispatchLedgerTransactionBundle() {
         });
         const result = await response.json();
 
-        console.log("🛰️ SERVER RESPONSE RECEIVED: ", JSON.stringify(result, null, 2));
-
         if (result.status === "success") {
             statusText.style.color = '#4ade80'; 
             statusText.innerText = "✔ Verified transaction successfully logged into Google Sheets!";
+            
+            // SPINNER SUCCESS HOOK
+            updateSyncSpinnerState("success");
             
             document.getElementById('formAmount').value = '';
             document.getElementById('formFees').value = '0';
             document.getElementById('formExpenses').value = '0';
             document.getElementById('formWithholdingAmt').value = '0';
             document.getElementById('formClient').value = '';
+            
+            // Core Re-hydration refresh triggers
+            if (result.summary) {
+                window.liveSheetMetrics = result.summary;
+                window.localHistoryTotals = result.summary.totals;
+                window.cachedHistoricalLogs = result.summary.logs || [];
+                if (typeof updateMatrixData === 'function') updateMatrixData();
+                if (typeof renderHistoricalSidebarLogs === 'function') renderHistoricalSidebarLogs();
+            }
         } else {
             throw new Error(result.message);
         }
@@ -174,6 +216,9 @@ async function dispatchLedgerTransactionBundle() {
         console.error("🚨 TRANSMISSION CRASH LOG: ", err);
         statusText.style.color = '#f87171'; 
         statusText.innerText = "Streaming failed. Check connection parameter inputs!";
+        
+        // SPINNER ERROR HOOK
+        updateSyncSpinnerState("error");
     } finally {
         submitBtn.disabled = false;
         submitBtn.innerText = "STREAM TO SHEET";
@@ -585,16 +630,12 @@ function renderHistoricalSidebarLogs() {
     });
 }
 
-// =========================================================================
-// 🚀 AUTOMATED RE-HYDRATION CORE: FORCES INITIAL LOG DATA ON BOOTUP
-// =========================================================================
 async function fetchAndHydrateLogCachesFromSheet() {
     const endpoint = apiInput.value.trim();
     const container = document.getElementById('sidebarLogContainer');
     
-    // UPDATED VALIDATION PREFIX: Now safely accepts script.google.com deployments
-    if (!endpoint || !endpoint.startsWith('https://script.google.com')) {
-        console.warn("Logcat Engine Trace: Please paste a valid Google Web App URL (must start with https://script.google.com).");
+    if (!endpoint || !endpoint.startsWith('https://google.com')) {
+        console.warn("Logcat Engine Trace: Please paste a valid Google Web App URL.");
         if (container) {
             container.innerHTML = `<div class="empty-tray-text" style="color: #64748b;">Waiting for a valid Google Script Web App URL...</div>`;
         }
@@ -606,13 +647,14 @@ async function fetchAndHydrateLogCachesFromSheet() {
     }
 
     console.log("⚡ Boot Sync Engine: Requesting historical spreadsheet records cache...");
+    
+    // SPINNER ACTIVATION HOOK
+    if (typeof updateSyncSpinnerState === 'function') updateSyncSpinnerState("loading");
 
     try {
-        // A clean GET request to your deployment app activates your doGet handler route loop
         const response = await fetch(endpoint, { method: 'GET' });
         const result = await response.json();
 
-        // If your server is on the production script framework, it returns your logs summary array!
         if (result.status === "success" && result.summary) {
             window.liveSheetMetrics = result.summary;
             window.localHistoryTotals = result.summary.totals;
@@ -620,11 +662,13 @@ async function fetchAndHydrateLogCachesFromSheet() {
             
             console.log(`✔ Boot Sync Engine: Loaded ${window.cachedHistoricalLogs.length} historical entries smoothly.`);
             
-            // Force your visual charts and card panels to redraw automatically on launch
+            // SPINNER SUCCESS HOOK
+            if (typeof updateSyncSpinnerState === 'function') updateSyncSpinnerState("success");
+
             if (typeof updateMatrixData === 'function') updateMatrixData();
             if (typeof renderHistoricalSidebarLogs === 'function') renderHistoricalSidebarLogs();
         } else {
-            // If the backend returns a mock string layout, trigger a parallel POST setup frame block
+            // Configuration recovery frame fallback fallback handling loop
             const postResponse = await fetch(endpoint, { 
                 method: 'POST', 
                 body: JSON.stringify({ configUpdate: false, data: null }) 
@@ -635,8 +679,14 @@ async function fetchAndHydrateLogCachesFromSheet() {
                 window.liveSheetMetrics = postResult.summary;
                 window.localHistoryTotals = postResult.summary.totals;
                 window.cachedHistoricalLogs = postResult.summary.logs || [];
+                
+                // SPINNER SUCCESS HOOK
+                if (typeof updateSyncSpinnerState === 'function') updateSyncSpinnerState("success");
+
                 if (typeof updateMatrixData === 'function') updateMatrixData();
                 if (typeof renderHistoricalSidebarLogs === 'function') renderHistoricalSidebarLogs();
+            } else {
+                if (typeof updateSyncSpinnerState === 'function') updateSyncSpinnerState("error");
             }
         }
     } catch (err) {
@@ -644,5 +694,7 @@ async function fetchAndHydrateLogCachesFromSheet() {
         if (container) {
             container.innerHTML = `<div class="empty-tray-text" style="color: #f87171;">Database Sync Failed. Check URL connection parameters!</div>`;
         }
+        // SPINNER ERROR HOOK
+        if (typeof updateSyncSpinnerState === 'function') updateSyncSpinnerState("error");
     }
 }

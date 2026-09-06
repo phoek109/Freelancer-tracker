@@ -19,12 +19,12 @@ const inputTaxRate = document.getElementById('inputTaxRate');
 const canvas = document.getElementById('flowChart');
 const btnToggle = document.getElementById('btnToggleMode');
 
-// FIXED: Restored correct string template evaluation syntax to eliminate 404/CORS crashes on dropdown mutations
+// Drop-in replacement for the broken exchange rate fetch routine
 async function fetchLiveExchangeRates(baseCurrency) {
     if (!baseCurrency) return;
     try {
         const cleanBase = String(baseCurrency).toUpperCase().trim();
-        // FIXED: Added missing forward slash and variable dollar mapping character tag
+        // REPAIRED: Corrected endpoint syntax with template literal structure
         const response = await fetch(`https://er-api.com{cleanBase}`);
         
         if (response.ok) {

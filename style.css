@@ -600,3 +600,64 @@ body {
         opacity: 0.6;
     }
 }
+
+/* ========================================================================= */
+/* ⚡ DYNAMIC NEON STATUS SPINNER SPARK ACCENT ANIMATION CONFIGURATION       */
+/* ========================================================================= */
+.neon-spinner-ring {
+    position: absolute;
+    right: 12px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-sizing: border-box;
+    pointer-events: none;
+}
+
+/* State A: Idle profile state maps a solid muted frame anchor */
+.neon-spinner-ring.state-idle {
+    border-color: #334155;
+    box-shadow: none;
+    animation: none;
+}
+
+/* State B: Active Loading connection pulse track spinning loops */
+.neon-spinner-ring.state-loading {
+    border-color: rgba(234, 179, 8, 0.2);
+    border-top-color: #eab308;
+    box-shadow: 0 0 10px rgba(234, 179, 8, 0.4);
+    animation: cyberSpinLoop 0.75s linear infinite;
+}
+
+/* State C: Success verified connection flash glow flags */
+.neon-spinner-ring.state-success {
+    border-color: #4ade80;
+    background-color: #4ade80;
+    box-shadow: 0 0 12px #4ade80, 0 0 24px rgba(74, 222, 128, 0.4);
+    animation: neonPulseSuccess 1.5s ease-in-out infinite alternate;
+}
+
+/* State D: Broken Connection / CORS Block alert rings */
+.neon-spinner-ring.state-error {
+    border-color: #f87171;
+    background-color: #f87171;
+    box-shadow: 0 0 12px #f87171, 0 0 24px rgba(248, 113, 113, 0.4);
+    animation: pulseError 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes cyberSpinLoop {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes neonPulseSuccess {
+    0% { transform: scale(0.9); box-shadow: 0 0 8px #4ade80; }
+    100% { transform: scale(1.1); box-shadow: 0 0 16px #4ade80, 0 0 28px rgba(74, 222, 128, 0.5); }
+}
+
+@keyframes pulseError {
+    0% { opacity: 0.6; transform: scale(0.95); }
+    100% { opacity: 1; transform: scale(1.05); }
+}

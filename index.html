@@ -10,12 +10,16 @@
     <div class="app-layout">
         
         <!-- LEFT SIDEBAR: Ledger Entry Form & Backend Configuration -->
-        <div class="sidebar">
-            <div class="sidebar-header">DATABASE SETUP</div>
-            <div class="form-block">
-                <input type="text" id="apiEndpoint" placeholder="Paste Google Web App URL here..." value="">
-                <small class="help-text">Deploy your Google Sheet script to get an unlimited backend link.</small>
+        <div class="sidebar-header">DATABASE SETUP</div>
+        <div class="form-block">
+            <div class="url-input-container" style="position: relative; display: flex; align-items: center; width: 100%;">
+                <input type="text" id="apiEndpoint" placeholder="Paste Google Web App URL here..." value="" style="padding-right: 40px;">
+                
+                <!-- DYNAMIC NEON STATUS SPINNER TARGET ANCHOR -->
+                <div id="syncSpinner" class="neon-spinner" style="display: none; position: absolute; right: 12px; width: 16px; height: 16px; border: 2px solid rgba(56, 189, 248, 0.2); border-top-color: #38bdf8; border-radius: 50%;"></div>
             </div>
+            <small class="help-text">Deploy your Google Sheet script to get an unlimited backend link.</small>
+        </div>
 
             <div class="sidebar-header">ADD INCOME ENTRY</div>
             <div class="form-grid">
