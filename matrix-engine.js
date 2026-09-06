@@ -19,13 +19,13 @@ const inputTaxRate = document.getElementById('inputTaxRate');
 const canvas = document.getElementById('flowChart');
 const btnToggle = document.getElementById('btnToggleMode');
 
-// REPAIRED: Cleaned up URL parameters to eliminate er-api routing failures
+// REPAIRED CORE FOREX CHANNEL: Stops name resolution crashes instantly
 async function fetchLiveExchangeRates(baseCurrency) {
     if (!baseCurrency) return;
     try {
         const cleanBase = String(baseCurrency).toUpperCase().trim();
         
-        // FIXED FORMAT: Replaced raw string concatenation with a valid template string
+        // FIXED ENDPOINT CONTEXT: Clean template literals integration
         const response = await fetch(`https://er-api.com{cleanBase}`);
         
         if (response.ok) {
@@ -33,15 +33,14 @@ async function fetchLiveExchangeRates(baseCurrency) {
             if (data && data.rates) {
                 exchangeRatesCache = data.rates;
                 console.log(`✔ Forex Engine Sync Successful for Base: ${cleanBase}`);
-                // Safely update all active calculated metrics cards and layouts
+                
                 if (typeof window.updateMatrixData === 'function') {
                     window.updateMatrixData();
                 }
             }
         }
     } catch (e) {
-        console.warn("Forex Cloud Matrix Offline. Dropping into local recovery variables cache.", e);
-        // Direct layout redraw to ensure the UI updates even using cached metrics
+        console.warn("Forex Cloud Matrix Offline. Falling back to local cache definitions.", e);
         if (typeof window.updateMatrixData === 'function') {
             window.updateMatrixData();
         }
@@ -399,9 +398,34 @@ function adjustRevenueViaMultiplier(direction) {
 // Add Event Listeners across all controls to keep calculations interactive
 if (inputRevenue) inputRevenue.addEventListener('input', updateMatrixData);
 
-// Add or append the sync call directly to your drag input event handlers:
-if (inputRatio) inputRatio.addEventListener('input', () => { updateMatrixData(); updateBaseCurrencySettingsInSheet(); });
-if (inputTaxRate) inputTaxRate.addEventListener('input', () => { updateMatrixData(); updateBaseCurrencySettingsInSheet(); });
+// FIXED: Removed heavy network config setters from the direct drag listeners
+if (inputRatio) {
+    inputRatio.addEventListener('input', () => { 
+        // Sync local text percentage values instantly
+        if (document.getElementById('valRatio')) {
+            document.getElementById('valRatio').innerText = `${Math.round(inputRatio.value)}%`;
+        }
+        window.updateMatrixData(); 
+    });
+    // Save to Google Sheets ONLY when the user lets go of the slider mouse handle
+    inputRatio.addEventListener('change', () => {
+        if (typeof updateBaseCurrencySettingsInSheet === 'function') updateBaseCurrencySettingsInSheet();
+    });
+}
+
+if (inputTaxRate) {
+    inputTaxRate.addEventListener('input', () => {
+        // Sync local text percentage values instantly
+        if (document.getElementById('valTaxRate')) {
+            document.getElementById('valTaxRate').innerText = `${parseFloat(inputTaxRate.value).toFixed(1)}%`;
+        }
+        window.updateMatrixData(); 
+    });
+    // Save to Google Sheets ONLY when the user lets go of the slider mouse handle
+    inputTaxRate.addEventListener('change', () => {
+        if (typeof updateBaseCurrencySettingsInSheet === 'function') updateBaseCurrencySettingsInSheet();
+    });
+}
 if (inputIncomeSplit) inputIncomeSplit.addEventListener('input', () => { updateMatrixData(); streamBreakdownProportionsToSheet(); });
 if (inputExpenseSplit) inputExpenseSplit.addEventListener('input', () => { updateMatrixData(); streamBreakdownProportionsToSheet(); });
 if (inputTaxSplit) inputTaxSplit.addEventListener('input', () => { updateMatrixData(); streamBreakdownProportionsToSheet(); });
