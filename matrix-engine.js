@@ -289,9 +289,9 @@ function updateMatrixData() {
         const dynamicTaxRateCalc = gross > 0 ? (taxReserve / gross) : 0.15;
 
         
-        if (inputRatio) inputRatio.value = Math.round(expRatio * 100);
+             if (inputRatio) inputRatio.value = Math.round(expRatio * 100);
 
-        // 🚀 FULL LOCKDOWN CORE: Programmatically disable inputs during live display states
+        // FULL LOCKDOWN CORE: Programmatically disable inputs during live display states
         const slidersToLock = ['inputRevenue', 'inputRatio', 'inputTaxRate', 'inputIncomeSplit', 'inputExpenseSplit', 'inputTaxSplit'];
         slidersToLock.forEach(id => {
             const sliderEl = document.getElementById(id);
@@ -302,7 +302,7 @@ function updateMatrixData() {
             }
         });
 
-        // Inject the final absolute balance figures directly onto the main visual panel cards
+        // Inject the absolute balanced figures directly onto the main visual panel cards
         const activeSymbol = window.currentCurrency || '$ ';
         if (document.getElementById('grossDisplay')) document.getElementById('grossDisplay').innerText = `${activeSymbol}${gross.toLocaleString(undefined, {maximumFractionDigits:0})}`;
         if (document.getElementById('expensesDisplay')) document.getElementById('expensesDisplay').innerText = `${activeSymbol}${totalExpenses.toLocaleString(undefined, {maximumFractionDigits:0})}`;
@@ -318,9 +318,9 @@ function updateMatrixData() {
         if (document.getElementById('taxWithholding')) document.getElementById('taxWithholding').innerText = `${activeSymbol}${(sheetMetrics.taxWithholding || 0).toLocaleString(undefined, {maximumFractionDigits:0})}`;
 
         if (gross > 0) {
-            if (document.getElementById('barExpenses')) document.getElementById('barExpenses').style.width = `${(totalExpenses / gross) * 100}%`;
-            if (document.getElementById('barTax')) document.getElementById('barTax').style.width = `${(taxReserve / gross) * 100}%`;
-            if (document.getElementById('barTakeHome')) document.getElementById('barTakeHome').style.width = `${(takeHome / gross) * 100}%`;
+            document.getElementById('barExpenses').style.width = `${(totalExpenses / gross) * 100}%`;
+            document.getElementById('barTax').style.width = `${(taxReserve / gross) * 100}%`;
+            document.getElementById('barTakeHome').style.width = `${(takeHome / gross) * 100}%`;
         }
 
         if (typeof drawFlowLines === 'function') {
