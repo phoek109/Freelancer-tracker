@@ -173,6 +173,38 @@ async function dispatchLedgerTransactionBundle() {
         return;
     }
 
+    // =========================================================================
+    // 🚀 NEW INTERCEPT GUARD: IDENTITY RULES IF TARGET CURRENCIES MATCH
+    // =========================================================================
+    const homeCurrencyCode     = String(document.getElementById('baseCurrencyConfig')?.value || "").toUpperCase().trim();
+    const receivedCurrencyCode = String(subIncome).toUpperCase().trim();
+
+    if (receivedCurrencyCode === homeCurrencyCode && receivedCurrencyCode !== "") {
+        
+        // CHECK THRESHOLD A: User mistakenly has Option B (Custom Rate) active
+        if (convMode === "custom_rate") {
+            statusText.style.color = '#f87171';
+            statusText.innerHTML = "🛑 <strong>Data Conflict:</strong> Received Currency matches your Base Home Currency! Please switch your FX Portal configuration to <strong>Option A (Enter Exact Cash Landed)</strong> and enter an identical amount to that of the invoice amount, or else check your preferred currency codes.";
+            return; // Terminate streaming completely
+        }
+        
+        // CHECK THRESHOLD B: User has Option A active but cash landed does not equal invoice amount
+        if (convMode === "exact_cash" && exactCashAmt !== amtIncome) {
+            statusText.style.color = '#f87171';
+            statusText.innerHTML = `🛑 <strong>Math Discrepancy:</strong> Currencies match perfectly. Your <strong>Exact Cash Arrived</strong> (${exactCashAmt}) must equal your <strong>Invoice Amount</strong> (${amtIncome}) because the exchange rate is exactly 1:1, or else check your preferred currency codes.`;
+            
+            const cashInputBox = document.getElementById('formExactCashAmt');
+            if (cashInputBox) {
+                cashInputBox.style.borderColor = "#f87171";
+                cashInputBox.focus();
+            }
+            return; // Terminate streaming completely
+        }
+    } else {
+        if (document.getElementById('formExactCashAmt')) {
+            document.getElementById('formExactCashAmt').style.borderColor = "";
+        }
+    }
     const payload = {
         data: {
             "Date": date,
@@ -194,8 +226,8 @@ async function dispatchLedgerTransactionBundle() {
     submitBtn.disabled = true;
     submitBtn.innerText = "SAVING...";
     
-    // SPINNER ACTIVATIONHOOK
-    updateSyncSpinnerState("loading");
+    // SPINNER ACTIVATION HOOK
+    if (typeof updateSyncSpinnerState === 'function') updateSyncSpinnerState("loading");
 
     try {
         const response = await fetch(endpoint, { 
@@ -209,7 +241,7 @@ async function dispatchLedgerTransactionBundle() {
             statusText.innerText = "✔ Verified transaction successfully logged into Google Sheets!";
             
             // SPINNER SUCCESS HOOK
-            updateSyncSpinnerState("success");
+            if (typeof updateSyncSpinnerState === 'function') updateSyncSpinnerState("success");
             
             document.getElementById('formAmount').value = '';
             document.getElementById('formFees').value = '0';
@@ -234,7 +266,7 @@ async function dispatchLedgerTransactionBundle() {
         statusText.innerText = "Streaming failed. Check connection parameter inputs!";
         
         // SPINNER ERROR HOOK
-        updateSyncSpinnerState("error");
+        if (typeof updateSyncSpinnerState === 'function') updateSyncSpinnerState("error");
     } finally {
         submitBtn.disabled = false;
         submitBtn.innerText = "STREAM TO SHEET";
@@ -420,8 +452,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Upgraded matrix driver intercept loop inside matrix-engine.js to cleanly strip hardcoded behaviors
 const originalUpdateMatrixData = window.updateMatrixData;
-// Upgraded matrix driver intercept loop inside sheets-sync.js cleanly patched
-// Upgraded matrix driver intercept loop inside sheets-sync.js cleanly patched
+// Clean intercept matrix driver patch inside sheets-sync.js
 window.updateMatrixData = function() {
     const receivedSelect = document.getElementById('formCurrency');
     const homeSelect = document.getElementById('baseCurrencyConfig');
@@ -435,55 +466,53 @@ window.updateMatrixData = function() {
 
         window.currentCurrency = logSymbol;
 
-        const rawHomeIncome = parseFloat(logItem.homeIncome) || parseFloat(logItem.netHomeIncome) || 0;
-        const bizExpenseAmt = parseFloat(logItem.bizExpense) || 0;
-        const platformPctVal = parseFloat(logItem.platformPct) || 0;
-        const invoiceAmt = parseFloat(logItem.amount) || 0;
-        const fxRateVal = parseFloat(logItem.fxRate) || 1;
+        const gross             = parseFloat(logItem.homeIncome) || parseFloat(logItem.netHomeIncome) || 0;
+        const bizExpenseAmt     = parseFloat(logItem.bizExpense) || 0;
+        const invoiceAmt        = parseFloat(logItem.amount) || 0;
+        const platformPctVal    = parseFloat(logItem.platformPct) || 0;
+        const fxRateVal         = parseFloat(logItem.fxRate) || 1;
+        const rawWithholdAmt    = parseFloat(logItem.withholdAmt) || 0;
+        
+        const computedFinalTax  = parseFloat(logItem.finalTaxOwed) || 0;
+        const computedTakeHome  = parseFloat(logItem.takeHomePay) || 0;
 
-        // Formula H & L Total Equivalents
         const computedPlatformFeeHome = invoiceAmt * platformPctVal * fxRateVal;
         const logTotalExpenses = bizExpenseAmt + computedPlatformFeeHome;
+        const computedNetProfit = gross - bizExpenseAmt;
+        const withholdingTaxHome = rawWithholdAmt * fxRateVal;
+        const taxReserve = computedFinalTax + withholdingTaxHome;
+
+        if (document.getElementById('grossDisplay')) document.getElementById('grossDisplay').innerText = `${logSymbol}${gross.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+        if (document.getElementById('expensesDisplay')) document.getElementById('expensesDisplay').innerText = `${logSymbol}${logTotalExpenses.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+        if (document.getElementById('taxDisplay')) document.getElementById('taxDisplay').innerText = `${logSymbol}${taxReserve.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+        if (document.getElementById('takeHomeDisplay')) document.getElementById('takeHomeDisplay').innerText = `${logSymbol}${computedTakeHome.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
         
-        // Formula M & N & O Equivalents for single row parameters
-        const taxRateConfigEl = document.getElementById('baseTaxRateConfig');
-        const systemTaxRate = taxRateConfigEl ? (parseFloat(taxRateConfigEl.value) / 100) : 0.15;
-        const computedNetProfit = rawHomeIncome - bizExpenseAmt;
-        const computedFinalTax = computedNetProfit > 0 ? (computedNetProfit * systemTaxRate) : 0;
-        const computedTakeHome = rawHomeIncome - logTotalExpenses - computedFinalTax;
+        if (document.getElementById('valRevenue')) document.getElementById('valRevenue').innerText = `${logSymbol}${gross.toLocaleString()}`;
+        if (document.getElementById('inputRevenue')) document.getElementById('inputRevenue').value = gross;
 
-        if (document.getElementById('grossDisplay')) document.getElementById('grossDisplay').innerText = `${logSymbol}${rawHomeIncome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-        if (document.getElementById('expensesDisplay')) document.getElementById('expensesDisplay').innerText = `${logSymbol}${logTotalExpenses.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-        if (document.getElementById('taxDisplay')) document.getElementById('taxDisplay').innerText = `${logSymbol}${computedFinalTax.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-        if (document.getElementById('takeHomeDisplay')) document.getElementById('takeHomeDisplay').innerText = `${logSymbol}${computedTakeHome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-        if (document.getElementById('valRevenue')) document.getElementById('valRevenue').innerText = `${logSymbol}${rawHomeIncome.toLocaleString()}`;
-        if (document.getElementById('inputRevenue')) document.getElementById('inputRevenue').value = rawHomeIncome;
-        // 🚀 FIXED: DYNAMICALLY HOOK THE REMAINING SUB-BREAKDOWN LABELS TO LOG ROW ATTRIBUTES
-        if (document.getElementById('incActive')) document.getElementById('incActive').innerText = `${logSymbol}${rawHomeIncome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-        if (document.getElementById('incOthers')) document.getElementById('incOthers').innerText = `${logSymbol}0`;
-        if (document.getElementById('expBusinessExpenses')) document.getElementById('expBusinessExpenses').innerText = `${logSymbol}${bizExpenseAmt.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-        if (document.getElementById('expPlatformFees')) document.getElementById('expPlatformFees').innerText = `${logSymbol}${computedPlatformFeeHome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-        if (document.getElementById('taxIncome')) document.getElementById('taxIncome').innerText = `${logSymbol}${computedFinalTax.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-        if (document.getElementById('taxWithholding')) document.getElementById('taxWithholding').innerText = `${logSymbol}${(parseFloat(logItem.withholdAmt) || 0).toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('incActive')) document.getElementById('incActive').innerText = `${logSymbol}${gross.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+        if (document.getElementById('incOthers')) document.getElementById('incOthers').innerText = `${logSymbol}0.00`;
+        if (document.getElementById('expBusinessExpenses')) document.getElementById('expBusinessExpenses').innerText = `${logSymbol}${bizExpenseAmt.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+        if (document.getElementById('expPlatformFees')) document.getElementById('expPlatformFees').innerText = `${logSymbol}${computedPlatformFeeHome.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+        if (document.getElementById('taxIncome')) document.getElementById('taxIncome').innerText = `${logSymbol}${computedFinalTax.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+        if (document.getElementById('taxWithholding')) document.getElementById('taxWithholding').innerText = `${logSymbol}${withholdingTaxHome.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
 
-        // Update progress visualization segments for single card selection
-        if (rawHomeIncome > 0) {
-            if (document.getElementById('barExpenses')) document.getElementById('barExpenses').style.width = `${(logTotalExpenses / rawHomeIncome) * 100}%`;
-            if (document.getElementById('barTax')) document.getElementById('barTax').style.width = `${(computedFinalTax / rawHomeIncome) * 100}%`;
-            if (document.getElementById('barTakeHome')) document.getElementById('barTakeHome').style.width = `${(computedTakeHome / rawHomeIncome) * 100}%`;
+        if (gross > 0) {
+            document.getElementById('barExpenses').style.width = `${(logTotalExpenses / gross) * 100}%`;
+            document.getElementById('barTax').style.width = `${(taxReserve / gross) * 100}%`;
+            document.getElementById('barTakeHome').style.width = `${(computedTakeHome / gross) * 100}%`;
         }
 
         const canvasEl = document.getElementById('flowChart');
         if (canvasEl && typeof drawFlowLines === 'function') {
-            const expRatio = rawHomeIncome > 0 ? (logTotalExpenses / rawHomeIncome) : 0;
-            drawFlowLines(expRatio, systemTaxRate, computedNetProfit, rawHomeIncome);
+            drawFlowLines(gross, logTotalExpenses, taxReserve, computedTakeHome);
         }
         
         if (typeof synchronizeDualCurrencyActionButtons === 'function') synchronizeDualCurrencyActionButtons();
-        return;
+        return; 
     }
 
-    // SCENARIO B: Live tracking modes driven directly by active dropdown status loops
+    // SCENARIO B: Fall-through cleanly to use our newly streamlined matrix-engine core!
     const activeCurrencyCode = (window.activeMatrixCurrencyScopeMode === "received") ? receivedSelect.value : homeSelect.value;
     if (typeof getGlobalCurrencySymbolCharacter === 'function') {
         window.currentCurrency = getGlobalCurrencySymbolCharacter(activeCurrencyCode);
@@ -495,7 +524,6 @@ window.updateMatrixData = function() {
     
     if (typeof synchronizeDualCurrencyActionButtons === 'function') synchronizeDualCurrencyActionButtons();
 };
-
 
 
 
@@ -756,4 +784,44 @@ async function fetchAndHydrateLogCachesFromSheet() {
         if (typeof updateSyncSpinnerState === 'function') updateSyncSpinnerState("error");
     }
 }
+// NEW VISIBILITY CONTROL HUB: Handles Option A vs Option B form block switching dynamically
+function toggleConversionInputFields() {
+    const modeSelect = document.getElementById('formConversionMode');
+    const groupExact = document.getElementById('groupExactCash');
+    const groupRate  = document.getElementById('groupCustomRate');
+    
+    if (!modeSelect || !groupExact || !groupRate) return;
+    
+    const selectedMode = modeSelect.value;
+    
+    if (selectedMode === "exact_cash") {
+        groupExact.style.display = "flex";  // Open Cash Landed Input
+        groupRate.style.display  = "none";  // Wipe Custom Exchange Rate Input
+        
+        // Auto-fill behavior: If currencies match, fill down matching amounts instantly
+        const homeCode = String(document.getElementById('baseCurrencyConfig')?.value || "").toUpperCase().trim();
+        const recCode  = String(document.getElementById('formCurrency')?.value || "").toUpperCase().trim();
+        const invoiceAmt = parseFloat(document.getElementById('formAmount')?.value) || 0;
+        
+        if (homeCode === recCode && recCode !== "" && invoiceAmt > 0) {
+            const cashBox = document.getElementById('formExactCashAmt');
+            if (cashBox) cashBox.value = invoiceAmt;
+        }
+    } else if (selectedMode === "custom_rate") {
+        groupExact.style.display = "none";  // Wipe Cash Landed Input
+        groupRate.style.display  = "flex";  // Open Custom Exchange Rate Input
+    }
+}
+
+// Attach change interception tracking loops inside the main DOM thread framework initialization
+document.addEventListener('DOMContentLoaded', () => {
+    const convModeSelector = document.getElementById('formConversionMode');
+    if (convModeSelector) {
+        convModeSelector.addEventListener('change', toggleConversionInputFields);
+    }
+    const invoiceAmtInput = document.getElementById('formAmount');
+    if (invoiceAmtInput) {
+        invoiceAmtInput.addEventListener('input', toggleConversionInputFields);
+    }
+});
 

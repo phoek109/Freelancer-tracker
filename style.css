@@ -224,15 +224,17 @@ body {
     margin-bottom: 16px;
 }
 
+/* 🚀 FIXED CONTAINER LAYOUT: Establishes strong explicit proportions for structural drawing stability */
 .flow-chart-wrapper {
-    position: relative;
-    height: 260px; /* Boosted slightly to prevent edge labels cutting off */
-    width: 100%;
-    background: #070a13;
-    border: 1px solid #1e293b;
-    border-radius: 16px;
-    overflow: hidden;
-    margin-bottom: 24px;
+    position: relative !important;
+    width: 100% !important;
+    height: 320px !important; /* Forces the container to open up visually and hold the drawing canvas */
+    background: #070a13 !important;
+    border: 1px solid #1e293b !important;
+    border-radius: 12px !important;
+    margin-bottom: 20px !important;
+    overflow: hidden !important;
+    display: block !important;
 }
 
 .split-progress-bar {
@@ -660,4 +662,64 @@ body {
 @keyframes pulseError {
     0% { opacity: 0.6; transform: scale(0.95); }
     100% { opacity: 1; transform: scale(1.05); }
+}
+
+/* Ensure internal chart layers stack cleanly */
+.flow-chart-wrapper {
+    position: relative !important;
+}
+
+/* Detached Floating Window State Properties Core */
+.flow-chart-wrapper.detached-floating-window {
+    position: fixed !important;
+    bottom: 24px !important;
+    right: 24px !important;
+    width: 460px !important;
+    height: 280px !important; /* Explicit dimensions for floating screen layout states */
+    z-index: 99999 !important;
+    background: #0b0f19 !important;
+    border: 2px solid #38bdf8 !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.7), 0 0 15px rgba(56, 189, 248, 0.15) !important;
+    border-radius: 12px !important;
+    padding: 8px !important;
+    transition: transform 0.2s ease, opacity 0.15s ease !important;
+}
+
+.flow-chart-wrapper.detached-floating-window:hover {
+    border-color: #a855f7 !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.8), 0 0 20px rgba(168, 85, 247, 0.2) !important;
+}
+
+/* Custom Interaction Micro-Animations for professional SVGs */
+.matrix-action-icon-tray button:hover {
+    color: #38bdf8 !important;
+    transform: scale(1.05);
+}
+
+.matrix-action-icon-tray button:active {
+    transform: scale(0.95);
+}
+
+/* 🚀 FULLSCREEN MODALPRESENTATION SCREEN OVERLAY */
+.matrix-container.canvas-maximize-presentation-view {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 999999 !important;
+    background: #020617 !important; /* Pure black matrix void layout track */
+    padding: 30px !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+}
+
+/* Adjust nested canvas heights automatically when full-screen is engaged */
+.matrix-container.canvas-maximize-presentation-view .flow-chart-wrapper {
+    flex-grow: 1 !important;
+    height: calc(100vh - 220px) !important;
+    margin-bottom: 20px !important;
 }
