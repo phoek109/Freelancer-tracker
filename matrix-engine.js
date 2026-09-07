@@ -195,13 +195,9 @@ function updateMatrixData() {
         totals: { gross: 0, expenses: 0, taxWithheld: 0 }
     };
 
-    // =========================================================================
-    // ⚡ FIXED HISTORICAL LOCK DRILL-DOWN: ARITHMETIC WITH SAFETIES
-    // =========================================================================
     if (window.currentlyPinnedLogIndex !== null && window.cachedHistoricalLogs && window.cachedHistoricalLogs[window.currentlyPinnedLogIndex]) {
         const logItem = window.cachedHistoricalLogs[window.currentlyPinnedLogIndex];
         
-        // 🚀 FULL DRILL-DOWN LOCKDOWN CORE: Instantly freeze all physical sliders while reviewing a historic log card
         const slidersToLock = ['inputRevenue', 'inputRatio', 'inputTaxRate', 'inputIncomeSplit', 'inputExpenseSplit', 'inputTaxSplit'];
         slidersToLock.forEach(id => {
             const sliderEl = document.getElementById(id);
@@ -219,33 +215,22 @@ function updateMatrixData() {
         const withholdAmtVal = parseFloat(logItem.withholdAmt) || 0;
         const bizExpenseAmt  = parseFloat(logItem.bizExpense) || 0;
         
-        // 🚀 FIXED: Read the exact historical final tax owed directly from the dataset row object parameters
+        // 🚀 FIXED: Extract outputs directly from spreadsheet formulas variables to prevent local mismatch issues
+        gross                = parseFloat(logItem.homeIncome) || parseFloat(logItem.netHomeIncome) || 0;
         const computedFinalTax = parseFloat(logItem.finalTaxOwed) || 0;
+        const computedTakeHome = parseFloat(logItem.takeHomePay) || 0;
 
-        // Formula I Equivalent: Calculated Net Foreign cash flow amount
-        const computedNetForeign = invoiceAmt - withholdAmtVal - (invoiceAmt * platformPctVal);
-        
-        // Formula K Equivalent: Net Home Income (Becomes your exclusive Gross Input baseline)
-        gross = parseFloat(logItem.homeIncome) || (computedNetForeign * fxRateVal);
-
-        // Formula H Equivalent: Platform fees calculated flat amount translated to home currency values
+        // Platform fee formulas matching sheet row column alignments exactly
         const computedPlatformFeeHome = invoiceAmt * platformPctVal * fxRateVal;
-        
-        // Formula L Total Equivalent: Total Row Expenses (Biz overheads + Platform fees cash value)
         const logTotalExpenses = bizExpenseAmt + computedPlatformFeeHome;
-        
-        // Formula M Equivalent: Taxable net row margins profit profiles
         const computedNetProfit = gross - bizExpenseAmt; 
-
-        // Formula O Equivalent: Final true net take home row pay calculated using the historical tax figure
-        const computedTakeHome = gross - logTotalExpenses - computedFinalTax;
 
         // 2. Safely populate every single right hand metrics card text element
         const activeSymbol = window.currentCurrency || '$ ';
-        if (document.getElementById('grossDisplay')) document.getElementById('grossDisplay').innerText = `${activeSymbol}${gross.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-        if (document.getElementById('expensesDisplay')) document.getElementById('expensesDisplay').innerText = `${activeSymbol}${logTotalExpenses.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-        if (document.getElementById('taxDisplay')) document.getElementById('taxDisplay').innerText = `${activeSymbol}${computedFinalTax.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-        if (document.getElementById('takeHomeDisplay')) document.getElementById('takeHomeDisplay').innerText = `${activeSymbol}${computedTakeHome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('grossDisplay')) document.getElementById('grossDisplay').innerText = `${activeSymbol}${gross.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+        if (document.getElementById('expensesDisplay')) document.getElementById('expensesDisplay').innerText = `${activeSymbol}${logTotalExpenses.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+        if (document.getElementById('taxDisplay')) document.getElementById('taxDisplay').innerText = `${activeSymbol}${computedFinalTax.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+        if (document.getElementById('takeHomeDisplay')) document.getElementById('takeHomeDisplay').innerText = `${activeSymbol}${computedTakeHome.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
 
         // HYDRATE DETAILED BREAKDOWN VALUES FOR SINGLE LOG VIEW
         if (document.getElementById('incActive')) document.getElementById('incActive').innerText = `${activeSymbol}${gross.toLocaleString(undefined, {maximumFractionDigits:0})}`;
@@ -268,7 +253,7 @@ function updateMatrixData() {
         
         // 4. Repaint your live Flow Matrix canvas charts Bezier curves using historical weight allocations
         expRatio = gross > 0 ? (logTotalExpenses / gross) : 0;
-        const historicalTaxRateProportion = computedNetProfit > 0 ? (computedFinalTax / computedNetProfit) : 0.15;
+        const historicalTaxRateProportion = computedNetProfit > 0 ? (computedFinalTax / gross) : 0.05;
         
         if (typeof drawFlowLines === 'function') {
             drawFlowLines(expRatio, historicalTaxRateProportion, computedNetProfit, gross);
