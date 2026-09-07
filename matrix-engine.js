@@ -302,7 +302,7 @@ function updateMatrixData() {
             }
         });
 
-        // Inject the absolute balanced figures directly onto the main visual panel cards
+        // Inject the final absolute balance figures directly onto the main visual panel cards
         const activeSymbol = window.currentCurrency || '$ ';
         if (document.getElementById('grossDisplay')) document.getElementById('grossDisplay').innerText = `${activeSymbol}${gross.toLocaleString(undefined, {maximumFractionDigits:0})}`;
         if (document.getElementById('expensesDisplay')) document.getElementById('expensesDisplay').innerText = `${activeSymbol}${totalExpenses.toLocaleString(undefined, {maximumFractionDigits:0})}`;
@@ -323,11 +323,14 @@ function updateMatrixData() {
             document.getElementById('barTakeHome').style.width = `${(takeHome / gross) * 100}%`;
         }
 
+        // 🚀 FIXED CANVAS INJECTOR: Passed exact database proportions down to your canvas Bezier curves
         if (typeof drawFlowLines === 'function') {
             const computedNetProfitLive = gross - (sheetMetrics.BusinessExpenses || 0);
             drawFlowLines(expRatio, dynamicTaxRateCalc, computedNetProfitLive, gross);
         }
+        return; // Halt processing loop cleanly right here to prevent code leaking out!
     } else {
+
         // --- PREDICTIVE USER MARCO SIMULATION CHANNEL (RESTORE FUNCTIONALITY) ---
         gross = parseFloat(inputRevenue ? inputRevenue.value : 0) || 0;
         expRatio = (parseFloat(inputRatio ? inputRatio.value : 0) || 0) / 100;
