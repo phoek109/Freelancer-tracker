@@ -263,20 +263,25 @@ function updateMatrixData() {
 
     
     // =========================================================================
-    // ⚡ SCENARIO B: STANDARD LIVE PIPELINE TRACKING (ELIMINATE SIMULATION LEAK)
-    // =========================================================================
-    // =========================================================================
-    // ⚡ SCENARIO B: STANDARD LIVE PIPELINE TRACKING (ELIMINATE SIMULATION LEAK)
+    // ⚡ SCENARIO B: STANDARD LIVE PIPELINE TRACKING (TRUE SHEET COLUMN VALUES)
     // =========================================================================
     if (isLiveTrackingMode) {
-        // Pull exact running summary values directly out of your sheet data rows totals object
+        // 1. Pull verified values straight from your raw metadata attributes cache
         gross = totals.gross || 0;
         const totalExpenses = totals.expenses || 0;
         const taxReserve = totals.taxWithheld || 0;
         
-        // 🚀 REPAIRED MATH SYNC: Pull your exact spreadsheet pre-calculated column sum 
-        // directly out of your summary data package to eliminate double platform cut deductions!
-        const takeHome = totals.takeHomePay || sheetMetrics.totals.takeHomePay || (gross - totalExpenses - taxReserve);
+        // 🚀 TRUE SHEET SUM REPAIR: Instead of running subtraction math, we loop through 
+        // your actual raw logs cache to sum up the true "takeHomePay" values from your sheet!
+        let pureSheetTakeHomeSum = 0;
+        if (window.cachedHistoricalLogs && window.cachedHistoricalLogs.length > 0) {
+            window.cachedHistoricalLogs.forEach(log => {
+                pureSheetTakeHomeSum += parseFloat(log.takeHomePay) || 0;
+            });
+        }
+        
+        // If the array isn't hydrated yet, fall back safely to the summary data keys
+        const takeHome = pureSheetTakeHomeSum > 0 ? pureSheetTakeHomeSum : (totals.takeHomePay || (gross - totalExpenses - taxReserve));
 
         incomePct = sheetMetrics.activeRatio || 0.65;
         expensePct = sheetMetrics.bizExpRatio || 0.60;
@@ -287,9 +292,8 @@ function updateMatrixData() {
         // Match the slider positioning hooks onto true current database proportions
         expRatio = gross > 0 ? (totalExpenses / gross) : 0;
         const dynamicTaxRateCalc = gross > 0 ? (taxReserve / gross) : 0.15;
-
         
-             if (inputRatio) inputRatio.value = Math.round(expRatio * 100);
+        if (inputRatio) inputRatio.value = Math.round(expRatio * 100);
 
         // FULL LOCKDOWN CORE: Programmatically disable inputs during live display states
         const slidersToLock = ['inputRevenue', 'inputRatio', 'inputTaxRate', 'inputIncomeSplit', 'inputExpenseSplit', 'inputTaxSplit'];
@@ -323,12 +327,13 @@ function updateMatrixData() {
             document.getElementById('barTakeHome').style.width = `${(takeHome / gross) * 100}%`;
         }
 
-        // 🚀 FIXED CANVAS INJECTOR: Passed exact database proportions down to your canvas Bezier curves
+        // 🚀 FIXED CHART CURVES: Maps the take-home line path directly onto the true sheet values proportion
         if (typeof drawFlowLines === 'function') {
             const computedNetProfitLive = gross - (sheetMetrics.BusinessExpenses || 0);
             drawFlowLines(expRatio, dynamicTaxRateCalc, computedNetProfitLive, gross);
         }
-        return; // Halt processing loop cleanly right here to prevent code leaking out!
+        return; // Halt stream processing right here to safely exit the live dashboard module
+
     } else {
 
         // --- PREDICTIVE USER MARCO SIMULATION CHANNEL (RESTORE FUNCTIONALITY) ---
