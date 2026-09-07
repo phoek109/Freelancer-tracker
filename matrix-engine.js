@@ -262,40 +262,75 @@ function updateMatrixData() {
     }
 
     
-    // --- STANDARD PIPELINE MANAGEMENT FOR LIVE CHANNELS TRACKING ---
+    // =========================================================================
+    // ⚡ SCENARIO B: STANDARD LIVE PIPELINE TRACKING (ELIMINATE SIMULATION LEAK)
+    // =========================================================================
     if (isLiveTrackingMode) {
-        gross = totals.gross;
-        expRatio = gross > 0 ? (totals.expenses / gross) : 0;
+        // Pull exact running summary values directly out of your sheet data rows totals object
+        gross = totals.gross || 0;
         
-        const baseTaxInputBox = document.getElementById('baseTaxRateConfig');
-        taxRate = baseTaxInputBox ? (parseFloat(baseTaxInputBox.value) || 15) / 100 : 0.15;
+        // 🚀 FIXED: Lock live totals onto the cold hard historical tax records served from your cloud sheets
+        // This stops the dragged tax slider from modifying the boot metrics grid!
+        const totalExpenses = totals.expenses || 0;
+        const taxReserve = totals.taxWithheld || 0;
+        const takeHome = gross - totalExpenses - taxReserve;
 
         incomePct = sheetMetrics.activeRatio || 0.65;
         expensePct = sheetMetrics.bizExpRatio || 0.60;
         taxPct = sheetMetrics.incomeTaxRatio || 0.80;
 
         if (inputRevenue) inputRevenue.value = gross;
+        
+        // Match the slider positioning hooks onto true current database proportions
+        expRatio = gross > 0 ? (totalExpenses / gross) : 0;
+        const dynamicTaxRateCalc = gross > 0 ? (taxReserve / gross) : 0.15;
+        
         if (inputRatio) inputRatio.value = Math.round(expRatio * 100);
 
-        // 🚀 FULL LOCKDOWN CORE: Completely freeze all physical sliders while in live tracking mode
+        // 🚀 FULL LOCKDOWN CORE: Programmatically disable inputs during live display states
         const slidersToLock = ['inputRevenue', 'inputRatio', 'inputTaxRate', 'inputIncomeSplit', 'inputExpenseSplit', 'inputTaxSplit'];
         slidersToLock.forEach(id => {
             const sliderEl = document.getElementById(id);
             if (sliderEl) {
                 sliderEl.disabled = true;
                 sliderEl.style.cursor = "not-allowed";
-                sliderEl.style.opacity = "0.5"; // Visual cue indicating locked state
+                sliderEl.style.opacity = "0.5";
             }
         });
+
+        // Inject the final absolute balance figures directly onto the main visual panel cards
+        const activeSymbol = window.currentCurrency || '$ ';
+        if (document.getElementById('grossDisplay')) document.getElementById('grossDisplay').innerText = `${activeSymbol}${gross.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('expensesDisplay')) document.getElementById('expensesDisplay').innerText = `${activeSymbol}${totalExpenses.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('taxDisplay')) document.getElementById('taxDisplay').innerText = `${activeSymbol}${taxReserve.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('takeHomeDisplay')) document.getElementById('takeHomeDisplay').innerText = `${activeSymbol}${takeHome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+
+        // HYDRATE DETAILED BREAKDOWN VALUES FOR GLOBAL LIVE TRACKING CONSOLE
+        if (document.getElementById('incActive')) document.getElementById('incActive').innerText = `${activeSymbol}${(sheetMetrics.incActive || 0).toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('incOthers')) document.getElementById('incOthers').innerText = `${activeSymbol}${(sheetMetrics.incOthers || 0).toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('expBusinessExpenses')) document.getElementById('expBusinessExpenses').innerText = `${activeSymbol}${(sheetMetrics.BusinessExpenses || 0).toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('expPlatformFees')) document.getElementById('expPlatformFees').innerText = `${activeSymbol}${(sheetMetrics.PlatformFees || 0).toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('taxIncome')) document.getElementById('taxIncome').innerText = `${activeSymbol}${(sheetMetrics.taxIncome || 0).toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('taxWithholding')) document.getElementById('taxWithholding').innerText = `${activeSymbol}${(sheetMetrics.taxWithholding || 0).toLocaleString(undefined, {maximumFractionDigits:0})}`;
+
+        if (gross > 0) {
+            if (document.getElementById('barExpenses')) document.getElementById('barExpenses').style.width = `${(totalExpenses / gross) * 100}%`;
+            if (document.getElementById('barTax')) document.getElementById('barTax').style.width = `${(taxReserve / gross) * 100}%`;
+            if (document.getElementById('barTakeHome')) document.getElementById('barTakeHome').style.width = `${(takeHome / gross) * 100}%`;
+        }
+
+        if (typeof drawFlowLines === 'function') {
+            const computedNetProfitLive = gross - (sheetMetrics.BusinessExpenses || 0);
+            drawFlowLines(expRatio, dynamicTaxRateCalc, computedNetProfitLive, gross);
+        }
     } else {
-        // --- PREDICTIVE SIMULATION MODE (UNFREEZE HANDLES) ---
+        // --- PREDICTIVE USER MARCO SIMULATION CHANNEL (RESTORE FUNCTIONALITY) ---
         gross = parseFloat(inputRevenue ? inputRevenue.value : 0) || 0;
         expRatio = (parseFloat(inputRatio ? inputRatio.value : 0) || 0) / 100;
         taxRate = (parseFloat(inputTaxRate ? inputTaxRate.value : 0) || 0) / 100;
 
         incomePct = 0.65; expensePct = 0.60; taxPct = 0.80;
 
-        // Restore functionality to slider tracks when live tracking is turned off
         const slidersToUnlock = ['inputRevenue', 'inputRatio', 'inputTaxRate', 'inputIncomeSplit', 'inputExpenseSplit', 'inputTaxSplit'];
         slidersToUnlock.forEach(id => {
             const sliderEl = document.getElementById(id);
@@ -305,45 +340,35 @@ function updateMatrixData() {
                 sliderEl.style.opacity = "1";
             }
         });
-    }
 
-    const totalExpenses = gross * expRatio;
-    const netProfit = gross - totalExpenses;
-    const taxReserve = (netProfit > 0 ? netProfit * taxRate : 0) + (isLiveTrackingMode ? totals.taxWithheld : 0);
-    const takeHome = gross - totalExpenses - taxReserve;
+        const totalExpenses = gross * expRatio;
+        const netProfit = gross - totalExpenses;
+        const taxReserve = netProfit > 0 ? (netProfit * taxRate) : 0;
+        const takeHome = gross - totalExpenses - taxReserve;
 
-    const activeSymbol = window.currentCurrency || '$ ';
+        const activeSymbol = window.currentCurrency || '$ ';
 
-    if (document.getElementById('grossDisplay')) document.getElementById('grossDisplay').innerText = `${activeSymbol}${gross.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-    if (document.getElementById('expensesDisplay')) document.getElementById('expensesDisplay').innerText = `${activeSymbol}${totalExpenses.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-    if (document.getElementById('taxDisplay')) document.getElementById('taxDisplay').innerText = `${activeSymbol}${taxReserve.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-    if (document.getElementById('takeHomeDisplay')) document.getElementById('takeHomeDisplay').innerText = `${activeSymbol}${takeHome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('grossDisplay')) document.getElementById('grossDisplay').innerText = `${activeSymbol}${gross.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('expensesDisplay')) document.getElementById('expensesDisplay').innerText = `${activeSymbol}${totalExpenses.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('taxDisplay')) document.getElementById('taxDisplay').innerText = `${activeSymbol}${taxReserve.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('takeHomeDisplay')) document.getElementById('takeHomeDisplay').innerText = `${activeSymbol}${takeHome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
 
-    // HYDRATE DETAILED BREAKDOWN VALUES FOR GLOBAL LIVE/PREDICTIVE VIEW
-    if (isLiveTrackingMode) {
-        if (document.getElementById('incActive')) document.getElementById('incActive').innerText = `${activeSymbol}${(sheetMetrics.incActive || 0).toLocaleString(undefined, {maximumFractionDigits:0})}`;
-        if (document.getElementById('incOthers')) document.getElementById('incOthers').innerText = `${activeSymbol}${(sheetMetrics.incOthers || 0).toLocaleString(undefined, {maximumFractionDigits:0})}`;
-        if (document.getElementById('expBusinessExpenses')) document.getElementById('expBusinessExpenses').innerText = `${activeSymbol}${(sheetMetrics.BusinessExpenses || 0).toLocaleString(undefined, {maximumFractionDigits:0})}`;
-        if (document.getElementById('expPlatformFees')) document.getElementById('expPlatformFees').innerText = `${activeSymbol}${(sheetMetrics.PlatformFees || 0).toLocaleString(undefined, {maximumFractionDigits:0})}`;
-        if (document.getElementById('taxIncome')) document.getElementById('taxIncome').innerText = `${activeSymbol}${(sheetMetrics.taxIncome || 0).toLocaleString(undefined, {maximumFractionDigits:0})}`;
-        if (document.getElementById('taxWithholding')) document.getElementById('taxWithholding').innerText = `${activeSymbol}${(sheetMetrics.taxWithholding || 0).toLocaleString(undefined, {maximumFractionDigits:0})}`;
-    } else {
         if (document.getElementById('incActive')) document.getElementById('incActive').innerText = `${activeSymbol}${(gross * incomePct).toLocaleString(undefined, {maximumFractionDigits:0})}`;
         if (document.getElementById('incOthers')) document.getElementById('incOthers').innerText = `${activeSymbol}${(gross * (1 - incomePct)).toLocaleString(undefined, {maximumFractionDigits:0})}`;
         if (document.getElementById('expBusinessExpenses')) document.getElementById('expBusinessExpenses').innerText = `${activeSymbol}${(totalExpenses * expensePct).toLocaleString(undefined, {maximumFractionDigits:0})}`;
         if (document.getElementById('expPlatformFees')) document.getElementById('expPlatformFees').innerText = `${activeSymbol}${(totalExpenses * (1 - expensePct)).toLocaleString(undefined, {maximumFractionDigits:0})}`;
         if (document.getElementById('taxIncome')) document.getElementById('taxIncome').innerText = `${activeSymbol}${(taxReserve * taxPct).toLocaleString(undefined, {maximumFractionDigits:0})}`;
         if (document.getElementById('taxWithholding')) document.getElementById('taxWithholding').innerText = `${activeSymbol}${(taxReserve * (1 - taxPct)).toLocaleString(undefined, {maximumFractionDigits:0})}`;
-    }
 
-    if (gross > 0) {
-        if (document.getElementById('barExpenses')) document.getElementById('barExpenses').style.width = `${(totalExpenses / gross) * 100}%`;
-        if (document.getElementById('barTax')) document.getElementById('barTax').style.width = `${(taxReserve / gross) * 100}%`;
-        if (document.getElementById('barTakeHome')) document.getElementById('barTakeHome').style.width = `${(takeHome / gross) * 100}%`;
-    }
+        if (gross > 0) {
+            if (document.getElementById('barExpenses')) document.getElementById('barExpenses').style.width = `${(totalExpenses / gross) * 100}%`;
+            if (document.getElementById('barTax')) document.getElementById('barTax').style.width = `${(taxReserve / gross) * 100}%`;
+            if (document.getElementById('barTakeHome')) document.getElementById('barTakeHome').style.width = `${(takeHome / gross) * 100}%`;
+        }
 
-    if (typeof drawFlowLines === 'function') {
-        drawFlowLines(expRatio, taxRate, netProfit, gross);
+        if (typeof drawFlowLines === 'function') {
+            drawFlowLines(expRatio, taxRate, netProfit, gross);
+        }
     }
 }
 
@@ -384,7 +409,6 @@ function adjustSliderStep(sliderId, changeAmount, isMacro = false) {
         if (typeof streamBreakdownProportionsToSheet === 'function') streamBreakdownProportionsToSheet();
     }
 }
-
 
 
 // UPDATED: Explicitly updates both the range value and handles multi-million math accurately
