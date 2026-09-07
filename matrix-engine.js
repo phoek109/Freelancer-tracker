@@ -107,7 +107,8 @@ function resizeCanvas() {
 window.isMatrixChartDetachedFloating = false;
 window.isMatrixCanvasMaximizeViewActive = false;
 
-// 🚀 CONTROL ENGINE HOOK 1: Floating state controller utilizing the updated minimal box icon button
+window.floatingMatrixWindowCoordinates = { x: null, y: null, width: null, height: null };
+
 function toggleMatrixChartFloatingState() {
     const wrapper = document.getElementById('matrixFlowChartWrapper');
     const button = document.getElementById('btnPinChartFloat');
@@ -115,96 +116,177 @@ function toggleMatrixChartFloatingState() {
     
     if (!wrapper || !button || !sliderGroup) return;
 
-    // Direct protection: If fullscreen mode is active, completely block floating actions
-    if (window.isMatrixCanvasMaximizeViewActive) return;
-
     window.isMatrixChartDetachedFloating = !window.isMatrixChartDetachedFloating;
 
     if (window.isMatrixChartDetachedFloating) {
         wrapper.classList.add('detached-floating-window');
-        button.style.color = "#f87171"; // Switch icon alert status hue to pastel red
+        button.style.color = "#f87171"; // Turn the button red to indicate active status
         button.setAttribute('title', 'Unpin Floating View');
         sliderGroup.style.display = "flex"; 
         
+        if (window.floatingMatrixWindowCoordinates.x !== null) {
+            wrapper.style.left   = window.floatingMatrixWindowCoordinates.x + "px";
+            wrapper.style.top    = window.floatingMatrixWindowCoordinates.y + "px";
+            wrapper.style.width  = window.floatingMatrixWindowCoordinates.width + "px";
+            wrapper.style.height = window.floatingMatrixWindowCoordinates.height + "px";
+            wrapper.style.bottom = "auto";
+            wrapper.style.right  = "auto";
+        }
+
         const activeOpacitySlider = document.getElementById('chartOpacitySlider');
         if (activeOpacitySlider) {
             wrapper.style.opacity = (parseFloat(activeOpacitySlider.value) / 100);
         }
+        
+        // 🚀 INITIALIZE ANYWHERE-DRAG TRACKER
+        initializeDraggableMatrixWindowEngine();
+        
+        // 🚀 INITIALIZE RESOLUTION RESIZE OBSERVER
+        initializeMatrixCanvasResizeObserverEngine();
+
     } else {
+        window.floatingMatrixWindowCoordinates.width  = wrapper.offsetWidth;
+        window.floatingMatrixWindowCoordinates.height = wrapper.offsetHeight;
+        window.floatingMatrixWindowCoordinates.x      = wrapper.offsetLeft;
+        window.floatingMatrixWindowCoordinates.y      = wrapper.offsetTop;
+
         wrapper.classList.remove('detached-floating-window');
+        sliderGroup.style.display = "none";
+        
         wrapper.style.opacity = ""; 
+        wrapper.style.left    = "";
+        wrapper.style.top     = "";
+        wrapper.style.width   = "";
+        wrapper.style.height  = "";
+        wrapper.style.bottom  = "";
+        wrapper.style.right   = "";
+        
         button.style.color = "";
         button.setAttribute('title', 'Pin Detached View');
-        sliderGroup.style.display = "none"; 
+        
+        if (window.matrixResizeObserverInstance) {
+            window.matrixResizeObserverInstance.disconnect();
+            window.matrixResizeObserverInstance = null;
+        }
     }
 
-    if (typeof enforceDynamicViewportCanvasSizing === 'function') {
-        enforceDynamicViewportCanvasSizing();
+    setTimeout(enforceDynamicViewportCanvasSizing, 40);
+}
+
+function initializeDraggableMatrixWindowEngine() {
+    const wrapper = document.getElementById('matrixFlowChartWrapper');
+    if (!wrapper) return;
+
+    let mouseStartX = 0, mouseStartY = 0;
+    let elementStartX = 0, elementStartY = 0;
+    let isTrackingActive = false;
+
+    // 🚀 MASTER WINDOW OVERRIDE: Listen directly on the parent window context thread
+    window.addEventListener('mousedown', function(e) {
+        // Halt if floating mode is turned off completely
+        if (!window.isMatrixChartDetachedFloating) return;
+
+        // Verify the click hit inside our target chart wrapper container element
+        const hitWrapper = e.target.closest('#matrixFlowChartWrapper');
+        if (!hitWrapper) return;
+
+        // Guard A: Skip if clicking overlays like the button box or opacity range slider
+        if (e.target.closest('#inlineActionTrayWrapper') || e.target.closest('#opacitySliderContainer')) return;
+        
+        // Guard B: Skip if clicking near the bottom-right corner handles (unblocks native resize)
+        const elementRect = wrapper.getBoundingClientRect();
+        const clickOffsetFromRight  = elementRect.right - e.clientX;
+        const clickOffsetFromBottom = elementRect.bottom - e.clientY;
+        if (clickOffsetFromRight < 24 && clickOffsetFromBottom < 24) return;
+        
+        // Start dragging
+        isTrackingActive = true;
+        e.preventDefault();
+        
+        mouseStartX = e.clientX;
+        mouseStartY = e.clientY;
+        
+        elementStartX = wrapper.offsetLeft;
+        elementStartY = wrapper.offsetTop;
+
+        wrapper.style.width  = wrapper.offsetWidth + "px";
+        wrapper.style.height = wrapper.offsetHeight + "px";
+        wrapper.style.bottom = "auto";
+        wrapper.style.right  = "auto";
+
+        window.addEventListener('mousemove', applyActiveWindowMovementPosition, { passive: false });
+        window.addEventListener('mouseup', killWindowDragEventListeners);
+    });
+
+    function applyActiveWindowMovementPosition(e) {
+        if (!isTrackingActive) return;
+        
+        const deltaX = e.clientX - mouseStartX;
+        const deltaY = e.clientY - mouseStartY;
+        
+        let targetX = elementStartX + deltaX;
+        let targetY = elementStartY + deltaY;
+        
+        // Dynamic containment boundary limits
+        if (targetX < 4) targetX = 4;
+        if (targetX > window.innerWidth - 100) targetX = window.innerWidth - 100;
+        if (targetY < 4) targetY = 4;
+        if (targetY > window.innerHeight - 50) targetY = window.innerHeight - 50;
+
+        wrapper.style.left = targetX + "px";
+        wrapper.style.top  = targetY + "px";
+        
+        window.floatingMatrixWindowCoordinates.x = targetX;
+        window.floatingMatrixWindowCoordinates.y = targetY;
+    }
+
+    function killWindowDragEventListeners() {
+        isTrackingActive = false;
+        window.removeEventListener('mousemove', applyActiveWindowMovementPosition);
+        window.removeEventListener('mouseup', killWindowDragEventListeners);
     }
 }
 
-function toggleMatrixChartFullscreenViewMode() {
-    // Target the entire app wrapper box to pull it into fullscreen cleanly
-    const mainMatrixContainerBox = document.querySelector('.matrix-container');
-    const button = document.getElementById('btnFullscreenChart');
-    
-    if (!mainMatrixContainerBox || !button) return;
+// 🚀 STRETCH RESOLUTION AUTO-BALANCER: Guarantees clean pixels during scale updates
+function initializeMatrixCanvasResizeObserverEngine() {
+    const wrapper = document.getElementById('matrixFlowChartWrapper');
+    const canvasElement = document.getElementById('flowChart');
+    if (!wrapper || !canvasElement) return;
 
-    // Direct safety protection: Clear floating mode out before maximizing windows
-    if (window.isMatrixChartDetachedFloating) {
-        toggleMatrixChartFloatingState();
+    if (window.matrixResizeObserverInstance) {
+        window.matrixResizeObserverInstance.disconnect();
     }
 
-    // Toggle structural view state state parameters safely
-    window.isMatrixCanvasMaximizeViewActive = !window.isMatrixCanvasMaximizeViewActive;
-
-    if (window.isMatrixCanvasMaximizeViewActive) {
-        mainMatrixContainerBox.classList.add('canvas-maximize-presentation-view');
-        button.style.color = "#a855f7"; 
-        button.setAttribute('title', 'Exit Fullscreen Canvas');
-        
-        // 🚀 CRITICAL FIX: Explicitly request native hardware browser fullscreen mode
-        if (mainMatrixContainerBox.requestFullscreen) {
-            mainMatrixContainerBox.requestFullscreen().catch(err => {
-                console.warn("Hardware fullscreen request delayed or blocked by browser policies.", err);
-            });
+    window.matrixResizeObserverInstance = new ResizeObserver(entries => {
+        for (let entry of entries) {
+            if (!window.isMatrixChartDetachedFloating) return;
+            
+            const currentWidth  = entry.contentRect.width;
+            const currentHeight = entry.contentRect.height;
+            
+            if (currentWidth > 0 && currentHeight > 0) {
+                canvasElement.width  = currentWidth;
+                canvasElement.height = currentHeight;
+                
+                if (typeof window.updateMatrixData === 'function') {
+                    window.updateMatrixData();
+                }
+            }
         }
+    });
 
-        // Clean inward minimize icon vectors
-        button.innerHTML = `
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 14h6v6m10-6h-6v6M4 10h6V4m10 0h-6v6"></path>
-            </svg>
-        `;
-    } else {
-        mainMatrixContainerBox.classList.remove('canvas-maximize-presentation-view');
-        button.style.color = "";
-        button.setAttribute('title', 'Toggle Fullscreen Canvas');
-        
-        // 🚀 CRITICAL FIX: Natively leave hardware fullscreen mode safely
-        if (document.fullscreenElement) {
-            document.exitFullscreen().catch(err => console.log(err));
-        }
-        
-        // 🎯 FIXED OVERWRITE: True symmetric inward L-shaped corners for normal view mode
-        button.innerHTML = `
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
-            </svg>
-        `;
-    }
-
-    // Recalculate dimensions once layout styles adapt smoothly
-    setTimeout(enforceDynamicViewportCanvasSizing, 60);
+    window.matrixResizeObserverInstance.observe(wrapper);
 }
 
 function enforceDynamicViewportCanvasSizing() {
     const canvasElement = document.getElementById('flowChart');
     if (!canvasElement || !canvasElement.parentElement) return;
 
+    // Safety guard filter: If custom resize observer is handling pixels, let it take priority
+    if (window.isMatrixChartDetachedFloating) return;
+
     const parentContainerBoundingBox = canvasElement.parentElement.getBoundingClientRect();
     
-    // Fixed broken tracking parameter cuts:
     canvasElement.width = parentContainerBoundingBox.width;
     canvasElement.height = parentContainerBoundingBox.height;
 
@@ -235,26 +317,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Clean exit sync listener to handle hardware ESC keystrokes safely
-document.addEventListener('fullscreenchange', () => {
-    if (!document.fullscreenElement && window.isMatrixCanvasMaximizeViewActive) {
-        window.isMatrixCanvasMaximizeViewActive = false;
-        const mainMatrixContainerBox = document.querySelector('.matrix-container');
-        const button = document.getElementById('btnFullscreenChart');
-        
-        if (mainMatrixContainerBox) mainMatrixContainerBox.classList.remove('canvas-maximize-presentation-view');
-        if (button) {
-            button.style.color = "";
-            button.setAttribute('title', 'Toggle Fullscreen Canvas');
-            button.innerHTML = `
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
-                </svg>
-            `;
-        }
-        setTimeout(enforceDynamicViewportCanvasSizing, 50);
-    }
-});
+
 
 
 function drawBackgroundGrid(ctx, w, h) {

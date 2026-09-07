@@ -152,39 +152,33 @@
                 <!-- 🚀 PROFESSIONAL MINIMALIST DUAL INTERACTIVE HEADERS HUB -->
                 <div class="chart-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                     <span>LIVE FINANCIAL FLOW MATRIX</span>
+                </div>
+
+                <!-- 🚀 STREAMLINED: Clean layout with title bars removed completely -->
+                <div id="matrixFlowChartWrapper" class="flow-chart-wrapper" style="position: relative; background: #070a13; border: 1px solid #1e293b; border-radius: 12px; margin-bottom: 20px;">
                     
-                    <div class="matrix-action-icon-tray" style="display: flex; align-items: center; gap: 14px;">
-                        <!-- Icon Control 1: Pinned Floating Window Mode Switch -->
-                        <div class="action-icon-wrapper" style="position: relative; display: inline-block;">
-                            <button id="btnPinChartFloat" onclick="toggleMatrixChartFloatingState()" title="Pin Detached View" style="background: none; border: none; padding: 4px; display: flex; align-items: center; justify-content: center; color: #64748b; cursor: pointer; transition: color 0.2s ease, transform 0.1s ease;">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <!-- SINGLE CONTROL INSIDE-GRID TRAY OVERLAY -->
+                    <div id="inlineActionTrayWrapper" class="matrix-action-icon-tray" style="position: absolute; top: 16px; right: 16px; display: flex; align-items: center; justify-content: center; z-index: 100000; background: rgba(7, 10, 19, 0.85); padding: 4px 8px; border-radius: 8px; border: 1px solid #1e293b; backdrop-filter: blur(4px);">
+                        <div class="action-icon-wrapper" style="display: inline-flex; width: 28px; height: 28px; align-items: center; justify-content: center;">
+                            <button id="btnPinChartFloat" onclick="toggleMatrixChartFloatingState()" title="Pin Detached View" style="background: none; border: none; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #64748b; cursor: pointer; padding: 0; margin: 0;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: block; pointer-events: none;">
                                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                                 </svg>
                             </button>
                         </div>
-
-                        <!-- Icon Control 2: Dashboard Fullscreen Viewport Mode Switch -->
-                        <div class="action-icon-wrapper" style="position: relative; display: inline-block;">
-                            <button id="btnFullscreenChart" onclick="toggleMatrixChartFullscreenViewMode()" title="Toggle Fullscreen Canvas" style="background: none; border: none; padding: 4px; display: flex; align-items: center; justify-content: center; color: #64748b; cursor: pointer; transition: color 0.2s ease, transform 0.1s ease;">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M8 3H5a2 2 0 0 0-2 2v3m16 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
-                                </svg>
-                            </button>
-                        </div>
                     </div>
-                </div>
 
-                <!-- 🚀 FIXED HOUSING SYSTEM: Restored correct canvas id parameters target -->
-                <div id="matrixFlowChartWrapper" class="flow-chart-wrapper" style="position: relative; width: 100%; height: 320px; background: #070a13; border-radius: 12px; border: 1px solid #1e293b; margin-bottom: 20px;">
+                    <!-- Central Hardware Surface Drawing Canvas -->
                     <canvas id="flowChart" style="display: block; width: 100%; height: 100%;"></canvas>
                     
-                    <!-- Floating Internal Opacity Slider Overlay (Bottom-Left Corner of Chart Box) -->
+                    <!-- Opacity slider tray configuration stays right here -->
                     <div id="opacitySliderContainer" style="display: none; position: absolute; bottom: 12px; left: 16px; align-items: center; gap: 8px; font-size: 10px; color: #64748b; background: rgba(15, 23, 42, 0.9); padding: 4px 10px; border-radius: 6px; border: 1px solid #1e293b; backdrop-filter: blur(4px); z-index: 100;">
                         <label for="chartOpacitySlider" style="letter-spacing: 1px; font-weight: 700; color: #38bdf8; margin: 0;">OPACITY:</label>
                         <input type="range" id="chartOpacitySlider" min="20" max="100" value="95" style="width: 70px; height: 4px; accent-color: #38bdf8; cursor: pointer; margin: 0;">
                     </div>
                 </div>
+
 
                 <div class="split-progress-bar" style="display: flex; height: 6px; background: #1e293b; border-radius: 3px; overflow: hidden; margin-bottom: 24px; width: 100%;">
                     <div id="barExpenses" class="progress-segment expenses-seg" style="width: 0%; height: 100%; background: #f87171; transition: width 0.3s ease;"></div>

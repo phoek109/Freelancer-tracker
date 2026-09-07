@@ -235,6 +235,7 @@ body {
     margin-bottom: 20px !important;
     overflow: hidden !important;
     display: block !important;
+    overflow: hidden;
 }
 
 .split-progress-bar {
@@ -664,27 +665,6 @@ body {
     100% { opacity: 1; transform: scale(1.05); }
 }
 
-/* Detached Floating Window State Properties Core */
-.flow-chart-wrapper.detached-floating-window {
-    position: fixed !important;
-    bottom: 24px !important;
-    right: 24px !important;
-    width: 460px !important;
-    height: 280px !important; /* Explicit dimensions for floating screen layout states */
-    z-index: 99999 !important;
-    background: #0b0f19 !important;
-    border: 2px solid #38bdf8 !important;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.7), 0 0 15px rgba(56, 189, 248, 0.15) !important;
-    border-radius: 12px !important;
-    padding: 8px !important;
-    transition: transform 0.2s ease, opacity 0.15s ease !important;
-}
-
-.flow-chart-wrapper.detached-floating-window:hover {
-    border-color: #a855f7 !important;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.8), 0 0 20px rgba(168, 85, 247, 0.2) !important;
-}
-
 /* Custom Interaction Micro-Animations for professional SVGs */
 .matrix-action-icon-tray button:hover {
     color: #38bdf8 !important;
@@ -693,22 +673,6 @@ body {
 
 .matrix-action-icon-tray button:active {
     transform: scale(0.95);
-}
-
-/* Fixes vertical presentation bounds when maximized */
-.matrix-container.canvas-maximize-presentation-view {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    z-index: 999999 !important;
-    background: #020617 !important;
-    padding: 32px !important;
-    margin: 0 !important;
-    border-radius: 0 !important;
-    box-sizing: border-box !important;
-    overflow-y: auto !important; /* Retains internal tracking rows usability if content breaks */
 }
 
 /* 🚀 FIX CANVAS EXPANSION BOUNDS: Automatically stretches chart elements to occupy the full screen display */
@@ -734,6 +698,7 @@ body {
     gap: 16px !important;
 }
 
+
 .action-icon-wrapper button {
     display: inline-flex !important;
     align-items: center !important;
@@ -752,4 +717,59 @@ body {
 .action-icon-wrapper button svg {
     display: block !important;
     transition: stroke 0.2s ease, transform 0.1s ease !important;
+}
+
+/* ========================================================================= */
+/* 🚀 MASTER DESIGN: ULTRA-HIGH PRIORITY ANYWHERE-DRAGGABLE WINDOW           */
+/* ========================================================================= */
+.flow-chart-wrapper.detached-floating-window {
+    position: fixed !important;
+    bottom: 24px !important;
+    right: 24px !important;
+    width: 480px !important;   
+    height: 320px !important;
+    min-width: 320px !important; 
+    min-height: 200px !important;
+    
+    /* 🚀 CRITICAL LAYOUT LOCK: Forces window to sit above ALL structural forms */
+    z-index: 2147483647 !important; 
+    
+    background: #070a13 !important;
+    border: 2px solid #38bdf8 !important;
+    box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.9), 0 0 30px rgba(56, 189, 248, 0.3) !important;
+    border-radius: 14px !important;
+    padding: 0 !important; 
+    
+    cursor: move !important;
+    resize: both !important;
+    overflow: hidden !important;
+    
+    /* Enforces core click interception directly on the wrapper container */
+    pointer-events: auto !important;
+}
+
+/* Let the mouse pass straight through the canvas grid graphic art layer */
+.flow-chart-wrapper.detached-floating-window #flowChart {
+    pointer-events: none !important;
+    height: 100% !important;
+    width: 100% !important;
+    display: block !important;
+}
+
+/* Ensure the control buttons and opacity sliders can still be clicked */
+.flow-chart-wrapper.detached-floating-window #inlineActionTrayWrapper,
+.flow-chart-wrapper.detached-floating-window #opacitySliderContainer {
+    pointer-events: auto !important;
+    z-index: 2147483647 !important;
+}
+
+/* 🚀 DESIGNER TOUCH: Make the top control banner look like a draggable window title-bar hook */
+.matrix-action-icon-tray {
+    cursor: move !important; /* Visual alert indicating mouse drag hooks are active */
+    user-select: none !important;
+}
+
+.flow-chart-wrapper.detached-floating-window:hover {
+    border-color: #a855f7 !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9), 0 0 24px rgba(168, 85, 247, 0.25) !important;
 }
