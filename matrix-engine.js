@@ -201,6 +201,17 @@ function updateMatrixData() {
     if (window.currentlyPinnedLogIndex !== null && window.cachedHistoricalLogs && window.cachedHistoricalLogs[window.currentlyPinnedLogIndex]) {
         const logItem = window.cachedHistoricalLogs[window.currentlyPinnedLogIndex];
         
+        // 🚀 FULL DRILL-DOWN LOCKDOWN CORE: Instantly freeze all physical sliders while reviewing a historic log card
+        const slidersToLock = ['inputRevenue', 'inputRatio', 'inputTaxRate', 'inputIncomeSplit', 'inputExpenseSplit', 'inputTaxSplit'];
+        slidersToLock.forEach(id => {
+            const sliderEl = document.getElementById(id);
+            if (sliderEl) {
+                sliderEl.disabled = true;
+                sliderEl.style.cursor = "not-allowed";
+                sliderEl.style.opacity = "0.5"; // Visual grey-out cue
+            }
+        });
+
         // 1. Pull verified values straight from your raw metadata attributes cache
         const invoiceAmt     = parseFloat(logItem.amount) || 0;
         const platformPctVal = parseFloat(logItem.platformPct) || 0;
@@ -208,9 +219,8 @@ function updateMatrixData() {
         const withholdAmtVal = parseFloat(logItem.withholdAmt) || 0;
         const bizExpenseAmt  = parseFloat(logItem.bizExpense) || 0;
         
-        // Fetch current global tax rate setting from configuration inputs
-        const targetTaxRateInputEl = document.getElementById('baseTaxRateConfig');
-        const systemTaxRateConfigVal = targetTaxRateInputEl ? (parseFloat(targetTaxRateInputEl.value) / 100) : 0.15;
+        // 🚀 FIXED: Read the exact historical final tax owed directly from the dataset row object parameters
+        const computedFinalTax = parseFloat(logItem.finalTaxOwed) || 0;
 
         // Formula I Equivalent: Calculated Net Foreign cash flow amount
         const computedNetForeign = invoiceAmt - withholdAmtVal - (invoiceAmt * platformPctVal);
@@ -227,15 +237,11 @@ function updateMatrixData() {
         // Formula M Equivalent: Taxable net row margins profit profiles
         const computedNetProfit = gross - bizExpenseAmt; 
 
-        // Formula N Equivalent: Final calculated tax owed matrix
-        const computedFinalTax = computedNetProfit > 0 ? (computedNetProfit * systemTaxRateConfigVal) : 0;
-        
-        // Formula O Equivalent: Final true net take home row pay
+        // Formula O Equivalent: Final true net take home row pay calculated using the historical tax figure
         const computedTakeHome = gross - logTotalExpenses - computedFinalTax;
 
         // 2. Safely populate every single right hand metrics card text element
         const activeSymbol = window.currentCurrency || '$ ';
-        
         if (document.getElementById('grossDisplay')) document.getElementById('grossDisplay').innerText = `${activeSymbol}${gross.toLocaleString(undefined, {maximumFractionDigits:0})}`;
         if (document.getElementById('expensesDisplay')) document.getElementById('expensesDisplay').innerText = `${activeSymbol}${logTotalExpenses.toLocaleString(undefined, {maximumFractionDigits:0})}`;
         if (document.getElementById('taxDisplay')) document.getElementById('taxDisplay').innerText = `${activeSymbol}${computedFinalTax.toLocaleString(undefined, {maximumFractionDigits:0})}`;
@@ -260,10 +266,12 @@ function updateMatrixData() {
             if (document.getElementById('barTakeHome')) document.getElementById('barTakeHome').style.width = `0%`;
         }
         
-        // 4. Repaint your live Flow Matrix canvas charts Bezier curves
+        // 4. Repaint your live Flow Matrix canvas charts Bezier curves using historical weight allocations
         expRatio = gross > 0 ? (logTotalExpenses / gross) : 0;
+        const historicalTaxRateProportion = computedNetProfit > 0 ? (computedFinalTax / computedNetProfit) : 0.15;
+        
         if (typeof drawFlowLines === 'function') {
-            drawFlowLines(expRatio, systemTaxRateConfigVal, computedNetProfit, gross);
+            drawFlowLines(expRatio, historicalTaxRateProportion, computedNetProfit, gross);
         }
         return; // Halt routine loop tracking processing here to prevent live variables spillover!
     }
@@ -273,7 +281,9 @@ function updateMatrixData() {
     if (isLiveTrackingMode) {
         gross = totals.gross;
         expRatio = gross > 0 ? (totals.expenses / gross) : 0;
-        taxRate = parseFloat(inputTaxRate ? inputTaxRate.value : 15) / 100;
+        
+        const baseTaxInputBox = document.getElementById('baseTaxRateConfig');
+        taxRate = baseTaxInputBox ? (parseFloat(baseTaxInputBox.value) || 15) / 100 : 0.15;
 
         incomePct = sheetMetrics.activeRatio || 0.65;
         expensePct = sheetMetrics.bizExpRatio || 0.60;
@@ -281,12 +291,35 @@ function updateMatrixData() {
 
         if (inputRevenue) inputRevenue.value = gross;
         if (inputRatio) inputRatio.value = Math.round(expRatio * 100);
+
+        // 🚀 FULL LOCKDOWN CORE: Completely freeze all physical sliders while in live tracking mode
+        const slidersToLock = ['inputRevenue', 'inputRatio', 'inputTaxRate', 'inputIncomeSplit', 'inputExpenseSplit', 'inputTaxSplit'];
+        slidersToLock.forEach(id => {
+            const sliderEl = document.getElementById(id);
+            if (sliderEl) {
+                sliderEl.disabled = true;
+                sliderEl.style.cursor = "not-allowed";
+                sliderEl.style.opacity = "0.5"; // Visual cue indicating locked state
+            }
+        });
     } else {
+        // --- PREDICTIVE SIMULATION MODE (UNFREEZE HANDLES) ---
         gross = parseFloat(inputRevenue ? inputRevenue.value : 0) || 0;
         expRatio = (parseFloat(inputRatio ? inputRatio.value : 0) || 0) / 100;
         taxRate = (parseFloat(inputTaxRate ? inputTaxRate.value : 0) || 0) / 100;
 
         incomePct = 0.65; expensePct = 0.60; taxPct = 0.80;
+
+        // Restore functionality to slider tracks when live tracking is turned off
+        const slidersToUnlock = ['inputRevenue', 'inputRatio', 'inputTaxRate', 'inputIncomeSplit', 'inputExpenseSplit', 'inputTaxSplit'];
+        slidersToUnlock.forEach(id => {
+            const sliderEl = document.getElementById(id);
+            if (sliderEl) {
+                sliderEl.disabled = false;
+                sliderEl.style.cursor = "pointer";
+                sliderEl.style.opacity = "1";
+            }
+        });
     }
 
     const totalExpenses = gross * expRatio;
@@ -329,17 +362,20 @@ function updateMatrixData() {
     }
 }
 
-// UPDATED STEPPER MATRIX DRIVER: Resolves variable locking on slide interactions
+// UPDATED MICRO-ADJUSTMENT STEP CONTROLLER WITH LIVE MODE GUARDS
 function adjustSliderStep(sliderId, changeAmount, isMacro = false) {
+    // 🚀 STEPPER SECURITY GUARD: Immediately block any button execution loop if live tracking is active
+    if (window.currentlyPinnedLogIndex !== null || isLiveTrackingMode) {
+        console.warn(`🔒 Stepper Block: Action denied on ${sliderId}. Turn off Live Tracking to simulate metrics.`);
+        return; // Exit out instantly so nothing changes!
+    }
+
     const slider = document.getElementById(sliderId);
     if (!slider) return;
 
-    // 1. Fetch current position value as a pure floating-point decimal
     let currentValue = parseFloat(slider.value) || 0;
     let newValue = currentValue + changeAmount;
 
-    // 2. Map strict safety boundary caps matching individual parameters profiles
-    // FIXED ID MATCHING: Matches your exact inputs 'inputTaxRate' and 'inputRatio'
     let maxLimit = 100;
     if (sliderId === 'inputTaxRate') maxLimit = 50;
     if (sliderId === 'inputRatio') maxLimit = 90;
@@ -347,9 +383,8 @@ function adjustSliderStep(sliderId, changeAmount, isMacro = false) {
     if (newValue < 0) newValue = 0;
     if (newValue > maxLimit) newValue = maxLimit;
 
-    // 3. Force the physical HTML range input slider handle to visually update its position
     slider.value = newValue.toFixed(1);
-    // 4. Update the visual text indicators matching the new slider position values
+
     if (sliderId === 'inputRatio' && document.getElementById('valRatio')) {
         document.getElementById('valRatio').innerText = `${Math.round(newValue)}%`;
     }
@@ -357,19 +392,11 @@ function adjustSliderStep(sliderId, changeAmount, isMacro = false) {
         document.getElementById('valTaxRate').innerText = `${newValue.toFixed(1)}%`;
     }
     
-    // 5. Trigger UI metrics matrix calculation block cleanly
     if (typeof window.updateMatrixData === 'function') window.updateMatrixData();
-
-    // 6. Cloud Database Synchronization Pipelines Execution
-    // Wrapped inside clean validation catches to insulate sliders from network drops
     if (isMacro) {
-        if (typeof updateBaseCurrencySettingsInSheet === 'function') {
-            updateBaseCurrencySettingsInSheet();
-        }
+        if (typeof updateBaseCurrencySettingsInSheet === 'function') updateBaseCurrencySettingsInSheet();
     } else {
-        if (typeof streamBreakdownProportionsToSheet === 'function') {
-            streamBreakdownProportionsToSheet();
-        }
+        if (typeof streamBreakdownProportionsToSheet === 'function') streamBreakdownProportionsToSheet();
     }
 }
 
