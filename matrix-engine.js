@@ -263,16 +263,21 @@ function updateMatrixData() {
 
     
     // =========================================================================
-    // ⚡ SCENARIO B: STANDARD LIVE PIPELINE TRACKING (TRUE SHEET COLUMN VALUES)
+    // ⚡ SCENARIO B: STANDARD LIVE PIPELINE TRACKING (COMBINED TAX VAULT MATH)
     // =========================================================================
     if (isLiveTrackingMode) {
         // 1. Pull verified values straight from your raw metadata attributes cache
         gross = totals.gross || 0;
         const totalExpenses = totals.expenses || 0;
-        const taxReserve = totals.taxWithheld || 0;
         
-        // 🚀 TRUE SHEET SUM REPAIR: Instead of running subtraction math, we loop through 
-        // your actual raw logs cache to sum up the true "takeHomePay" values from your sheet!
+        // Extract both distinct tax columns from your running database summary object
+        const incomeTaxReserveFlat = totals.taxWithheld || 0; 
+        const withholdingTaxVaultFlat = sheetMetrics.taxWithholding || 0;
+        
+        // 🚀 REPAIRED TAX VAULT MATRIX: Combine both tax vectors together exactly like expenses
+        const taxReserve = incomeTaxReserveFlat + withholdingTaxVaultFlat;
+
+        // Loop through your actual raw logs cache to extract your pure true sheet Take-Home Pay
         let pureSheetTakeHomeSum = 0;
         if (window.cachedHistoricalLogs && window.cachedHistoricalLogs.length > 0) {
             window.cachedHistoricalLogs.forEach(log => {
@@ -280,8 +285,8 @@ function updateMatrixData() {
             });
         }
         
-        // If the array isn't hydrated yet, fall back safely to the summary data keys
-        const takeHome = pureSheetTakeHomeSum > 0 ? pureSheetTakeHomeSum : (totals.takeHomePay || (gross - totalExpenses - taxReserve));
+        // If your sheets log cache array isn't fully built yet, fall back cleanly
+        const takeHome = pureSheetTakeHomeSum > 0 ? pureSheetTakeHomeSum : (gross - totalExpenses - taxReserve);
 
         incomePct = sheetMetrics.activeRatio || 0.65;
         expensePct = sheetMetrics.bizExpRatio || 0.60;
@@ -292,7 +297,6 @@ function updateMatrixData() {
         // Match the slider positioning hooks onto true current database proportions
         expRatio = gross > 0 ? (totalExpenses / gross) : 0;
         const dynamicTaxRateCalc = gross > 0 ? (taxReserve / gross) : 0.15;
-        
         if (inputRatio) inputRatio.value = Math.round(expRatio * 100);
 
         // FULL LOCKDOWN CORE: Programmatically disable inputs during live display states
@@ -318,8 +322,8 @@ function updateMatrixData() {
         if (document.getElementById('incOthers')) document.getElementById('incOthers').innerText = `${activeSymbol}${(sheetMetrics.incOthers || 0).toLocaleString(undefined, {maximumFractionDigits:0})}`;
         if (document.getElementById('expBusinessExpenses')) document.getElementById('expBusinessExpenses').innerText = `${activeSymbol}${(sheetMetrics.BusinessExpenses || 0).toLocaleString(undefined, {maximumFractionDigits:0})}`;
         if (document.getElementById('expPlatformFees')) document.getElementById('expPlatformFees').innerText = `${activeSymbol}${(sheetMetrics.PlatformFees || 0).toLocaleString(undefined, {maximumFractionDigits:0})}`;
-        if (document.getElementById('taxIncome')) document.getElementById('taxIncome').innerText = `${activeSymbol}${(sheetMetrics.taxIncome || 0).toLocaleString(undefined, {maximumFractionDigits:0})}`;
-        if (document.getElementById('taxWithholding')) document.getElementById('taxWithholding').innerText = `${activeSymbol}${(sheetMetrics.taxWithholding || 0).toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('taxIncome')) document.getElementById('taxIncome').innerText = `${activeSymbol}${incomeTaxReserveFlat.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        if (document.getElementById('taxWithholding')) document.getElementById('taxWithholding').innerText = `${activeSymbol}${withholdingTaxVaultFlat.toLocaleString(undefined, {maximumFractionDigits:0})}`;
 
         if (gross > 0) {
             document.getElementById('barExpenses').style.width = `${(totalExpenses / gross) * 100}%`;
@@ -327,7 +331,7 @@ function updateMatrixData() {
             document.getElementById('barTakeHome').style.width = `${(takeHome / gross) * 100}%`;
         }
 
-        // 🚀 FIXED CHART CURVES: Maps the take-home line path directly onto the true sheet values proportion
+        // 🚀 FIXED VISUAL NODES PATH: Sends the unified combined tax rate straight into your Bezier lines
         if (typeof drawFlowLines === 'function') {
             const computedNetProfitLive = gross - (sheetMetrics.BusinessExpenses || 0);
             drawFlowLines(expRatio, dynamicTaxRateCalc, computedNetProfitLive, gross);
