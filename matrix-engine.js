@@ -265,15 +265,18 @@ function updateMatrixData() {
     // =========================================================================
     // ⚡ SCENARIO B: STANDARD LIVE PIPELINE TRACKING (ELIMINATE SIMULATION LEAK)
     // =========================================================================
+    // =========================================================================
+    // ⚡ SCENARIO B: STANDARD LIVE PIPELINE TRACKING (ELIMINATE SIMULATION LEAK)
+    // =========================================================================
     if (isLiveTrackingMode) {
         // Pull exact running summary values directly out of your sheet data rows totals object
         gross = totals.gross || 0;
-        
-        // 🚀 FIXED: Lock live totals onto the cold hard historical tax records served from your cloud sheets
-        // This stops the dragged tax slider from modifying the boot metrics grid!
         const totalExpenses = totals.expenses || 0;
         const taxReserve = totals.taxWithheld || 0;
-        const takeHome = gross - totalExpenses - taxReserve;
+        
+        // 🚀 REPAIRED MATH SYNC: Pull your exact spreadsheet pre-calculated column sum 
+        // directly out of your summary data package to eliminate double platform cut deductions!
+        const takeHome = totals.takeHomePay || sheetMetrics.totals.takeHomePay || (gross - totalExpenses - taxReserve);
 
         incomePct = sheetMetrics.activeRatio || 0.65;
         expensePct = sheetMetrics.bizExpRatio || 0.60;
@@ -284,6 +287,7 @@ function updateMatrixData() {
         // Match the slider positioning hooks onto true current database proportions
         expRatio = gross > 0 ? (totalExpenses / gross) : 0;
         const dynamicTaxRateCalc = gross > 0 ? (taxReserve / gross) : 0.15;
+
         
         if (inputRatio) inputRatio.value = Math.round(expRatio * 100);
 
