@@ -825,3 +825,80 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// 🚀 CONTROL ENGINE HOOK 1: Floating state controller utilizing the updated minimal box icon button
+function toggleMatrixChartFloatingState() {
+    const wrapper = document.getElementById('matrixFlowChartWrapper');
+    const button = document.getElementById('btnPinChartFloat');
+    const sliderGroup = document.getElementById('opacitySliderContainer');
+    
+    if (!wrapper || !button || !sliderGroup) return;
+
+    // Direct protection: If fullscreen mode is active, completely block floating actions
+    if (window.isMatrixCanvasMaximizeViewActive) return;
+
+    window.isMatrixChartDetachedFloating = !window.isMatrixChartDetachedFloating;
+
+    if (window.isMatrixChartDetachedFloating) {
+        wrapper.classList.add('detached-floating-window');
+        button.style.color = "#f87171"; // Switch icon alert status hue to pastel red
+        button.setAttribute('title', 'Unpin Floating View');
+        sliderGroup.style.display = "flex"; 
+        
+        const activeOpacitySlider = document.getElementById('chartOpacitySlider');
+        if (activeOpacitySlider) {
+            wrapper.style.opacity = (parseFloat(activeOpacitySlider.value) / 100);
+        }
+    } else {
+        wrapper.classList.remove('detached-floating-window');
+        wrapper.style.opacity = ""; 
+        button.style.color = "";
+        button.setAttribute('title', 'Pin Detached View');
+        sliderGroup.style.display = "none"; 
+    }
+
+    if (typeof enforceDynamicViewportCanvasSizing === 'function') {
+        enforceDynamicViewportCanvasSizing();
+    }
+}
+
+// 🚀 CONTROL ENGINE HOOK 2: Fullscreen modal presentation view control toggle engine handler
+function toggleMatrixChartFullscreenViewMode() {
+    const mainMatrixContainerBox = document.querySelector('.matrix-container');
+    const button = document.getElementById('btnFullscreenChart');
+    
+    if (!mainMatrixContainerBox || !button) return;
+
+    // Direct protection: If floating mode is currently engaged, clear it out before expanding
+    if (window.isMatrixChartDetachedFloating) {
+        toggleMatrixChartFloatingState();
+    }
+
+    window.isMatrixCanvasMaximizeViewActive = !window.isMatrixCanvasMaximizeViewActive;
+
+    if (window.isMatrixCanvasMaximizeViewActive) {
+        mainMatrixContainerBox.classList.add('canvas-maximize-presentation-view');
+        button.style.color = "#a855f7"; // Switch icon alert status hue to vibrant purple
+        button.setAttribute('title', 'Exit Fullscreen Canvas');
+        
+        // Change full layout SVG internal graphics path vector maps to an un-expand collapse icon symbol
+        button.innerHTML = `
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 14h6v6m10-6h-6v6M4 10h6V4m10 0h-6v6"></path>
+            </svg>
+        `;
+    } else {
+        mainMatrixContainerBox.classList.remove('canvas-maximize-presentation-view');
+        button.style.color = "";
+        button.setAttribute('title', 'Toggle Fullscreen Canvas');
+        
+        // Restore standard expand lines SVG path
+        button.innerHTML = `
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+            </svg>
+        `;
+    }
+
+    // Force an immediate re-measurement pass to update the canvas grid coordinate mapping tracking frames
+    setTimeout(enforceDynamicViewportCanvasSizing, 20);
+}

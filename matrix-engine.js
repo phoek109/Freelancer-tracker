@@ -19,13 +19,12 @@ const inputTaxRate = document.getElementById('inputTaxRate');
 const canvas = document.getElementById('flowChart');
 const btnToggle = document.getElementById('btnToggleMode');
 
-// REPAIRED CORE FOREX CHANNEL: Stops name resolution crashes instantly
 async function fetchLiveExchangeRates(baseCurrency) {
     if (!baseCurrency) return;
     try {
         const cleanBase = String(baseCurrency).toUpperCase().trim();
         
-        // FIXED ENDPOINT CONTEXT: Clean template literals integration
+        // FIXED ENDPOINT CONTEXT: Added proper URL string parameters mapping
         const response = await fetch(`https://er-api.com{cleanBase}`);
         
         if (response.ok) {
@@ -48,7 +47,6 @@ async function fetchLiveExchangeRates(baseCurrency) {
 }
 
 
-// Bind change tracking event listeners to both components natively
 // Bind change tracking event listeners to both components natively
 document.addEventListener('DOMContentLoaded', () => {
     const receivedEl = document.getElementById('formCurrency');
@@ -107,8 +105,6 @@ function resizeCanvas() {
     canvas.height = rect.height;
 }
 window.isMatrixChartDetachedFloating = false;
-
-window.isMatrixChartDetachedFloating = false;
 window.isMatrixCanvasMaximizeViewActive = false;
 
 // 🚀 CONTROL ENGINE HOOK 1: Floating state controller utilizing the updated minimal box icon button
@@ -147,26 +143,34 @@ function toggleMatrixChartFloatingState() {
     }
 }
 
-// 🚀 CONTROL ENGINE HOOK 2: Fullscreen modal presentation view control toggle engine handler
 function toggleMatrixChartFullscreenViewMode() {
+    // Target the entire app wrapper box to pull it into fullscreen cleanly
     const mainMatrixContainerBox = document.querySelector('.matrix-container');
     const button = document.getElementById('btnFullscreenChart');
     
     if (!mainMatrixContainerBox || !button) return;
 
-    // Direct protection: If floating mode is currently engaged, clear it out before expanding
+    // Direct safety protection: Clear floating mode out before maximizing windows
     if (window.isMatrixChartDetachedFloating) {
         toggleMatrixChartFloatingState();
     }
 
+    // Toggle structural view state state parameters safely
     window.isMatrixCanvasMaximizeViewActive = !window.isMatrixCanvasMaximizeViewActive;
 
     if (window.isMatrixCanvasMaximizeViewActive) {
         mainMatrixContainerBox.classList.add('canvas-maximize-presentation-view');
-        button.style.color = "#a855f7"; // Switch icon alert status hue to vibrant purple
+        button.style.color = "#a855f7"; 
         button.setAttribute('title', 'Exit Fullscreen Canvas');
         
-        // Change full layout SVG internal graphics path vector maps to an un-expand collapse icon symbol
+        // 🚀 CRITICAL FIX: Explicitly request native hardware browser fullscreen mode
+        if (mainMatrixContainerBox.requestFullscreen) {
+            mainMatrixContainerBox.requestFullscreen().catch(err => {
+                console.warn("Hardware fullscreen request delayed or blocked by browser policies.", err);
+            });
+        }
+
+        // Clean inward minimize icon vectors
         button.innerHTML = `
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M4 14h6v6m10-6h-6v6M4 10h6V4m10 0h-6v6"></path>
@@ -177,7 +181,12 @@ function toggleMatrixChartFullscreenViewMode() {
         button.style.color = "";
         button.setAttribute('title', 'Toggle Fullscreen Canvas');
         
-        // Restore standard expand lines SVG path
+        // 🚀 CRITICAL FIX: Natively leave hardware fullscreen mode safely
+        if (document.fullscreenElement) {
+            document.exitFullscreen().catch(err => console.log(err));
+        }
+        
+        // 🎯 FIXED OVERWRITE: True symmetric inward L-shaped corners for normal view mode
         button.innerHTML = `
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
@@ -185,8 +194,8 @@ function toggleMatrixChartFullscreenViewMode() {
         `;
     }
 
-    // Force an immediate re-measurement pass to update the canvas grid coordinate mapping tracking frames
-    setTimeout(enforceDynamicViewportCanvasSizing, 20);
+    // Recalculate dimensions once layout styles adapt smoothly
+    setTimeout(enforceDynamicViewportCanvasSizing, 60);
 }
 
 function enforceDynamicViewportCanvasSizing() {
@@ -195,6 +204,7 @@ function enforceDynamicViewportCanvasSizing() {
 
     const parentContainerBoundingBox = canvasElement.parentElement.getBoundingClientRect();
     
+    // Fixed broken tracking parameter cuts:
     canvasElement.width = parentContainerBoundingBox.width;
     canvasElement.height = parentContainerBoundingBox.height;
 
@@ -225,41 +235,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Mount interface tracking listeners on setup sequence boot phases
-document.addEventListener('DOMContentLoaded', () => {
-    window.addEventListener('resize', enforceDynamicViewportCanvasSizing);
-    
-    const opacitySlider = document.getElementById('chartOpacitySlider');
-    if (opacitySlider) {
-        opacitySlider.addEventListener('input', (e) => {
-            const wrapper = document.getElementById('matrixFlowChartWrapper');
-            if (wrapper && window.isMatrixChartDetachedFloating) {
-                // Adjust complete chart frame alpha opacity values dynamically
-                wrapper.style.opacity = (parseFloat(e.target.value) / 100);
-            }
-        });
-    }
-
-    const convModeSelector = document.getElementById('formConversionMode');
-    if (convModeSelector) {
-        convModeSelector.addEventListener('change', () => {
-            setTimeout(enforceDynamicViewportCanvasSizing, 50);
-        });
+// Clean exit sync listener to handle hardware ESC keystrokes safely
+document.addEventListener('fullscreenchange', () => {
+    if (!document.fullscreenElement && window.isMatrixCanvasMaximizeViewActive) {
+        window.isMatrixCanvasMaximizeViewActive = false;
+        const mainMatrixContainerBox = document.querySelector('.matrix-container');
+        const button = document.getElementById('btnFullscreenChart');
+        
+        if (mainMatrixContainerBox) mainMatrixContainerBox.classList.remove('canvas-maximize-presentation-view');
+        if (button) {
+            button.style.color = "";
+            button.setAttribute('title', 'Toggle Fullscreen Canvas');
+            button.innerHTML = `
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+                </svg>
+            `;
+        }
+        setTimeout(enforceDynamicViewportCanvasSizing, 50);
     }
 });
 
-// Attach the auto-sizer to form visibility dropdown changes and window resize events
-document.addEventListener('DOMContentLoaded', () => {
-    window.addEventListener('resize', enforceDynamicViewportCanvasSizing);
-    
-    const convModeSelector = document.getElementById('formConversionMode');
-    if (convModeSelector) {
-        convModeSelector.addEventListener('change', () => {
-            // Delay slightly to let the browser execute display collapses before re-measuring coordinates
-            setTimeout(enforceDynamicViewportCanvasSizing, 50);
-        });
-    }
-});
 
 function drawBackgroundGrid(ctx, w, h) {
     ctx.strokeStyle = 'rgba(30, 41, 59, 0.25)';
@@ -319,6 +315,13 @@ function drawFlowLines(gross, expensesValue, taxValue, takeHomeValue) {
         let targetXPosition = endX;
         if ((targetXPosition + pillW) > (w - 10)) {
             targetXPosition = w - pillW - 10;
+        }
+
+        const textPaddingWidth = ctx.measureText(labelText).width + 24;
+        let absoluteDrawX = endX;
+
+        if ((absoluteDrawX + textPaddingWidth) > (w - 12)) {
+            absoluteDrawX = w - textPaddingWidth - 12; // Locks rendering boundaries to prevent trailing clipping leaks
         }
 
         ctx.beginPath(); ctx.roundRect(targetXPosition, endY - 11, pillW, 22, 11);

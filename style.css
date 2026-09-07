@@ -664,11 +664,6 @@ body {
     100% { opacity: 1; transform: scale(1.05); }
 }
 
-/* Ensure internal chart layers stack cleanly */
-.flow-chart-wrapper {
-    position: relative !important;
-}
-
 /* Detached Floating Window State Properties Core */
 .flow-chart-wrapper.detached-floating-window {
     position: fixed !important;
@@ -700,7 +695,7 @@ body {
     transform: scale(0.95);
 }
 
-/* 🚀 FULLSCREEN MODALPRESENTATION SCREEN OVERLAY */
+/* Fixes vertical presentation bounds when maximized */
 .matrix-container.canvas-maximize-presentation-view {
     position: fixed !important;
     top: 0 !important;
@@ -708,18 +703,53 @@ body {
     width: 100vw !important;
     height: 100vh !important;
     z-index: 999999 !important;
-    background: #020617 !important; /* Pure black matrix void layout track */
-    padding: 30px !important;
+    background: #020617 !important;
+    padding: 32px !important;
     margin: 0 !important;
     border-radius: 0 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: space-between !important;
+    box-sizing: border-box !important;
+    overflow-y: auto !important; /* Retains internal tracking rows usability if content breaks */
 }
 
-/* Adjust nested canvas heights automatically when full-screen is engaged */
-.matrix-container.canvas-maximize-presentation-view .flow-chart-wrapper {
+/* 🚀 FIX CANVAS EXPANSION BOUNDS: Automatically stretches chart elements to occupy the full screen display */
+.matrix-container.canvas-maximize-presentation-view #matrixFlowChartWrapper {
     flex-grow: 1 !important;
-    height: calc(100vh - 220px) !important;
-    margin-bottom: 20px !important;
+    width: 100% !important;
+    height: calc(100vh - 160px) !important; /* Dynamically reserve space for header actions and progress dividers */
+    min-height: auto !important;
+    margin-bottom: 24px !important;
+    display: block !important;
+}
+
+/* Force the child hardware drawing surface canvas element to adapt instantly */
+.matrix-container.canvas-maximize-presentation-view #flowChart {
+    width: 100% !important;
+    height: 100% !important;
+    display: block !important;
+}
+/* 🚀 PROFESSIONAL VECTOR ALIGNMENT TRAYS: Locks SVG paths precisely in geometric dead-centers */
+.matrix-action-icon-tray {
+    display: flex !important;
+    align-items: center !important;
+    gap: 16px !important;
+}
+
+.action-icon-wrapper button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 28px !important;
+    height: 28px !important;
+    padding: 0 !important; /* Erase standard inner spacing skewing the vectors */
+    margin: 0 !important;
+    background: none !important;
+    border: none !important;
+    line-height: 1 !important;
+    vertical-align: middle !important;
+}
+
+/* Apply professional hover glow shifts smoothly */
+.action-icon-wrapper button svg {
+    display: block !important;
+    transition: stroke 0.2s ease, transform 0.1s ease !important;
 }
