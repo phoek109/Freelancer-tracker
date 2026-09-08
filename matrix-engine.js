@@ -66,20 +66,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Automatically balances currency signs and passes metrics down to target tax variables
+// =========================================================================
+// 🚀 DYNAMIC LOOKUP OVERHAUL IN MATRIX-ENGINE.JS
+// =========================================================================
 function updateBaseCurrencyConfigSymbols() {
-    const base = document.getElementById('baseCurrencyConfig').value;
-    if (base === 'USD') currentCurrency = '$';
-    else if (base === 'EUR') currentCurrency = '€';
-    else if (base === 'GBP') currentCurrency = '£';
-    else if (base === 'UGX') currentCurrency = 'USh ';
-    else if (base === 'KES') currentCurrency = 'KSh ';
-    else if (base === 'NGN') currentCurrency = '₦';
+    const baseElement = document.getElementById('baseCurrencyConfig');
+    if (!baseElement) return;
+    
+    const activeBaseISO = baseElement.value;
+    
+    // 🚀 ZERO HARDCODING PATCH: Instantly queries the global native browser localization dictionary
+    if (typeof getGlobalCurrencySymbolCharacter === 'function') {
+        window.currentCurrency = getGlobalCurrencySymbolCharacter(activeBaseISO);
+    } else {
+        // Safe baseline layout fallback parameter string checks
+        if (activeBaseISO === 'USD') window.currentCurrency = '$ ';
+        else if (activeBaseISO === 'EUR') window.currentCurrency = '€ ';
+        else window.currentCurrency = activeBaseISO + ' ';
+    }
     
     const baseTaxInput = document.getElementById('baseTaxRateConfig').value;
-    inputTaxRate.value = baseTaxInput || 15;
+    if (inputTaxRate) {
+        inputTaxRate.value = baseTaxInput || 15;
+    }
     
-    fetchLiveExchangeRates(base);
+    if (typeof fetchLiveExchangeRates === 'function') {
+        fetchLiveExchangeRates(activeBaseISO);
+    }
 }
 
 function toggleDatabaseMode() {
@@ -230,13 +243,40 @@ function drawBackgroundGrid(ctx, w, h) {
     }
 }
 
-// 🚀 UPGRADED VISUAL ENGINE CORE: Implements Right-Edge Boundary Guards and Lower Neon Aura Intensity
+// =========================================================================
+// 🚀 MULTI-CHART STYLING MANAGEMENT DRIVER
+// =========================================================================
+window.activeMatrixChartStyle = "sankey"; // Baseline configuration startup state fallback
+
 function drawFlowLines(gross, expensesValue, taxValue, takeHomeValue) {
     const canvas = document.getElementById('flowChart');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const w = canvas.width; const h = canvas.height;
+    const w = canvas.width; 
+    const h = canvas.height;
+
+    ctx.clearRect(0, 0, w, h);
+
+    // 🚀 UPDATED ARCHITECTURAL ROUTER: Now supports four unique chart type options
+    if (window.activeMatrixChartStyle === "bars") {
+        executeStackedColumnRenderingEngine(ctx, w, h, gross, expensesValue, taxValue, takeHomeValue);
+    } 
+    // 🎯 NEW DESIGNATED FILTER INTERCEPT SWITCH ROUTE:
+    else if (window.activeMatrixChartStyle === "hhoriz") {
+        executeHorizontalBarChartRenderingEngine(ctx, w, h, gross, expensesValue, taxValue, takeHomeValue);
+    } 
+    else if (window.activeMatrixChartStyle === "pie") {
+        executeProportionPieRenderingEngine(ctx, w, h, gross, expensesValue, taxValue, takeHomeValue);
+    } 
+    else {
+        executeOriginalSankeyCurvesEngine(ctx, canvas, w, h, gross, expensesValue, taxValue, takeHomeValue);
+    }
+}
+
+// =========================================================================
+// 📈 PRESENTATION LAYER 1: ORIGINAL HIGH-FIDELITY SANKEY ENGINE (RESERVED)
+// =========================================================================
+function executeOriginalSankeyCurvesEngine(ctx, canvas, w, h, gross, expensesValue, taxValue, takeHomeValue) {
     if (typeof drawBackgroundGrid === 'function') drawBackgroundGrid(ctx, w, h);
 
     // DYNAMIC EDGE COMPENSATOR: Increase endX padding to give long floating strings more buffer room
@@ -256,7 +296,7 @@ function drawFlowLines(gross, expensesValue, taxValue, takeHomeValue) {
 
     ctx.beginPath(); ctx.moveTo(0, startY); ctx.lineTo(startX, startY);
     ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 4; ctx.stroke();
-
+    
     ctx.font = 'bold 11px "Plus Jakarta Sans", sans-serif';
     ctx.fillStyle = '#38bdf8'; ctx.fillText("GROSS INPUT", 20, startY - 14);
 
@@ -279,13 +319,6 @@ function drawFlowLines(gross, expensesValue, taxValue, takeHomeValue) {
             targetXPosition = w - pillW - 10;
         }
 
-        const textPaddingWidth = ctx.measureText(labelText).width + 24;
-        let absoluteDrawX = endX;
-
-        if ((absoluteDrawX + textPaddingWidth) > (w - 12)) {
-            absoluteDrawX = w - textPaddingWidth - 12; // Locks rendering boundaries to prevent trailing clipping leaks
-        }
-
         ctx.beginPath(); ctx.roundRect(targetXPosition, endY - 11, pillW, 22, 11);
         ctx.fillStyle = color; ctx.fill();
         ctx.fillStyle = '#ffffff'; ctx.fillText(labelText, targetXPosition + 12, endY + 4);
@@ -302,6 +335,341 @@ function drawFlowLines(gross, expensesValue, taxValue, takeHomeValue) {
     ctx.textAlign = 'left';
 }
 
+// =========================================================================
+// 📈 PRESENTATION LAYER 2: PROFESSIONAL SIDE-BY-SIDE COLUMN CHART ENGINE
+// =========================================================================
+function executeStackedColumnRenderingEngine(ctx, w, h, gross, totalExpenses, taxReserve, takeHome) {
+    if (typeof drawBackgroundGrid === 'function') drawBackgroundGrid(ctx, w, h);
+    const activeSymbol = window.currentCurrency || '$ ';
+
+    // 1. Establish chart margins and coordinate bounding dimensions
+    const paddingLeft   = 80;   // Room for vertical Y-axis currency text labels
+    const paddingRight  = 40;
+    const paddingTop    = 60;   // Room for the column data text values tags
+    const paddingBottom = 40;   // Room for horizontal X-axis column titles
+
+    const graphWidth  = w - paddingLeft - paddingRight;
+    const graphHeight = h - paddingTop - paddingBottom;
+    const baselineY   = h - paddingBottom;
+
+    // 2. Compute dynamic Y-axis ceiling limits based on your Gross Income volume
+    const highestDataValuePoint = Math.max(gross, totalExpenses, taxReserve, takeHome);
+    const yAxisCeilingValue = highestDataValuePoint > 0 ? highestDataValuePoint * 1.15 : 10000; // 15% safety padding overhead
+
+    // 3. Draw horizontal reference grid lines and Y-axis scale value markings
+    ctx.save();
+    ctx.font = "9px 'JetBrains Mono', monospace";
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+
+    const totalGridLinesCount = 4;
+    for (let i = 0; i <= totalGridLinesCount; i++) {
+        const lineRatio = i / totalGridLinesCount;
+        const currentLineYPosition = baselineY - (graphHeight * lineRatio);
+        const currentGridValueMarking = yAxisCeilingValue * lineRatio;
+
+        // Subtle background reference line tracks
+        ctx.strokeStyle = "rgba(30, 41, 59, 0.35)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(paddingLeft, currentLineYPosition);
+        ctx.lineTo(w - paddingRight, currentLineYPosition);
+        ctx.stroke();
+
+        // White axis indicator metrics ticks labels
+        ctx.fillStyle = "#64748b";
+        ctx.fillText(
+            `${activeSymbol}${currentGridValueMarking.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+            paddingLeft - 12,
+            currentLineYPosition
+        );
+    }
+    ctx.restore();
+
+    if (gross <= 0) return;
+
+    // 4. Calibrate column position math across the horizontal X-axis bounds
+    const barsDataPool = [
+        { value: totalExpenses, color: "#f87171", title: "EXPENSES", ratio: totalExpenses / gross },
+        { value: taxReserve,    color: "#facc15", title: "TAX VAULT", ratio: taxReserve / gross },
+        { value: takeHome,      color: "#4ade80", title: "TAKE-HOME", ratio: takeHome / gross }
+    ];
+
+    const totalColumnsCount = barsDataPool.length;
+    const absoluteColumnWidth = (graphWidth / totalColumnsCount) * 0.55; // 55% bar footprint width, leaves 45% for padding spaces
+    const gapBetweenColumns  = (graphWidth - (absoluteColumnWidth * totalColumnsCount)) / (totalColumnsCount + 1);
+
+    // 5. Run the rendering sweep loop to paint column pillars and text overlays
+    barsDataPool.forEach((barItem, idx) => {
+        const columnStartX = paddingLeft + gapBetweenColumns + (idx * (absoluteColumnWidth + gapBetweenColumns));
+        
+        // Map absolute currency volume value smoothly onto graph vertical pixel scale heights
+        const computedColumnPixelHeight = (barItem.value / yAxisCeilingValue) * graphHeight;
+        const columnStartY = baselineY - computedColumnPixelHeight;
+
+        ctx.save();
+
+        // A. Draw Column Pillar Shapes
+        ctx.fillStyle = barItem.color;
+        ctx.beginPath();
+        // Generates clean upper rounded corners for a professional software look
+        ctx.roundRect(columnStartX, columnStartY, absoluteColumnWidth, computedColumnPixelHeight > 0 ? computedColumnPixelHeight : 2, [6, 6, 0, 0]);
+        ctx.fill();
+
+        // B. Draw Top Floating Data Value Indicators
+        ctx.font = "bold 10px 'JetBrains Mono', monospace";
+        ctx.fillStyle = barItem.color;
+        ctx.textAlign = "center";
+        
+        const valueLabelString = `${activeSymbol}${barItem.value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+        const percentageLabelString = `(${Math.round(barItem.ratio * 100)}%)`;
+        
+        ctx.fillText(valueLabelString, columnStartX + (absoluteColumnWidth / 2), columnStartY - 16);
+        ctx.font = "9px 'JetBrains Mono', monospace";
+        ctx.fillStyle = "#64748b";
+        ctx.fillText(percentageLabelString, columnStartX + (absoluteColumnWidth / 2), columnStartY - 4);
+
+        // C. Draw Bottom Horizontal X-Axis Category Labels
+        ctx.font = "bold 9px 'JetBrains Mono', monospace";
+        ctx.fillStyle = "#f8fafc";
+        ctx.fillText(barItem.title, columnStartX + (absoluteColumnWidth / 2), baselineY + 16);
+
+        ctx.restore();
+    });
+
+    // Draw the baseline solid axis anchor rule line asset card track
+    ctx.strokeStyle = "#1e293b";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(paddingLeft, baselineY);
+    ctx.lineTo(w - paddingRight, baselineY);
+    ctx.stroke();
+}
+
+// =========================================================================
+// 📈 PRESENTATION LAYER 3: COMPACT CHUNKY DONUT PIE BREAKDOWN MATRIX
+// =========================================================================
+function executeProportionPieRenderingEngine(ctx, w, h, gross, expensesValue, taxValue, takeHomeValue) {
+    if (typeof drawBackgroundGrid === 'function') drawBackgroundGrid(ctx, w, h);
+    const activeSymbol = window.currentCurrency || '$ ';
+    
+    // 1. Precise coordinates calibrations: Perfectly centered in the new expanded workspace height
+    const centerX = w * 0.38;
+    const centerY = h * 0.50; 
+    
+    // 🚀 THE FIX: Reduced track radius to 0.22 and chunked thickness to 54px to make the inner circle tighter!
+    const donutCenterRadiusTrack = Math.min(w, h) * 0.27; 
+    const donutRibbonThickness = 54; 
+
+    if (gross <= 0) return;
+
+    // Map dataset items pool arrays (Layering sort order preserved)
+    const slices = [
+        { value: expensesValue, color: "#f87171", label: "Expenses" },
+        { value: taxValue,      color: "#facc15", label: "Tax Vault" },
+        { value: takeHomeValue, color: "#4ade80", label: "Take-Home" }
+    ];
+
+    slices.sort((a, b) => b.value - a.value);
+
+    let currentStartAngle = -Math.PI / 2; // Always begin plotting cleanly at the top 12-o-clock line
+
+    slices.forEach((slice) => {
+        const sliceAngleSize = (slice.value / gross) * (2 * Math.PI);
+        if (sliceAngleSize <= 0) return;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, donutCenterRadiusTrack, currentStartAngle, currentStartAngle + sliceAngleSize);
+        
+        ctx.strokeStyle = slice.color;
+        ctx.lineWidth = donutRibbonThickness;
+        ctx.lineCap = "butt"; 
+        ctx.stroke();
+        ctx.restore();
+
+        currentStartAngle += sliceAngleSize;
+    });
+
+    // Surgical hole mask cutout drawing routine
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, donutCenterRadiusTrack - (donutRibbonThickness / 2) - 1, 0, 2 * Math.PI);
+    ctx.fillStyle = "#070a13"; 
+    ctx.fill();
+    ctx.restore();
+
+    // Text legend checklist layout parameters
+    const originalLegendOrder = [
+        { value: expensesValue, color: "#f87171", label: "Expenses" },
+        { value: taxValue,      color: "#facc15", label: "Tax Vault" },
+        { value: takeHomeValue, color: "#4ade80", label: "Take-Home" }
+    ];
+
+    originalLegendOrder.forEach((slice, idx) => {
+        const legendX = w * 0.64;
+        const legendY = (h * 0.38) + (idx * 24);
+
+        ctx.fillStyle = slice.color;
+        ctx.beginPath();
+        ctx.arc(legendX, legendY - 4, 5, 0, 2 * Math.PI);
+        ctx.fill();
+
+        ctx.font = "bold 11px 'Plus Jakarta Sans', sans-serif";
+        ctx.fillStyle = "#f8fafc";
+        
+        const numericString = slice.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const percentageString = Math.round((slice.value / gross) * 100);
+        const labelTextString = `${slice.label.toUpperCase()}: ${activeSymbol}${numericString} (${percentageString}%)`;
+        
+        ctx.fillText(labelTextString, legendX + 14, legendY);
+    });
+
+    // Paint dynamic center gross cash totals labels text overlays (Synchronized to new coordinates)
+    ctx.save();
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    ctx.font = "bold 8px 'JetBrains Mono', monospace";
+    ctx.fillStyle = "#64748b";
+    ctx.fillText("GROSS INCOME", centerX, centerY - 8);
+
+    ctx.font = "bold 12px 'JetBrains Mono', monospace";
+    ctx.fillStyle = "#38bdf8"; 
+    const centerTotalString = `${activeSymbol}${gross.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+    ctx.fillText(centerTotalString, centerX, centerY + 6);
+
+    ctx.restore();
+}
+
+// =========================================================================
+// 📈 PRESENTATION LAYER 4: STANDALONE HORIZONTAL BAR GRAPH FOR MATRIX PANEL
+// =========================================================================
+function executeHorizontalBarChartRenderingEngine(ctx, w, h, gross, totalExpenses, taxReserve, takeHome) {
+    if (typeof drawBackgroundGrid === 'function') drawBackgroundGrid(ctx, w, h);
+    const activeSymbol = window.currentCurrency || '$ ';
+
+    const paddingLeft   = 100;  // Space for category titles on the left
+    const paddingRight  = 130;  // Space for floating total values on the right edge
+    const paddingTop    = 40;
+    const paddingBottom = 40;
+
+    const graphWidth  = w - paddingLeft - paddingRight;
+    const graphHeight = h - paddingTop - paddingBottom;
+    const baselineX   = paddingLeft;
+
+    const highestDataValuePoint = Math.max(gross, totalExpenses, taxReserve, takeHome);
+    const xAxisCeilingValue = highestDataValuePoint > 0 ? highestDataValuePoint * 1.15 : 10000;
+
+    ctx.save();
+    ctx.font = "9px 'JetBrains Mono', monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+
+    const totalGridLinesCount = 4;
+    for (let i = 0; i <= totalGridLinesCount; i++) {
+        const lineRatio = i / totalGridLinesCount;
+        const currentLineXPosition = baselineX + (graphWidth * lineRatio);
+        const currentGridValueMarking = xAxisCeilingValue * lineRatio;
+
+        ctx.strokeStyle = "rgba(30, 41, 59, 0.35)";
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(currentLineXPosition, paddingTop); ctx.lineTo(currentLineXPosition, h - paddingBottom); ctx.stroke();
+
+        ctx.fillStyle = "#64748b";
+        ctx.fillText(`${activeSymbol}${currentGridValueMarking.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, currentLineXPosition, h - paddingBottom + 8);
+    }
+    ctx.restore();
+
+    if (gross <= 0) return;
+
+    const barsDataPool = [
+        { value: totalExpenses, color: "#f87171", title: "EXPENSES", ratio: totalExpenses / gross },
+        { value: taxReserve,    color: "#facc15", title: "TAX VAULT", ratio: taxReserve / gross },
+        { value: takeHome,      color: "#4ade80", title: "TAKE-HOME", ratio: takeHome / gross }
+    ];
+
+    const totalBarsCount = barsDataPool.length;
+    const absoluteBarHeight = (graphHeight / totalBarsCount) * 0.50; 
+    const gapBetweenBars  = (graphHeight - (absoluteBarHeight * totalBarsCount)) / (totalBarsCount + 1);
+
+    barsDataPool.forEach((barItem, idx) => {
+        const barStartY = paddingTop + gapBetweenBars + (idx * (absoluteBarHeight + gapBetweenBars));
+        const computedBarPixelWidth = (barItem.value / xAxisCeilingValue) * graphWidth;
+
+        ctx.save();
+        ctx.fillStyle = barItem.color;
+        ctx.beginPath();
+        ctx.roundRect(baselineX, barStartY, computedBarPixelWidth > 0 ? computedBarPixelWidth : 2, absoluteBarHeight, 6);
+        ctx.fill();
+
+        ctx.font = "bold 9px 'JetBrains Mono', monospace"; ctx.fillStyle = "#f8fafc"; ctx.textAlign = "right"; ctx.textBaseline = "middle";
+        ctx.fillText(barItem.title, baselineX - 16, barStartY + (absoluteBarHeight / 2));
+
+        ctx.textAlign = "left"; ctx.font = "bold 10px 'JetBrains Mono', monospace"; ctx.fillStyle = barItem.color;
+        const valueLabelString = `${activeSymbol}${barItem.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        const percentageLabelString = `${Math.round(barItem.ratio * 100)}%`;
+        ctx.fillText(`${valueLabelString} (${percentageLabelString})`, baselineX + computedBarPixelWidth + 12, barStartY + (absoluteBarHeight / 2));
+        ctx.restore();
+    });
+
+    ctx.strokeStyle = "#1e293b"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(baselineX, paddingTop); ctx.lineTo(baselineX, h - paddingBottom); ctx.stroke();
+}
+
+// 🚀 REPAIRED NAVIGATION CONTROLLER: Include 'hhoriz' into your tabs list highlight sweep loop
+function switchMatrixChartStylePresentationMode(targetStyleName) {
+    window.activeMatrixChartStyle = targetStyleName;
+    const tabs = ["sankey", "bars", "hhoriz", "pie"]; // Included 'hhoriz' in selection pool array list
+    tabs.forEach(style => {
+        const btn = document.getElementById(`tabChart${style.charAt(0).toUpperCase() + style.slice(1)}`);
+        if (!btn) return;
+        if (style === targetStyleName) {
+            btn.style.background = "#1e293b";
+            btn.style.color = "#38bdf8";
+        } else {
+            btn.style.background = "none";
+            btn.style.color = "#64748b";
+        }
+    });
+    if (typeof window.updateMatrixData === 'function') window.updateMatrixData();
+}
+
+// =========================================================================
+// 🚀 HARDWARE CAPACITIVE TOUCH MONITOR: DETECTS HORIZONTAL VIEWPORT SWIPES
+// =========================================================================
+document.addEventListener('DOMContentLoaded', () => {
+    const canvasElement = document.getElementById('flowChart');
+    if (!canvasElement) return;
+
+    let touchCoordinatesStartX = 0;
+    // Locate this at the absolute bottom of matrix-engine.js and confirm the array holds four items:
+    const orderedChartsSequence = ["sankey", "bars", "hhoriz", "pie"];
+
+    canvasElement.addEventListener('touchstart', (e) => {
+        touchCoordinatesStartX = e.changedTouches[0].clientX;
+    }, { passive: true });
+
+    canvasElement.addEventListener('touchend', (e) => {
+        const touchCoordinatesEndX = e.changedTouches[0].clientX;
+        const totalSwipeVelocityDeltaX = touchCoordinatesEndX - touchCoordinatesStartX;
+
+        // Threshold check (60px): Ensures tiny accidental shakes are safely ignored
+        if (Math.abs(totalSwipeVelocityDeltaX) > 60) {
+            let activeIndex = orderedChartsSequence.indexOf(window.activeMatrixChartStyle);
+            if (activeIndex === -1) activeIndex = 0;
+            
+            if (totalSwipeVelocityDeltaX < 0) {
+                // Swiped Left: Advance forward
+                activeIndex = (activeIndex + 1) % orderedChartsSequence.length;
+            } else {
+                // Swiped Right: Regress backward
+                activeIndex = (activeIndex - 1 + orderedChartsSequence.length) % orderedChartsSequence.length;
+            }
+            switchMatrixChartStylePresentationMode(orderedChartsSequence[activeIndex]);
+        }
+    }, { passive: true });
+});
+
 
 // Aligned Breakdown Proportions Sliders
 const inputIncomeSplit = document.getElementById('inputIncomeSplit');
@@ -309,6 +677,7 @@ const inputExpenseSplit = document.getElementById('inputExpenseSplit');
 const inputTaxSplit = document.getElementById('inputTaxSplit');
 
 function updateMatrixData() {
+    let grossValueCalculated = 0, totalExpensesValueCalculated = 0, taxReserveValueCalculated = 0, takeHomeValueCalculated = 0;
     let gross, expRatio, taxRate;
     let incomePct, expensePct, taxPct;
     
@@ -317,6 +686,78 @@ function updateMatrixData() {
         activeRatio: 0.65, bizExpRatio: 0.60, incomeTaxRatio: 0.80,
         totals: { gross: 0, expenses: 0, taxWithheld: 0 }
     };
+    
+    const activeSymbol = window.currentCurrency || '$ ';
+    const startFilterDate = document.getElementById('filterStartDate')?.value || '';
+    const endFilterDate = document.getElementById('filterEndDate')?.value || '';
+    const isDateRangeFilterActive = (startFilterDate !== '' || endFilterDate !== '');
+
+    // 🚀 NEW HIGH-PRIORITY MULTI-SELECT & DATE INTERCEPTOR NODE
+    if ((window.selectedHistoricalLogIndices && window.selectedHistoricalLogIndices.length > 0) || isDateRangeFilterActive) {
+        let targetLogPool = [];
+
+        if (window.selectedHistoricalLogIndices && window.selectedHistoricalLogIndices.length > 0) {
+            window.selectedHistoricalLogIndices.forEach(idx => {
+                if (window.cachedHistoricalLogs && window.cachedHistoricalLogs[idx]) {
+                    targetLogPool.push(window.cachedHistoricalLogs[idx]);
+                }
+            });
+        } else if (isDateRangeFilterActive && window.cachedHistoricalLogs) {
+            window.cachedHistoricalLogs.forEach(log => {
+                if (startFilterDate && log.date < startFilterDate) return;
+                if (endFilterDate && log.date > endFilterDate) return;
+                targetLogPool.push(log);
+            });
+        }
+
+        let calculatedBizExpenses = 0, calculatedPlatformFees = 0;
+        let calculatedIncomeTaxReserve = 0, calculatedWithholdingTaxHome = 0;
+
+        targetLogPool.forEach(logItem => {
+            const invoiceAmt = parseFloat(logItem.amount) || 0;
+            const platformPctVal = parseFloat(logItem.platformPct) || 0;
+            const fxRateVal = parseFloat(logItem.fxRate) || 1;
+            const rawWithholdAmt = parseFloat(logItem.withholdAmt) || 0;
+            
+            grossValueCalculated += (parseFloat(logItem.homeIncome) || parseFloat(logItem.netHomeIncome) || 0);
+            calculatedBizExpenses += (parseFloat(logItem.bizExpense) || 0);
+            calculatedIncomeTaxReserve += (parseFloat(logItem.finalTaxOwed) || 0);
+            takeHomeValueCalculated += (parseFloat(logItem.takeHomePay) || 0);
+
+            const isPlat = (logItem.platformToggle === "YES" || platformPctVal > 0);
+            calculatedPlatformFees += isPlat ? (invoiceAmt * platformPctVal * fxRateVal) : 0;
+            if (logItem.withholdingToggle === "YES" || rawWithholdAmt > 0) {
+                calculatedWithholdingTaxHome += (rawWithholdAmt * fxRateVal);
+            }
+        });
+
+        totalExpensesValueCalculated = calculatedBizExpenses + calculatedPlatformFees;
+        taxReserveValueCalculated = calculatedIncomeTaxReserve + calculatedWithholdingTaxHome;
+        if (targetLogPool.length === 0) takeHomeValueCalculated = 0;
+
+        if (document.getElementById('grossDisplay')) document.getElementById('grossDisplay').innerText = `${activeSymbol}${grossValueCalculated.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+        if (document.getElementById('expensesDisplay')) document.getElementById('expensesDisplay').innerText = `${activeSymbol}${totalExpensesValueCalculated.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+        if (document.getElementById('taxDisplay')) document.getElementById('taxDisplay').innerText = `${activeSymbol}${taxReserveValueCalculated.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+        if (document.getElementById('takeHomeDisplay')) document.getElementById('takeHomeDisplay').innerText = `${activeSymbol}${takeHomeValueCalculated.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+
+        if (document.getElementById('incActive')) document.getElementById('incActive').innerText = `${activeSymbol}${grossValueCalculated.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+        if (document.getElementById('incOthers')) document.getElementById('incOthers').innerText = `${activeSymbol}0.00`;
+        if (document.getElementById('expBusinessExpenses')) document.getElementById('expBusinessExpenses').innerText = `${activeSymbol}${calculatedBizExpenses.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+        if (document.getElementById('expPlatformFees')) document.getElementById('expPlatformFees').innerText = `${activeSymbol}${calculatedPlatformFees.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+        if (document.getElementById('taxIncome')) document.getElementById('taxIncome').innerText = `${activeSymbol}${calculatedIncomeTaxReserve.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+        if (document.getElementById('taxWithholding')) document.getElementById('taxWithholding').innerText = `${activeSymbol}${calculatedWithholdingTaxHome.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+
+        if (grossValueCalculated > 0) {
+            if (document.getElementById('barExpenses')) document.getElementById('barExpenses').style.width = `${(totalExpensesValueCalculated / grossValueCalculated) * 100}%`;
+            if (document.getElementById('barTax')) document.getElementById('barTax').style.width = `${(taxReserveValueCalculated / grossValueCalculated) * 100}%`;
+            if (document.getElementById('barTakeHome')) document.getElementById('barTakeHome').style.width = `${(takeHomeValueCalculated / grossValueCalculated) * 100}%`;
+        }
+
+        if (typeof drawFlowLines === 'function') {
+            drawFlowLines(grossValueCalculated, totalExpensesValueCalculated, taxReserveValueCalculated, takeHomeValueCalculated);
+        }
+        return; 
+    }
 
     // =========================================================================
     // ⚡ SCENARIO A: HISTORICAL DRILL-DOWN BLOCK (PERFECT SHEET ALIGNMENT)

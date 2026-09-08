@@ -130,17 +130,66 @@
                 <button id="btnSubmit" onclick="dispatchLedgerTransactionBundle()">STREAM TO SHEET</button>
                 <p id="syncStatus" class="status-text"></p>
                 
-                <!-- TRANSACTION LOG PANELS -->
+                                <!-- TRANSACTION LOG PANELS -->
                 <div class="sidebar-header" style="margin-top:24px;">TRANSACTION DATABASE LOGS</div>
-                
+
                 <div class="log-controls">
+                    <!-- 🚀 NEW VISIBLE COMPONENT: MASTER DATE RANGE INTERVAL FILTERS -->
+                    <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+                        <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                            <label style="font-size: 9px;">START DATE</label>
+                            <input type="date" id="filterStartDate" onchange="renderHistoricalSidebarLogs(); if(typeof window.updateMatrixData === 'function') window.updateMatrixData();" style="padding: 6px; font-size: 11px;">
+                        </div>
+                        <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                            <label style="font-size: 9px;">END DATE</label>
+                            <input type="date" id="filterEndDate" onchange="renderHistoricalSidebarLogs(); if(typeof window.updateMatrixData === 'function') window.updateMatrixData();" style="padding: 6px; font-size: 11px;">
+                        </div>
+                    </div>
+
+                    <!-- Search and sorting tracks -->
                     <input type="text" id="logSearchInput" placeholder="Search client or currency..." oninput="renderHistoricalSidebarLogs()">
-                    <select id="logSortSelect" onchange="renderHistoricalSidebarLogs()" class="bright-input" style="margin-top: 8px;">
-                        <option value="date_desc">Date: Newest First</option>
-                        <option value="date_asc">Date: Oldest First</option>
-                        <option value="amt_desc">Amount: Highest First</option>
-                        <option value="client_asc">Client: A-Z</option>
+                    <!-- 🚀 UPGRADED SORTING MATRIX: Comprehensive professional financial filters grid -->
+                    <select id="logSortSelect" onchange="renderHistoricalSidebarLogs()" style="width: 100%; padding: 8px; background: #070a13; border: 1px solid #1e293b; color: #f8fafc; border-radius: 6px; font-size: 12px; box-sizing: border-box; cursor: pointer; font-family: 'JetBrains Mono', monospace;">
+                        
+                        <optgroup label="CHRONOLOGICAL ORDER" style="background:#0f172a; color:#64748b;">
+                            <option value="date_desc" selected>Date: Newest First (Default)</option>
+                            <option value="date_asc">Date: Oldest First</option>
+                        </optgroup>
+
+                        <optgroup label="REVENUE & CASH VOLUME" style="background:#0f172a; color:#64748b;">
+                            <option value="amt_desc">Invoice Amount: Highest First</option>
+                            <option value="amt_asc">Invoice Amount: Lowest First</option>
+                            <option value="home_desc">Net Home Income: Highest First</option>
+                            <option value="home_asc">Net Home Income: Lowest First</option>
+                        </optgroup>
+
+                        <optgroup label="EXPENSES & PLATFORM CUTS" style="background:#0f172a; color:#64748b;">
+                            <option value="exp_desc">Business Expenses: Highest First</option>
+                            <option value="plat_desc">Platform Fees: Highest First</option>
+                        </optgroup>
+
+                        <optgroup label="TAX VAULT LIABILITIES" style="background:#0f172a; color:#64748b;">
+                            <option value="tax_desc">Final Tax Owed: Highest First</option>
+                            <option value="withhold_desc">Withholding Deducted: Highest First</option>
+                        </optgroup>
+
+                        <optgroup label="CLIENT METADATA" style="background:#0f172a; color:#64748b;">
+                            <option value="client_asc">Client Name: A - Z</option>
+                            <option value="client_desc">Client Name: Z - A</option>
+                        </optgroup>
+                        
                     </select>
+
+                    
+                    <!-- 🚀 UPGRADED: Added real-time tracking span placeholders to show record item metrics counts -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(30, 41, 59, 0.2); padding: 6px 10px; border-radius: 6px; border: 1px solid #1e293b;">
+                        <div style="display: flex; flex-direction: column; gap: 2px;">
+                            <span style="font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700; color: #64748b; letter-spacing: 0.5px;">MULTI-SELECT MODE</span>
+                            <!-- 🎯 DYNAMIC COUNT SUMMARY readout placeholder text label -->
+                            <span id="selectedLogsCountDisplay" style="font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; color: #38bdf8;">Showing: 0 | Selected: 0</span>
+                        </div>
+                        <button id="btnBulkSelectClear" onclick="clearAllHistoricalCardSelections()" style="display: none; background: rgba(248, 113, 113, 0.15); border: 1px solid #f87171; color: #f87171; padding: 4px 10px; border-radius: 4px; font-size: 9px; font-weight: 700; cursor: pointer; transition: background 0.2s; white-space: nowrap;">RESET SELECTION</button>
+                    </div>
                 </div>
 
                 <div id="sidebarLogContainer" class="sidebar-records-scroll-tray">
@@ -169,41 +218,39 @@
                     <span>LIVE FINANCIAL FLOW MATRIX</span>
                 </div>
 
-                <!-- 🚀 FIXED CONSOLE: Inline dimensions stripped to unlock dynamic dragging & resizing -->
+                <!-- 🚀 UPGRADED VIEWPORT: Multi-Chart Switching Architecture -->
                 <div id="matrixFlowChartWrapper" class="flow-chart-wrapper" style="position: relative; background: #070a13; border: 1px solid #1e293b; border-radius: 12px; margin-bottom: 20px;">
                     
-                    <!-- 🚀 VISIBLE DRAG BAR BANNER: Shows up ONLY when the window is detached floating -->
-                    <div id="floatingChartTitleBar" class="floating-window-titlebar" style="display: none; align-items: center; justify-content: space-between; background: #0f172a; padding: 6px 12px; border-bottom: 1px solid #1e293b; border-radius: 12px 12px 0 0; cursor: move; user-select: none;">
-                        <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; color: #38bdf8; letter-spacing: 1px;">FINANCIAL FLOW MATRIX PANEL</span>
+                    <!-- DUAL ACTION PANEL OVERLAY (Floats flush over background grid tracks) -->
+                    <div style="position: absolute; top: 16px; left: 16px; right: 16px; display: flex; align-items: center; justify-content: space-between; z-index: 100000; pointer-events: none;">
                         
-                        <!-- Action Icon Control Housing Container -->
-                        <div class="action-icon-wrapper" style="display: inline-flex; width: 22px; height: 22px; align-items: center; justify-content: center;">
-                            <button id="btnPinChartFloat" onclick="toggleMatrixChartFloatingState()" title="Unpin Floating View" style="background: none; border: none; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #f87171; cursor: pointer; padding: 0; margin: 0;">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: block; pointer-events: none;">
-                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                </svg>
-                            </button>
+                        <!-- 🚀 UPGRADED: Added a dedicated selectable tab option for Horizontal Bar charts -->
+                        <div class="matrix-chart-selector-ribbon" style="pointer-events: auto; display: flex; align-items: center; background: rgba(15, 23, 42, 0.85); padding: 3px 6px; border-radius: 8px; border: 1px solid #1e293b; backdrop-filter: blur(4px); gap: 4px;">
+                            <button id="tabChartSankey" onclick="switchMatrixChartStylePresentationMode('sankey')" style="background: #1e293b; border: none; color: #38bdf8; font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 800; padding: 4px 10px; border-radius: 5px; cursor: pointer; transition: all 0.2s;">FLOW MATRIX</button>
+                            <button id="tabChartBars" onclick="switchMatrixChartStylePresentationMode('bars')" style="background: none; border: none; color: #64748b; font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 800; padding: 4px 10px; border-radius: 5px; cursor: pointer; transition: all 0.2s;">STACKED COLUMN</button>
+                            <!-- 🎯 NEW SEPARATE CHOICE LAYER TRIGGER TAB: -->
+                            <button id="tabChartHHoriz" onclick="switchMatrixChartStylePresentationMode('hhoriz')" style="background: none; border: none; color: #64748b; font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 800; padding: 4px 10px; border-radius: 5px; cursor: pointer; transition: all 0.2s;">HORIZONTAL BAR</button>
+                            <button id="tabChartPie" onclick="switchMatrixChartStylePresentationMode('pie')" style="background: none; border: none; color: #64748b; font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 800; padding: 4px 10px; border-radius: 5px; cursor: pointer; transition: all 0.2s;">PROPORTION PIE</button>
+                        </div>
+
+                        <!-- Single Control Floating Pin Detached Box Levers (Stays perfectly active) -->
+                        <div id="inlineActionTrayWrapper" class="matrix-action-icon-tray" style="pointer-events: auto; background: rgba(7, 10, 19, 0.85); padding: 4px 8px; border-radius: 8px; border: 1px solid #1e293b; display: flex; align-items: center; justify-content: center;">
+                            <div class="action-icon-wrapper" style="display: inline-flex; width: 28px; height: 28px; align-items: center; justify-content: center;">
+                                <button id="btnPinChartFloat" onclick="toggleMatrixChartFloatingState()" title="Pin Detached View" style="background: none; border: none; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #64748b; cursor: pointer; padding: 0; margin: 0;">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: block; pointer-events: none;">
+                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- The original inline icon tray stays visible ONLY when in standard inline tracking layout mode -->
-                    <div id="inlineActionTrayWrapper" class="matrix-action-icon-tray" style="position: absolute; top: 16px; right: 16px; display: flex; align-items: center; justify-content: center; z-index: 1000;">
-                        <div class="action-icon-wrapper" style="display: inline-flex; width: 28px; height: 28px; align-items: center; justify-content: center;">
-                            <button id="btnPinChartFloatInline" onclick="toggleMatrixChartFloatingState()" title="Pin Detached View" style="background: none; border: none; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #64748b; cursor: pointer; padding: 0; margin: 0;">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: block; pointer-events: none;">
-                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Canvas surface layout container -->
+                    <!-- Central Hardware Surface Drawing Canvas -->
                     <canvas id="flowChart" style="display: block; width: 100%; height: 100%;"></canvas>
                     
-                    <!-- Opacity configuration slider tray -->
-                    <div id="opacitySliderContainer" style="display: none; position: absolute; bottom: 12px; left: 16px; align-items: center; gap: 8px; font-size: 10px; color: #64748b; background: rgba(15, 23, 42, 0.9); padding: 4px 10px; border-radius: 6px; border: 1px solid #1e293b; backdrop-filter: blur(4px); z-index: 100;">
+                    <!-- Opacity internal tracking configuration slider tray -->
+                    <div id="opacitySliderContainer" style="display: none; position: absolute; bottom: 12px; left: 16px; align-items: center; gap: 8px; font-size: 10px; color: #64748b; background: rgba(15, 23, 42, 0.9); padding: 4px 10px; border-radius: 6px; border: 1px solid #1e293b; backdrop-filter: blur(4px); z-index: 100000;">
                         <label for="chartOpacitySlider" style="letter-spacing: 1px; font-weight: 700; color: #38bdf8; margin: 0;">OPACITY:</label>
                         <input type="range" id="chartOpacitySlider" min="20" max="100" value="95" style="width: 70px; height: 4px; accent-color: #38bdf8; cursor: pointer; margin: 0;">
                     </div>

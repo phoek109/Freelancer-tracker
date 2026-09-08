@@ -437,9 +437,11 @@ function synchronizeDualCurrencyActionButtons() {
         renderHistoricalSidebarLogs();
     };
 
-    // 2. Build Button Block 2: Home Base Currency Track
+    // 🚀 Force highlights synchronization hooks inside coordinate checks inside sheets-sync.js
     const btnHome = document.createElement('button');
-    btnHome.className = `curr-btn ${window.activeMatrixCurrencyScopeMode === "home" ? "active" : ""}`;
+    // If the pinned index is active, force match base validation indicators checks cleanly
+    const isHomeActive = (window.activeMatrixCurrencyScopeMode === "home" || window.currentlyPinnedLogIndex !== null);
+    btnHome.className = `curr-btn ${isHomeActive ? 'active' : ''}`;
     btnHome.style.flex = "1";
     btnHome.style.padding = "10px";
     btnHome.innerText = `${valHome} (${symbolHome.trim()})`;
@@ -473,7 +475,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Upgraded matrix driver intercept loop inside matrix-engine.js to cleanly strip hardcoded behaviors
 const originalUpdateMatrixData = window.updateMatrixData;
-// Clean intercept matrix driver patch inside sheets-sync.js
+// =========================================================================
+// 🚀 LOCATED INSIDE THE CO-DRIVER INTERCEPT IN sheets-sync.js
+// =========================================================================
 window.updateMatrixData = function() {
     const receivedSelect = document.getElementById('formCurrency');
     const homeSelect = document.getElementById('baseCurrencyConfig');
@@ -483,8 +487,15 @@ window.updateMatrixData = function() {
     // SCENARIO A: Historical Archival Drill-down is active
     if (window.currentlyPinnedLogIndex !== null && window.cachedHistoricalLogs && window.cachedHistoricalLogs[window.currentlyPinnedLogIndex]) {
         const logItem = window.cachedHistoricalLogs[window.currentlyPinnedLogIndex];
-        const logSymbol = typeof getGlobalCurrencySymbolCharacter === 'function' ? getGlobalCurrencySymbolCharacter(logItem.currency) : '$ ';
+        
+        // 🚀 CRITICAL FIX: Extract the true canonical row base currency symbol directly 
+        // from the specific row snapshot data instead of hardcoded lookups!
+        const logCurrencyCode = logItem.rowCurrencySetting || logItem.currency || "USD";
+        const logSymbol = typeof getGlobalCurrencySymbolCharacter === 'function' 
+            ? getGlobalCurrencySymbolCharacter(logCurrencyCode) 
+            : '$ ';
 
+        // Hard-lock the active application currency state to match the log snapshot character
         window.currentCurrency = logSymbol;
 
         const gross             = parseFloat(logItem.homeIncome) || parseFloat(logItem.netHomeIncome) || 0;
@@ -499,18 +510,18 @@ window.updateMatrixData = function() {
 
         const computedPlatformFeeHome = invoiceAmt * platformPctVal * fxRateVal;
         const logTotalExpenses = bizExpenseAmt + computedPlatformFeeHome;
-        const computedNetProfit = gross - bizExpenseAmt;
         const withholdingTaxHome = rawWithholdAmt * fxRateVal;
         const taxReserve = computedFinalTax + withholdingTaxHome;
 
+        // 🚀 ENFORCE THE REPAIRED SYMBOL DOWN ACROSS ALL PRIMARY DISPLAY NODES
         if (document.getElementById('grossDisplay')) document.getElementById('grossDisplay').innerText = `${logSymbol}${gross.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
         if (document.getElementById('expensesDisplay')) document.getElementById('expensesDisplay').innerText = `${logSymbol}${logTotalExpenses.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
         if (document.getElementById('taxDisplay')) document.getElementById('taxDisplay').innerText = `${logSymbol}${taxReserve.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
         if (document.getElementById('takeHomeDisplay')) document.getElementById('takeHomeDisplay').innerText = `${logSymbol}${computedTakeHome.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
         
         if (document.getElementById('valRevenue')) document.getElementById('valRevenue').innerText = `${logSymbol}${gross.toLocaleString()}`;
-        if (document.getElementById('inputRevenue')) document.getElementById('inputRevenue').value = gross;
-
+        
+        // Hydrate breakdown panels using the localized log symbol
         if (document.getElementById('incActive')) document.getElementById('incActive').innerText = `${logSymbol}${gross.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
         if (document.getElementById('incOthers')) document.getElementById('incOthers').innerText = `${logSymbol}0.00`;
         if (document.getElementById('expBusinessExpenses')) document.getElementById('expBusinessExpenses').innerText = `${logSymbol}${bizExpenseAmt.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
@@ -526,12 +537,15 @@ window.updateMatrixData = function() {
 
         const canvasEl = document.getElementById('flowChart');
         if (canvasEl && typeof drawFlowLines === 'function') {
+            // Re-render curves layout with synchronized row values parameter boundaries
             drawFlowLines(gross, logTotalExpenses, taxReserve, computedTakeHome);
         }
         
         if (typeof synchronizeDualCurrencyActionButtons === 'function') synchronizeDualCurrencyActionButtons();
         return; 
     }
+
+    // SCENARIO B: Clean fallback pipeline tracks continue normally below...
 
     // SCENARIO B: Fall-through cleanly to use our newly streamlined matrix-engine core!
     const activeCurrencyCode = (window.activeMatrixCurrencyScopeMode === "received") ? receivedSelect.value : homeSelect.value;
@@ -568,21 +582,22 @@ function extractLogsFromActiveSession() {
     }
 }
 
-// Re-maps your form properties array fields dynamically
+// Locate this function inside sheets-sync.js and verify it locks the global panel elements as well
 function toggleSidebarFormEditingState(shouldLock) {
     const inputIds = [
         'formDate', 'formClient', 'formAmount', 'formCurrency', 
         'formWithholdingToggle', 'formWithholdingAmt', 
         'formPlatformFeesToggle', 'formFees', 
         'formConversionMode', 'formExactCashAmt', 'formCustomRateVal', 
-        'formExpenses'
+        'formExpenses',
+        // 🚀 ADD THE GLOBAL CONFIGURATION INPUTS TO THE LOCK POOL
+        'baseCurrencyConfig', 'baseTaxRateConfig' 
     ];
     
     inputIds.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
             el.disabled = shouldLock;
-            // Add visual cue highlighting uneditable status profiles
             if (shouldLock) {
                 el.style.opacity = "0.6";
                 el.style.cursor = "not-allowed";
@@ -599,10 +614,9 @@ function toggleSidebarFormEditingState(shouldLock) {
     if (submitBtn) {
         if (shouldLock) {
             submitBtn.disabled = true;
-            submitBtn.innerText = "LOCKED VIEW";
+            submitBtn.innerText = "PINNED LOCK VIEW";
             submitBtn.style.borderColor = "#a855f7";
             submitBtn.style.color = "#a855f7";
-            submitBtn.style.boxShadow = "none";
         } else {
             submitBtn.disabled = false;
             submitBtn.innerText = "STREAM TO SHEET";
@@ -612,67 +626,107 @@ function toggleSidebarFormEditingState(shouldLock) {
     }
 }
 
-function selectAndPinHistoricalLogCard(index) {
-    if (window.currentlyPinnedLogIndex === index) {
-        // SCENARIO A: Release pin lock and restore standard entry states
-        window.currentlyPinnedLogIndex = null;
-        console.log("Database drill-down lock released. Restoring active tracking profiles.");
-        
-        // Clean out form text blocks safely (Your verified complete property stack)
-        document.getElementById('formClient').value = '';
-        document.getElementById('formAmount').value = '';
-        document.getElementById('formWithholdingAmt').value = '0';
-        document.getElementById('formFees').value = '0';
-        document.getElementById('formExpenses').value = '0';
-        document.getElementById('formExactCashAmt').value = '0';
-        document.getElementById('formCustomRateVal').value = '1';
-        document.getElementById('formDate').valueAsDate = new Date();
-        
-        // Reset toggle selections back to standard layout properties states
-        if (document.getElementById('formWithholdingToggle')) document.getElementById('formWithholdingToggle').value = "No";
-        if (document.getElementById('formPlatformFeesToggle')) document.getElementById('formPlatformFeesToggle').value = "No";
-        if (document.getElementById('formConversionMode')) document.getElementById('formConversionMode').value = "exact_cash";
-        
-        // Unfreeze input attributes natively
-        toggleSidebarFormEditingState(false);
-    } else {
-        // SCENARIO B: Lock matrix console onto historical transaction row variables array
-        window.currentlyPinnedLogIndex = index;
-        const logItem = window.cachedHistoricalLogs[index];
-        console.log(`Matrix console locked on historical transaction row index: [${index}]`);
-        
-        // Populate inputs with original logging attributes explicitly
-        if (document.getElementById('formDate')) document.getElementById('formDate').value = logItem.date;
-        if (document.getElementById('formClient')) document.getElementById('formClient').value = logItem.client;
-        if (document.getElementById('formAmount')) document.getElementById('formAmount').value = logItem.amount;
-        if (document.getElementById('formCurrency')) document.getElementById('formCurrency').value = logItem.currency;
-        
-        // Populate custom conversion logic inputs safely from cached row log parameters
-        if (document.getElementById('formConversionMode')) document.getElementById('formConversionMode').value = logItem.conversionMode || "exact_cash";
-        if (document.getElementById('formExactCashAmt')) document.getElementById('formExactCashAmt').value = logItem.exactCashInput || 0;
-        if (document.getElementById('formCustomRateVal')) document.getElementById('formCustomRateVal').value = logItem.customRateInput || 1;
-        if (document.getElementById('formExpenses')) document.getElementById('formExpenses').value = logItem.bizExpense || 0;
-        if (document.getElementById('formWithholdingAmt')) document.getElementById('formWithholdingAmt').value = logItem.withholdAmt || 0;
-        if (document.getElementById('formFees')) document.getElementById('formFees').value = (logItem.platformPct || 0) * 100;
-        
-        if (document.getElementById('formWithholdingToggle')) document.getElementById('formWithholdingToggle').value = logItem.withholdAmt > 0 ? "Yes" : "No";
-        if (document.getElementById('formPlatformFeesToggle')) document.getElementById('formPlatformFeesToggle').value = logItem.platformPct > 0 ? "Yes" : "No";
+// =========================================================================
+// 🚀 UPDATED ACTIVE APPLICATION STATES IN SHEETS-SYNC.JS
+// =========================================================================
+window.activeMatrixCurrencyScopeMode = "home"; 
+window.cachedHistoricalLogs = [];
 
-        // Hard-lock sidebar fields to prevent updates
+// 🚀 REPAIRED OVERHAUL: Tracks a group pool array list map instead of one slot indicator
+window.selectedHistoricalLogIndices = []; 
+
+// 🚀 SECURITY GUARD ENFORCER: Freezes simulation controls across all historical states
+function evaluateGlobalArchivalFreezeState() {
+    const btnPredictiveToggle = document.getElementById('btnToggleMode');
+    const currencyControlTabs = document.getElementById('dualCurrencyControlGrid');
+    const rightPanelSettingsGrid = document.querySelector('.settings-grid');
+    const annualRevenueControlBlock = document.querySelector('.full-width-control');
+
+    const startFilterDate = document.getElementById('filterStartDate')?.value || '';
+    const endFilterDate = document.getElementById('filterEndDate')?.value || '';
+    const isDateRangeFilterActive = (startFilterDate !== '' || endFilterDate !== '');
+    
+    // 🎯 TRUE CONDITION: Freeze if a row is single pinned, bulk multi-selected, or filtered by date window!
+    const isArchivalViewActive = (
+        (window.currentlyPinnedLogIndex !== null) || 
+        (window.selectedHistoricalLogIndices && window.selectedHistoricalLogIndices.length > 0) || 
+        isDateRangeFilterActive
+    );
+
+    if (isArchivalViewActive) {
+        // Enforce the layout freeze lock parameters securely
+        if (btnPredictiveToggle) btnPredictiveToggle.classList.add('predictive-toggle-frozen');
+        if (currencyControlTabs) currencyControlTabs.classList.add('currency-tabs-frozen');
+        if (rightPanelSettingsGrid) rightPanelSettingsGrid.classList.add('predictive-sliders-frozen');
+        if (annualRevenueControlBlock) annualRevenueControlBlock.classList.add('predictive-sliders-frozen');
+        
         toggleSidebarFormEditingState(true);
+    } else {
+        // Safely unfreeze elements back to live active workspace parameters
+        if (btnPredictiveToggle) btnPredictiveToggle.classList.remove('predictive-toggle-frozen');
+        if (currencyControlTabs) currencyControlTabs.classList.remove('currency-tabs-frozen');
+        if (rightPanelSettingsGrid) rightPanelSettingsGrid.classList.remove('predictive-sliders-frozen');
+        if (annualRevenueControlBlock) annualRevenueControlBlock.classList.remove('predictive-sliders-frozen');
+        
+        toggleSidebarFormEditingState(false);
     }
+}
 
-    // Force right-hand metrics calculation drivers to redraw canvas dashboards loops instantly!
-    if (typeof updateMatrixData === 'function') updateMatrixData();
+function clearAllHistoricalCardSelections() {
+    window.selectedHistoricalLogIndices = [];
+    const clearBtn = document.getElementById('btnBulkSelectClear');
+    if (clearBtn) clearBtn.style.display = "none";
+    
+    // Reset tracker text instantly on selection wipes clear actions
+    const countTextPanel = document.getElementById('selectedLogsCountDisplay');
+    if (countTextPanel && window.cachedHistoricalLogs) {
+        countTextPanel.innerText = `Showing: ${window.cachedHistoricalLogs.length} | Selected: 0`;
+    }
+    
+    if (typeof evaluateGlobalArchivalFreezeState === 'function') evaluateGlobalArchivalFreezeState();
+    if (typeof window.updateMatrixData === 'function') window.updateMatrixData();
     renderHistoricalSidebarLogs();
 }
 
+function selectAndPinHistoricalLogCard(index) {
+    const existingIndexPosition = window.selectedHistoricalLogIndices.indexOf(index);
+
+    if (existingIndexPosition > -1) {
+        window.selectedHistoricalLogIndices.splice(existingIndexPosition, 1);
+    } else {
+        window.selectedHistoricalLogIndices.push(index);
+    }
+
+    const clearBtn = document.getElementById('btnBulkSelectClear');
+    if (clearBtn) {
+        clearBtn.style.display = (window.selectedHistoricalLogIndices.length > 0) ? "block" : "none";
+    }
+
+    // 🚀 CRITICAL UPDATE: If precisely ONE row card is active, force inputs to match its snapshot
+    if (window.selectedHistoricalLogIndices.length === 1) {
+        const singleLog = window.cachedHistoricalLogs[window.selectedHistoricalLogIndices[0]];
+        const historicalRowBaseCurrency = singleLog.rowCurrencySetting || "USD";
+        const historicalRowTaxRate = (parseFloat(singleLog.rowTaxRateSetting) || 0) * 100;
+
+        if (document.getElementById('baseCurrencyConfig')) document.getElementById('baseCurrencyConfig').value = historicalRowBaseCurrency;
+        if (document.getElementById('baseTaxRateConfig')) document.getElementById('baseTaxRateConfig').value = historicalRowTaxRate.toFixed(1);
+        if (document.getElementById('inputTaxRate')) document.getElementById('inputTaxRate').value = historicalRowTaxRate.toFixed(1);
+        if (document.getElementById('valTaxRate')) document.getElementById('valTaxRate').innerText = `${historicalRowTaxRate.toFixed(1)}%`;
+    }
+
+    // 🚀 TRIGGER GLOBAL SECURITY RE-EVALUATION PASSTHROUGH
+    evaluateGlobalArchivalFreezeState();
+
+    if (typeof updateMatrixData === 'function') window.updateMatrixData();
+    renderHistoricalSidebarLogs();
+}
+
+// 🚀 OVERHAULED DYNAMIC CARD AND DATE FILTER PACK RENDERING ENGINE
 function renderHistoricalSidebarLogs() {
     const container = document.getElementById('sidebarLogContainer');
     if (!container) return;
     container.innerHTML = "";
 
-    // Safely look up if the cache holds rows array profiles
     if (!window.cachedHistoricalLogs || window.cachedHistoricalLogs.length === 0) {
         container.innerHTML = `<div class="empty-tray-text">No records streamed yet.</div>`;
         return;
@@ -680,58 +734,109 @@ function renderHistoricalSidebarLogs() {
 
     const searchQuery = document.getElementById('logSearchInput') ? document.getElementById('logSearchInput').value.toLowerCase().trim() : '';
     const sortMode = document.getElementById('logSortSelect') ? document.getElementById('logSortSelect').value : 'date_desc';
+    
+    // Read date range slider parameter configurations
+    const rawStartFilter = document.getElementById('filterStartDate')?.value || '';
+    const rawEndFilter = document.getElementById('filterEndDate')?.value || '';
 
-    // Build indexing links maps
     let logItemsWithIndices = window.cachedHistoricalLogs.map((item, originalIndex) => {
         return { data: item, id: originalIndex };
     });
 
-    // Execute Search filters criteria variables safe
+    // Execute Search and Date Range filters criteria checks simultaneously
     let filtered = logItemsWithIndices.filter(item => {
         const clientMatch = item.data.client ? item.data.client.toLowerCase().includes(searchQuery) : false;
         const currencyMatch = item.data.currency ? item.data.currency.toLowerCase().includes(searchQuery) : false;
-        return clientMatch || currencyMatch;
+        const textSearchMatch = clientMatch || currencyMatch;
+        
+        // Date Interval boundaries validation match blocks
+        if (rawStartFilter && item.data.date < rawStartFilter) return false;
+        if (rawEndFilter && item.data.date > rawEndFilter) return false;
+        
+        return textSearchMatch;
     });
 
+    // =========================================================================
+    // 🚀 NEW BINDING NODE: RE-CALCULATE LOG QUANTITIES AND BATCH COUNT READOUTS
+    // =========================================================================
+    const countTextPanel = document.getElementById('selectedLogsCountDisplay');
+    if (countTextPanel) {
+        const totalItemsInActiveFilteredView = filtered.length;
+        const totalItemsCurrentlySelectedInPool = window.selectedHistoricalLogIndices.length;
+        
+        // Staps text strings cleanly into the box row element nodes layout grid
+        countTextPanel.innerText = `Showing: ${totalItemsInActiveFilteredView} | Selected: ${totalItemsCurrentlySelectedInPool}`;
+    }
+
     if (filtered.length === 0) {
-        container.innerHTML = `<div class="empty-tray-text">No matching records found.</div>`;
+        container.innerHTML = `<div class="empty-tray-text">No matching records found within boundaries.</div>`;
         return;
     }
 
-    // Sort matching algorithms framework configurations
+    // =========================================================================
+    // 🚀 ADVANCED FINANCIAL SORTING ENGINES GRID IN SHEETS-SYNC.JS
+    // =========================================================================
     filtered.sort((a, b) => {
+        // A. Chronological Flows
         if (sortMode === "date_desc") return new Date(b.data.date) - new Date(a.data.date);
         if (sortMode === "date_asc") return new Date(a.data.date) - new Date(b.data.date);
+        
+        // B. Invoiced Amounts & Cash Volume
         if (sortMode === "amt_desc") return (b.data.amount || 0) - (a.data.amount || 0);
+        if (sortMode === "amt_asc") return (a.data.amount || 0) - (b.data.amount || 0);
+        if (sortMode === "home_desc") return (b.data.homeIncome || 0) - (a.data.homeIncome || 0);
+        if (sortMode === "home_asc") return (a.data.homeIncome || 0) - (b.data.homeIncome || 0);
+        
+        // C. Overhead Operational Loss Costs
+        if (sortMode === "exp_desc") return (b.data.bizExpense || 0) - (a.data.bizExpense || 0);
+        if (sortMode === "plat_desc") {
+            const feeA = (a.data.amount || 0) * (a.data.platformPct || 0) * (a.data.fxRate || 1);
+            const feeB = (b.data.amount || 0) * (b.data.platformPct || 0) * (b.data.fxRate || 1);
+            return feeB - feeA;
+        }
+        
+        // D. Tax Reserves & Deductions
+        if (sortMode === "tax_desc") return (b.data.finalTaxOwed || 0) - (a.data.finalTaxOwed || 0);
+        if (sortMode === "withhold_desc") return (b.data.withholdAmt || 0) - (a.data.withholdAmt || 0);
+        
+        // E. Textual Client Metadata Strings Strings Lookups
         if (sortMode === "client_asc") return String(a.data.client).localeCompare(String(b.data.client));
+        if (sortMode === "client_desc") return String(b.data.client).localeCompare(String(a.data.client));
+        
         return 0;
     });
 
     filtered.forEach(item => {
         const log = item.data;
         const card = document.createElement('div');
-        const isPinned = (window.currentlyPinnedLogIndex === item.id);
         
-        card.className = `transaction-card ${isPinned ? 'pinned-active' : ''}`;
+        // 🚀 CHECK ARRAY MEMBERSHIP: Verify if this specific card index sits inside the selected pool map
+        const isSelected = window.selectedHistoricalLogIndices.includes(item.id);
+        
+        card.className = `transaction-card ${isSelected ? 'multi-selected-active' : ''}`;
         card.setAttribute('onclick', `selectAndPinHistoricalLogCard(${item.id})`);
+        card.style.position = "relative";
         card.style.cursor = "pointer";
 
-        // FIXED: Added safe fallbacks for camelCase properties matching your console log layout view
         const rawAmt = parseFloat(log.amount) || 0;
         const rawHomeIncome = parseFloat(log.homeIncome) || 0;
         const displayCurrency = String(log.currency || "USD").toUpperCase().trim();
+        const displayLogSymbol = typeof getGlobalCurrencySymbolCharacter === 'function' ? getGlobalCurrencySymbolCharacter(displayCurrency) : '$ ';
 
         card.innerHTML = `
             <div class="card-row-top">
-                <span>${log.date || "2026-09-06"} ${isPinned ? '<strong style="color:#a855f7;">[PINNED]</strong>' : ''}</span>
+                <span>${log.date || "2026-09-06"} ${isSelected ? '<strong style="color:#38bdf8;">[SELECTED]</strong>' : ''}</span>
                 <span style="color:#38bdf8; font-weight:700;">${displayCurrency}</span>
             </div>
             <div class="card-client-title">${log.client || "Ledger Entry"}</div>
             <div class="card-row-metrics">
-                <span>Invoice: <strong>${rawAmt.toLocaleString(undefined, {minimumFractionDigits:2})}</strong></span>
+                <span>Invoice: <strong>${displayLogSymbol}${rawAmt.toLocaleString(undefined, {minimumFractionDigits:2})}</strong></span>
                 <span>Net Home: <strong style="color:#4ade80;">${window.currentCurrency || '$ '}${rawHomeIncome.toLocaleString(undefined, {maximumFractionDigits:0})}</strong></span>
             </div>
         `;
+        // Add as the first executing line inside renderHistoricalSidebarLogs() in sheets-sync.js
+        if (typeof evaluateGlobalArchivalFreezeState === 'function') evaluateGlobalArchivalFreezeState();
+
         container.appendChild(card);
     });
 }
@@ -926,3 +1031,4 @@ function toggleMatrixChartFullscreenViewMode() {
     // Force an immediate re-measurement pass to update the canvas grid coordinate mapping tracking frames
     setTimeout(enforceDynamicViewportCanvasSizing, 20);
 }
+

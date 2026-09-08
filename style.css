@@ -256,7 +256,7 @@ body:has(.sidebar-collapsed-hidden-state) .matrix-container {
 .flow-chart-wrapper {
     position: relative !important;
     width: 100% !important;
-    height: 320px !important; /* Forces the container to open up visually and hold the drawing canvas */
+    height: 420px !important; /* Forces the container to open up visually and hold the drawing canvas */
     background: #070a13 !important;
     border: 1px solid #1e293b !important;
     border-radius: 12px !important;
@@ -572,6 +572,35 @@ body:has(.sidebar-collapsed-hidden-state) .matrix-container {
 .transaction-card:hover {
     border-color: #38bdf8;
 }
+
+/* ========================================================================= */
+/* 🚀 MULTI-SELECT COMPONENT HOUSING DESIGNS                                */
+/* ========================================================================= */
+
+/* Active state profile applies a clean cyan cyberpunk glow mapping parameter */
+.transaction-card.multi-selected-active {
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+    background: linear-gradient(145deg, #0c1c2e, #070a13) !important;
+}
+
+/* Checkbox ring anchor indicator element layouts */
+.transaction-card::before {
+    content: '';
+    position: absolute;
+    top: 14px;
+    left: -2px;
+    width: 4px;
+    height: calc(100% - 28px);
+    background: transparent;
+    border-radius: 9999px;
+    transition: background 0.2s ease;
+}
+
+.transaction-card.multi-selected-active::before {
+    background: #38bdf8 !important;
+}
+
 .card-row-top {
     display: flex;
     justify-content: space-between;
@@ -802,4 +831,17 @@ body:has(.sidebar-collapsed-hidden-state) .matrix-container {
 .flow-chart-wrapper.detached-floating-window:hover {
     border-color: #a855f7 !important;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9), 0 0 24px rgba(168, 85, 247, 0.25) !important;
+}
+/* ========================================================================= */
+/* 🚀 SURGICAL LOCK ENGINE: BLOCKS SPECIFIC CONTROLLERS ONLY IN PINNED MODE   */
+/* ========================================================================= */
+
+.predictive-toggle-frozen,
+.predictive-sliders-frozen,
+.currency-tabs-frozen {
+    pointer-events: none !important;
+    user-select: none !important;
+    opacity: 0.5 !important; 
+    cursor: not-allowed !important;
+    transition: opacity 0.25s ease !important;
 }
