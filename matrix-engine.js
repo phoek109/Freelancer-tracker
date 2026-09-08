@@ -107,147 +107,51 @@ function resizeCanvas() {
 window.isMatrixChartDetachedFloating = false;
 window.isMatrixCanvasMaximizeViewActive = false;
 
+// 🚀 MASTER WINDOW DEPLOYMENT ENGINE: Re-injecting clean header mappings
 window.floatingMatrixWindowCoordinates = { x: null, y: null, width: null, height: null };
 
+// 🚀 REPAIRED POP-OUT ENGINE: Maintains absolute size and grid position
 function toggleMatrixChartFloatingState() {
     const wrapper = document.getElementById('matrixFlowChartWrapper');
-    const button = document.getElementById('btnPinChartFloat');
     const sliderGroup = document.getElementById('opacitySliderContainer');
     
-    if (!wrapper || !button || !sliderGroup) return;
+    // Target both conditional UI buttons present in your HTML code layout
+    const btnFloatInline = document.getElementById('btnPinChartFloatInline');
+    const btnFloatActive = document.getElementById('btnPinChartFloat');
+    
+    if (!wrapper || !sliderGroup) return;
 
     window.isMatrixChartDetachedFloating = !window.isMatrixChartDetachedFloating;
 
     if (window.isMatrixChartDetachedFloating) {
+        // 🚀 CRITICAL TRANSITION: Lifts the chart context above the sidebar/forms layout sheets
         wrapper.classList.add('detached-floating-window');
-        button.style.color = "#f87171"; // Turn the button red to indicate active status
-        button.setAttribute('title', 'Unpin Floating View');
         sliderGroup.style.display = "flex"; 
-        
-        if (window.floatingMatrixWindowCoordinates.x !== null) {
-            wrapper.style.left   = window.floatingMatrixWindowCoordinates.x + "px";
-            wrapper.style.top    = window.floatingMatrixWindowCoordinates.y + "px";
-            wrapper.style.width  = window.floatingMatrixWindowCoordinates.width + "px";
-            wrapper.style.height = window.floatingMatrixWindowCoordinates.height + "px";
-            wrapper.style.bottom = "auto";
-            wrapper.style.right  = "auto";
-        }
+
+        // Update color profiles on whichever button is processing the active session trigger
+        if (btnFloatInline) btnFloatInline.style.color = "#f87171";
+        if (btnFloatActive) btnFloatActive.style.color = "#f87171";
 
         const activeOpacitySlider = document.getElementById('chartOpacitySlider');
         if (activeOpacitySlider) {
             wrapper.style.opacity = (parseFloat(activeOpacitySlider.value) / 100);
         }
-        
-        // 🚀 INITIALIZE ANYWHERE-DRAG TRACKER
-        initializeDraggableMatrixWindowEngine();
-        
-        // 🚀 INITIALIZE RESOLUTION RESIZE OBSERVER
-        initializeMatrixCanvasResizeObserverEngine();
-
     } else {
-        window.floatingMatrixWindowCoordinates.width  = wrapper.offsetWidth;
-        window.floatingMatrixWindowCoordinates.height = wrapper.offsetHeight;
-        window.floatingMatrixWindowCoordinates.x      = wrapper.offsetLeft;
-        window.floatingMatrixWindowCoordinates.y      = wrapper.offsetTop;
-
+        // Return chart cleanly back down to default baseline workflow depths
         wrapper.classList.remove('detached-floating-window');
-        sliderGroup.style.display = "none";
-        
         wrapper.style.opacity = ""; 
-        wrapper.style.left    = "";
-        wrapper.style.top     = "";
-        wrapper.style.width   = "";
-        wrapper.style.height  = "";
-        wrapper.style.bottom  = "";
-        wrapper.style.right   = "";
-        
-        button.style.color = "";
-        button.setAttribute('title', 'Pin Detached View');
-        
-        if (window.matrixResizeObserverInstance) {
-            window.matrixResizeObserverInstance.disconnect();
-            window.matrixResizeObserverInstance = null;
-        }
+        sliderGroup.style.display = "none"; 
+
+        if (btnFloatInline) btnFloatInline.style.color = "";
+        if (btnFloatActive) btnFloatActive.style.color = "";
     }
 
-    setTimeout(enforceDynamicViewportCanvasSizing, 40);
-}
-
-function initializeDraggableMatrixWindowEngine() {
-    const wrapper = document.getElementById('matrixFlowChartWrapper');
-    if (!wrapper) return;
-
-    let mouseStartX = 0, mouseStartY = 0;
-    let elementStartX = 0, elementStartY = 0;
-    let isTrackingActive = false;
-
-    // 🚀 MASTER WINDOW OVERRIDE: Listen directly on the parent window context thread
-    window.addEventListener('mousedown', function(e) {
-        // Halt if floating mode is turned off completely
-        if (!window.isMatrixChartDetachedFloating) return;
-
-        // Verify the click hit inside our target chart wrapper container element
-        const hitWrapper = e.target.closest('#matrixFlowChartWrapper');
-        if (!hitWrapper) return;
-
-        // Guard A: Skip if clicking overlays like the button box or opacity range slider
-        if (e.target.closest('#inlineActionTrayWrapper') || e.target.closest('#opacitySliderContainer')) return;
-        
-        // Guard B: Skip if clicking near the bottom-right corner handles (unblocks native resize)
-        const elementRect = wrapper.getBoundingClientRect();
-        const clickOffsetFromRight  = elementRect.right - e.clientX;
-        const clickOffsetFromBottom = elementRect.bottom - e.clientY;
-        if (clickOffsetFromRight < 24 && clickOffsetFromBottom < 24) return;
-        
-        // Start dragging
-        isTrackingActive = true;
-        e.preventDefault();
-        
-        mouseStartX = e.clientX;
-        mouseStartY = e.clientY;
-        
-        elementStartX = wrapper.offsetLeft;
-        elementStartY = wrapper.offsetTop;
-
-        wrapper.style.width  = wrapper.offsetWidth + "px";
-        wrapper.style.height = wrapper.offsetHeight + "px";
-        wrapper.style.bottom = "auto";
-        wrapper.style.right  = "auto";
-
-        window.addEventListener('mousemove', applyActiveWindowMovementPosition, { passive: false });
-        window.addEventListener('mouseup', killWindowDragEventListeners);
-    });
-
-    function applyActiveWindowMovementPosition(e) {
-        if (!isTrackingActive) return;
-        
-        const deltaX = e.clientX - mouseStartX;
-        const deltaY = e.clientY - mouseStartY;
-        
-        let targetX = elementStartX + deltaX;
-        let targetY = elementStartY + deltaY;
-        
-        // Dynamic containment boundary limits
-        if (targetX < 4) targetX = 4;
-        if (targetX > window.innerWidth - 100) targetX = window.innerWidth - 100;
-        if (targetY < 4) targetY = 4;
-        if (targetY > window.innerHeight - 50) targetY = window.innerHeight - 50;
-
-        wrapper.style.left = targetX + "px";
-        wrapper.style.top  = targetY + "px";
-        
-        window.floatingMatrixWindowCoordinates.x = targetX;
-        window.floatingMatrixWindowCoordinates.y = targetY;
-    }
-
-    function killWindowDragEventListeners() {
-        isTrackingActive = false;
-        window.removeEventListener('mousemove', applyActiveWindowMovementPosition);
-        window.removeEventListener('mouseup', killWindowDragEventListeners);
+    // Force an immediate high-resolution vector redraw pass across the canvas surface
+    if (typeof enforceDynamicViewportCanvasSizing === 'function') {
+        enforceDynamicViewportCanvasSizing();
     }
 }
 
-// 🚀 STRETCH RESOLUTION AUTO-BALANCER: Guarantees clean pixels during scale updates
 function initializeMatrixCanvasResizeObserverEngine() {
     const wrapper = document.getElementById('matrixFlowChartWrapper');
     const canvasElement = document.getElementById('flowChart');
@@ -260,21 +164,18 @@ function initializeMatrixCanvasResizeObserverEngine() {
     window.matrixResizeObserverInstance = new ResizeObserver(entries => {
         for (let entry of entries) {
             if (!window.isMatrixChartDetachedFloating) return;
+            const dynamicWidth  = entry.contentRect.width;
+            const dynamicHeight = entry.contentRect.height - 34; 
             
-            const currentWidth  = entry.contentRect.width;
-            const currentHeight = entry.contentRect.height;
-            
-            if (currentWidth > 0 && currentHeight > 0) {
-                canvasElement.width  = currentWidth;
-                canvasElement.height = currentHeight;
-                
+            if (dynamicWidth > 0 && dynamicHeight > 0) {
+                canvasElement.width  = dynamicWidth;
+                canvasElement.height = dynamicHeight;
                 if (typeof window.updateMatrixData === 'function') {
                     window.updateMatrixData();
                 }
             }
         }
     });
-
     window.matrixResizeObserverInstance.observe(wrapper);
 }
 
@@ -282,11 +183,9 @@ function enforceDynamicViewportCanvasSizing() {
     const canvasElement = document.getElementById('flowChart');
     if (!canvasElement || !canvasElement.parentElement) return;
 
-    // Safety guard filter: If custom resize observer is handling pixels, let it take priority
-    if (window.isMatrixChartDetachedFloating) return;
-
     const parentContainerBoundingBox = canvasElement.parentElement.getBoundingClientRect();
     
+    // Fixed broken tracking parameter cuts:
     canvasElement.width = parentContainerBoundingBox.width;
     canvasElement.height = parentContainerBoundingBox.height;
 
@@ -573,47 +472,103 @@ function updateMatrixData() {
         expRatio = (parseFloat(inputRatio ? inputRatio.value : 0) || 0) / 100;
         taxRate = (parseFloat(inputTaxRate ? inputTaxRate.value : 0) || 0) / 100;
 
-        incomePct = 0.65; expensePct = 0.60; taxPct = 0.80;
+        // Read actual values from your allocation sliders instead of hardcoding them
+        incomePct  = parseFloat(inputIncomeSplit ? inputIncomeSplit.value : 65) / 100;
+        expensePct = parseFloat(inputExpenseSplit ? inputExpenseSplit.value : 60) / 100;
+        taxPct     = parseFloat(inputTaxSplit ? inputTaxSplit.value : 80) / 100;
 
+        
+        const slidersToUnlock = ['inputRevenue', 'inputRatio', 'inputTaxRate', 'inputIncomeSplit', 'inputExpenseSplit', 'inputTaxSplit'];
+        slidersToUnlock.forEach(id => {
+            const sliderEl = document.getElementById(id);
+            if (sliderEl) {
+                sliderEl.disabled = false;
+                sliderEl.style.cursor = "pointer";
+                sliderEl.style.opacity = "1";
+            }
+        });
+
+        // Calculate cash volumes for sandbox mode
         const totalExpenses = gross * expRatio;
         const netProfit = gross - totalExpenses;
         const taxReserve = netProfit > 0 ? (netProfit * taxRate) : 0;
-        
-        // 🚀 SUBTRACTION BASED SIMULATION SANDBOX ENGINE CALCULATION MATRIX
         const takeHome = gross - totalExpenses - taxReserve;
 
         const activeSymbol = window.currentCurrency || '$ ';
+        // Inject your simulation dollars into your main dashboard readout blocks with full decimal precision
+        if (document.getElementById('grossDisplay')) document.getElementById('grossDisplay').innerText = `${activeSymbol}${gross.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+        if (document.getElementById('expensesDisplay')) document.getElementById('expensesDisplay').innerText = `${activeSymbol}${totalExpenses.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+        if (document.getElementById('taxDisplay')) document.getElementById('taxDisplay').innerText = `${activeSymbol}${taxReserve.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+        if (document.getElementById('takeHomeDisplay')) document.getElementById('takeHomeDisplay').innerText = `${activeSymbol}${takeHome.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
 
-        if (document.getElementById('grossDisplay')) document.getElementById('grossDisplay').innerText = `${activeSymbol}${gross.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-        if (document.getElementById('expensesDisplay')) document.getElementById('expensesDisplay').innerText = `${activeSymbol}${totalExpenses.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-        if (document.getElementById('taxDisplay')) document.getElementById('taxDisplay').innerText = `${activeSymbol}${taxReserve.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-        if (document.getElementById('takeHomeDisplay')) document.getElementById('takeHomeDisplay').innerText = `${activeSymbol}${takeHome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-
-        if (document.getElementById('incActive')) document.getElementById('incActive').innerText = `${activeSymbol}${(gross * incomePct).toLocaleString(undefined, {maximumFractionDigits:0})}`;
-        if (document.getElementById('incOthers')) document.getElementById('incOthers').innerText = `${activeSymbol}${(gross * (1 - incomePct)).toLocaleString(undefined, {maximumFractionDigits:0})}`;
-        if (document.getElementById('expBusinessExpenses')) document.getElementById('expBusinessExpenses').innerText = `${activeSymbol}${(totalExpenses * expensePct).toLocaleString(undefined, {maximumFractionDigits:0})}`;
-        if (document.getElementById('expPlatformFees')) document.getElementById('expPlatformFees').innerText = `${activeSymbol}${(totalExpenses * (1 - expensePct)).toLocaleString(undefined, {maximumFractionDigits:0})}`;
-        if (document.getElementById('taxIncome')) document.getElementById('taxIncome').innerText = `${activeSymbol}${(taxReserve * taxPct).toLocaleString(undefined, {maximumFractionDigits:0})}`;
-        if (document.getElementById('taxWithholding')) document.getElementById('taxWithholding').innerText = `${activeSymbol}${(taxReserve * (1 - taxPct)).toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        // Hydrate bottom matrix legend labels dynamically matching your slider split ratios
+        if (document.getElementById('incActive')) document.getElementById('incActive').innerText = `${activeSymbol}${(gross * incomePct).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+        if (document.getElementById('incOthers')) document.getElementById('incOthers').innerText = `${activeSymbol}${(gross * (1 - incomePct)).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+        if (document.getElementById('expBusinessExpenses')) document.getElementById('expBusinessExpenses').innerText = `${activeSymbol}${(totalExpenses * expensePct).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+        if (document.getElementById('expPlatformFees')) document.getElementById('expPlatformFees').innerText = `${activeSymbol}${(totalExpenses * (1 - expensePct)).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+        if (document.getElementById('taxIncome')) document.getElementById('taxIncome').innerText = `${activeSymbol}${(taxReserve * taxPct).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+        if (document.getElementById('taxWithholding')) document.getElementById('taxWithholding').innerText = `${activeSymbol}${(taxReserve * (1 - taxPct)).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
 
         if (gross > 0) {
-            document.getElementById('barExpenses').style.width = `${(totalExpenses / gross) * 100}%`;
-            document.getElementById('barTax').style.width = `${(taxReserve / gross) * 100}%`;
-            document.getElementById('barTakeHome').style.width = `${(takeHome / gross) * 100}%`;
+            if (document.getElementById('barExpenses')) document.getElementById('barExpenses').style.width = `${(totalExpenses / gross) * 100}%`;
+            if (document.getElementById('barTax')) document.getElementById('barTax').style.width = `${(taxReserve / gross) * 100}%`;
+            if (document.getElementById('barTakeHome')) document.getElementById('barTakeHome').style.width = `${(takeHome / gross) * 100}%`;
         }
 
         if (typeof drawFlowLines === 'function') {
-            drawFlowLines(expRatio, taxRate, netProfit, gross);
+            drawFlowLines(gross, totalExpenses, taxReserve, takeHome);
         }
     }
 }
 
-// UPDATED MICRO-ADJUSTMENT STEP CONTROLLER WITH LIVE MODE GUARDS
+// =========================================================================
+// 🚀 DYNAMIC ALLOCATION READOUTS INTERCEPTORS IN MATRIX-ENGINE.JS
+// =========================================================================
+if (inputIncomeSplit) {
+    inputIncomeSplit.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value) || 0;
+        const textLabel = document.getElementById('valIncomeSplitText');
+        if (textLabel) {
+            // Calculates the dynamic inverse values instantly
+            textLabel.innerText = `${Math.round(val)}% / ${Math.round(100 - val)}%`;
+        }
+        window.updateMatrixData(); 
+        if (typeof streamBreakdownProportionsToSheet === 'function') streamBreakdownProportionsToSheet();
+    });
+}
+
+if (inputExpenseSplit) {
+    inputExpenseSplit.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value) || 0;
+        const textLabel = document.getElementById('valExpenseSplitText');
+        if (textLabel) {
+            textLabel.innerText = `${Math.round(val)}% / ${Math.round(100 - val)}%`;
+        }
+        window.updateMatrixData(); 
+        if (typeof streamBreakdownProportionsToSheet === 'function') streamBreakdownProportionsToSheet();
+    });
+}
+
+if (inputTaxSplit) {
+    inputTaxSplit.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value) || 0;
+        const textLabel = document.getElementById('valTaxSplitText');
+        if (textLabel) {
+            textLabel.innerText = `${Math.round(val)}% / ${Math.round(100 - val)}%`;
+        }
+        window.updateMatrixData(); 
+        if (typeof streamBreakdownProportionsToSheet === 'function') streamBreakdownProportionsToSheet();
+    });
+}
+
+
+// =========================================================================
+// 🚀 REPAIRED ENGINE CORE: STANDARD CONSOLE ADJUSTMENT DRIVERS
+// =========================================================================
 function adjustSliderStep(sliderId, changeAmount, isMacro = false) {
-    // 🚀 STEPPER SECURITY GUARD: Immediately block any button execution loop if live tracking is active
-    if (window.currentlyPinnedLogIndex !== null || isLiveTrackingMode) {
-        console.warn(`🔒 Stepper Block: Action denied on ${sliderId}. Turn off Live Tracking to simulate metrics.`);
-        return; // Exit out instantly so nothing changes!
+    if (window.currentlyPinnedLogIndex !== null) {
+        console.warn(`🔒 Stepper Block: Action denied on ${sliderId}. Pinned transaction view mode is active.`);
+        return; 
     }
 
     const slider = document.getElementById(sliderId);
@@ -631,14 +586,29 @@ function adjustSliderStep(sliderId, changeAmount, isMacro = false) {
 
     slider.value = newValue.toFixed(1);
 
+    // Instant textual update synchronization
     if (sliderId === 'inputRatio' && document.getElementById('valRatio')) {
         document.getElementById('valRatio').innerText = `${Math.round(newValue)}%`;
     }
+    
+    // 🚀 REPAIRED TAX INJECTOR LABEL: Spreads data outward cleanly without pulling background caches
     if (sliderId === 'inputTaxRate' && document.getElementById('valTaxRate')) {
-        document.getElementById('valTaxRate').innerText = `${newValue.toFixed(1)}%`;
+        document.getElementById('valTaxRate').innerText = `${parseFloat(newValue).toFixed(1)}%`;
+        
+    }
+
+    if (sliderId === 'inputIncomeSplit' && document.getElementById('valIncomeSplitText')) {
+        document.getElementById('valIncomeSplitText').innerText = `${Math.round(newValue)}% / ${Math.round(100 - newValue)}%`;
+    }
+    if (sliderId === 'inputExpenseSplit' && document.getElementById('valExpenseSplitText')) {
+        document.getElementById('valExpenseSplitText').innerText = `${Math.round(newValue)}% / ${Math.round(100 - newValue)}%`;
+    }
+    if (sliderId === 'inputTaxSplit' && document.getElementById('valTaxSplitText')) {
+        document.getElementById('valTaxSplitText').innerText = `${Math.round(newValue)}% / ${Math.round(100 - newValue)}%`;
     }
     
     if (typeof window.updateMatrixData === 'function') window.updateMatrixData();
+    
     if (isMacro) {
         if (typeof updateBaseCurrencySettingsInSheet === 'function') updateBaseCurrencySettingsInSheet();
     } else {
@@ -646,9 +616,10 @@ function adjustSliderStep(sliderId, changeAmount, isMacro = false) {
     }
 }
 
-
-// UPDATED: Explicitly updates both the range value and handles multi-million math accurately
+// 🚀 REPAIRED REVENUE MULTIPLIER CONTROLLER
 function adjustRevenueViaMultiplier(direction) {
+    if (window.currentlyPinnedLogIndex !== null) return;
+    
     const slider = document.getElementById('inputRevenue');
     const select = document.getElementById('revenueStepSelect');
     if (!slider || !select) return;
@@ -661,13 +632,82 @@ function adjustRevenueViaMultiplier(direction) {
     if (newValue < 0) newValue = 0;
     if (newValue > 1000000000) newValue = 1000000000;
 
-    // Force values and visually move browser engine tracking handle
     slider.value = newValue;
     
-    // Recalculate main display dashboard panels instantly
-    if (typeof updateMatrixData === 'function') updateMatrixData();
+    if (typeof window.updateMatrixData === 'function') window.updateMatrixData();
 }
 
+// =========================================================================
+// 🚀 MASTER UPGRADE: ADVANCED REVENUE-AWARE DYNAMIC LONG-PRESS CONTROLLER
+// =========================================================================
+document.addEventListener('DOMContentLoaded', () => {
+    let globalStepperIntervalLoop = null;
+    let globalStepperDelayTimeout = null;
+
+        // Scan the user view for all active data-stepper buttons
+        document.querySelectorAll('.step-btn[data-slider-target]').forEach(button => {
+            const targetSliderId = button.getAttribute('data-slider-target');
+            const loopDirection  = parseFloat(button.getAttribute('data-direction')) || 1;
+            
+            // 🚀 CRITICAL FIX: Removed inputTaxRate from this check so it simulates independently!
+            let isGlobalMacroAction = (targetSliderId === 'inputRatio');
+
+            // Match the step increment size precisely to the Target Tax Rate ranges
+            let operationalStepWeight = 0.1;
+            if (targetSliderId === 'inputTaxRate') {
+                operationalStepWeight = 0.5; 
+            }
+
+        // Capture initial click drop triggers phase
+        button.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            killActiveStepperTimers();
+
+            // Intercept trace: Check if this specific button runs your Annual Revenue pipeline
+            if (targetSliderId === 'inputRevenue') {
+                if (typeof adjustRevenueViaMultiplier === 'function') adjustRevenueViaMultiplier(loopDirection);
+
+                globalStepperDelayTimeout = setTimeout(() => {
+                    globalStepperIntervalLoop = setInterval(() => {
+                        if (typeof adjustRevenueViaMultiplier === 'function') adjustRevenueViaMultiplier(loopDirection);
+                    }, 40); 
+                }, 350);
+            } 
+            // Standard Sliders Branch Flow Channel
+            else {
+                if (typeof adjustSliderStep === 'function') {
+                    adjustSliderStep(targetSliderId, loopDirection * operationalStepWeight, isGlobalMacroAction);
+                }
+
+                globalStepperDelayTimeout = setTimeout(() => {
+                    globalStepperIntervalLoop = setInterval(() => {
+                        if (typeof adjustSliderStep === 'function') {
+                            adjustSliderStep(targetSliderId, loopDirection * operationalStepWeight, isGlobalMacroAction);
+                        }
+                    }, 40);
+                }, 350);
+            }
+        });
+
+        // Safe cleanup event listener targets: kill rapid counts when mouse lifts or leaves button area
+        button.addEventListener('mouseup', killActiveStepperTimers);
+        button.addEventListener('mouseleave', killActiveStepperTimers);
+        
+        // Mobile layout capacitive touchscreen hardware alignment bindings
+        button.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            button.dispatchEvent(new Event('mousedown'));
+        }, { passive: false });
+        button.addEventListener('touchend', killActiveStepperTimers);
+    });
+
+    function killActiveStepperTimers() {
+        if (globalStepperDelayTimeout) clearTimeout(globalStepperDelayTimeout);
+        if (globalStepperIntervalLoop) clearInterval(globalStepperIntervalLoop);
+        globalStepperDelayTimeout = null;
+        globalStepperIntervalLoop = null;
+    }
+});
 
 // Add Event Listeners across all controls to keep calculations interactive
 if (inputRevenue) inputRevenue.addEventListener('input', updateMatrixData);
@@ -681,27 +721,26 @@ if (inputRatio) {
         }
         window.updateMatrixData(); 
     });
-    // Save to Google Sheets ONLY when the user lets go of the slider mouse handle
-    inputRatio.addEventListener('change', () => {
-        if (typeof updateBaseCurrencySettingsInSheet === 'function') updateBaseCurrencySettingsInSheet();
-    });
 }
+// 🚀 FIXED: Stripped away all network triggers and sidebar overrides from this slider!
+// It now operates completely silently, dealing ONLY with the metrics on the right in predictive mode.
+if (inputTaxRate) {
+    // We only update the small text percent badge (e.g. 24.3%) while dragging so it feels responsive
+    inputTaxRate.addEventListener('input', (e) => {
+        const valText = document.getElementById('valTaxRate');
+        if (valText) {
+            valText.innerText = `${parseFloat(e.target.value).toFixed(1)}%`;
+        }
+        
+        // ONLY recalculate visual metrics if we are in predictive mode
+        if (window.currentlyPinnedLogIndex === null && !isLiveTrackingMode) {
+            if (typeof window.updateMatrixData === 'function') {
+                window.updateMatrixData();
+            }
+        }
+    });
 
-// Updates the percentage readout text smoothly while blocking calculations if view is locked
-if (inputTaxRate) inputTaxRate.addEventListener('input', (e) => {
-    // 1. Keep the slider label highly responsive
-    const valText = document.getElementById('valTaxRate');
-    if (valText) valText.innerText = `${parseFloat(e.target.value).toFixed(1)}%`;
-    
-    // 2. Only redraw the right-hand dashboard metrics if live tracking mode is explicitly active
-    if (window.currentlyPinnedLogIndex === null && isLiveTrackingMode) {
-        if (typeof window.updateMatrixData === 'function') window.updateMatrixData();
-    }
-});
-
-if (inputIncomeSplit) inputIncomeSplit.addEventListener('input', () => { updateMatrixData(); streamBreakdownProportionsToSheet(); });
-if (inputExpenseSplit) inputExpenseSplit.addEventListener('input', () => { updateMatrixData(); streamBreakdownProportionsToSheet(); });
-if (inputTaxSplit) inputTaxSplit.addEventListener('input', () => { updateMatrixData(); streamBreakdownProportionsToSheet(); });
+}
 
 // New Step Weight Selector Contextual Listener to clear interface lag:
 const revenueStepSelect = document.getElementById('revenueStepSelect');
@@ -715,32 +754,42 @@ document.querySelectorAll('.curr-btn').forEach(btn => {
         updateMatrixData();
     });
 });
-// =========================================================================
-// 🚀 PASTE THE NEW DRAG DRIVERS RIGHT HERE:
-// =========================================================================
-if (inputRatio) {
-    inputRatio.addEventListener('change', () => {
-        if (typeof updateBaseCurrencySettingsInSheet === 'function') updateBaseCurrencySettingsInSheet();
-    });
-}
 
-// Triggers the cloud spreadsheet synchronization ONLY when you release the mouse click handle
-if (inputTaxRate) inputTaxRate.addEventListener('change', (e) => {
-    const baseTaxInputBox = document.getElementById('baseTaxRateConfig');
-    if (baseTaxInputBox) baseTaxInputBox.value = e.target.value;
-    
-    // Broadcast parameters only if live tracking is running without archival card locks
-    if (window.currentlyPinnedLogIndex === null && isLiveTrackingMode) {
-        if (typeof updateBaseCurrencySettingsInSheet === 'function') updateBaseCurrencySettingsInSheet();
-    }
-});
-
-// =========================================================================
-// THIS IS THE ORIGINAL RESIZE HOOK THAT CLOSES THE FILE (LEAVE THIS AT THE BOTTOM)
-// =========================================================================
 window.onresize = () => { 
     if (typeof resizeCanvas === 'function') resizeCanvas(); 
     if (typeof window.updateMatrixData === 'function') window.updateMatrixData(); 
     if (typeof renderHistoricalSidebarLogs === 'function') renderHistoricalSidebarLogs();
 };
 
+// 🚀 SIDEBAR COLLAPSE ORCHESTRATOR MODULE
+window.isLeftInputSidebarMenuCollapsed = false;
+
+function toggleLeftInputSidebarPanelState() {
+    const sidebarPanel = document.getElementById('appInputSidebarPanel');
+    const toggleButton = document.getElementById('sidebarToggleArrowTrigger');
+    
+    if (!sidebarPanel || !toggleButton) return;
+
+    window.isLeftInputSidebarMenuCollapsed = !window.isLeftInputSidebarMenuCollapsed;
+
+    if (window.isLeftInputSidebarMenuCollapsed) {
+        sidebarPanel.classList.add('sidebar-collapsed-hidden-state');
+        toggleButton.setAttribute('title', 'Expand Sidebar Control Menu');
+    } else {
+        sidebarPanel.classList.remove('sidebar-collapsed-hidden-state');
+        toggleButton.setAttribute('title', 'Collapse Sidebar Control Menu');
+    }
+
+    // 🚀 DYNAMIC RE-SIZE BROADCASTER SEED: Fires a cascade of instant canvas updates 
+    // to stretch the graphics smoothly alongside the sliding animation curves
+    let animationProgressTimer = 0;
+    const executionInterval = setInterval(() => {
+        if (typeof enforceDynamicViewportCanvasSizing === 'function') {
+            enforceDynamicViewportCanvasSizing();
+        }
+        animationProgressTimer += 30;
+        if (animationProgressTimer >= 400) {
+            clearInterval(executionInterval); // Terminate loop safely once expansion finishes
+        }
+    }, 30);
+}

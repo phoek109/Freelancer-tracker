@@ -9,9 +9,13 @@
 <body>
     <div class="app-layout">
         
-        <!-- LEFT SIDEBAR: Ledger Entry Form & Backend Configuration -->
-        <div class="sidebar">
+                <!-- LEFT SIDEBAR: Ledger Entry Form & Backend Configuration -->
+                <!-- 🚀 SIDEBAR HOUSING OVERHAUL: Injected dynamic click listeners & overlay collapse prongs -->
+        <div class="sidebar" id="appInputSidebarPanel">
+            
             <div class="sidebar-header">DATABASE SETUP</div>
+            <!-- Rest of your original sidebar input elements stay exactly as they are here... -->
+
             <div class="form-block">
                 <div class="url-input-container" style="position: relative; display: flex; align-items: center; width: 100%;">
                     <input type="text" id="apiEndpoint" placeholder="Paste Google Web App URL here..." value="" style="padding-right: 40px;">
@@ -146,21 +150,47 @@
             </div> <!-- Close form-grid -->
         </div> <!-- Close sidebar -->
         <!-- RIGHT PANEL: Matrix Simulation Dashboard -->
+
+
         <div class="main-content">
+            
+            <!-- STANDALONE BOUNDARY INTERACTION LEVER (Stays fully visible when sidebar slides away) -->
+            <button id="sidebarToggleArrowTrigger" onclick="toggleLeftInputSidebarPanelState()" title="Collapse Sidebar Control Menu" style="position: absolute; top: 24px; left: 12px; width: 28px; height: 28px; background: #0f1626; border: 1px solid #1e293b; color: #38bdf8; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10000; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); transition: background 0.2s, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), left 0.35s cubic-bezier(0.4, 0, 0.2, 1);">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" id="toggleButtonArrowVectorIcon">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </button>
+
             <div class="matrix-container">
-                
+                <!-- Rest of your original matrix items stay exactly the same here... -->
+                    
                 <!-- 🚀 PROFESSIONAL MINIMALIST DUAL INTERACTIVE HEADERS HUB -->
                 <div class="chart-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                     <span>LIVE FINANCIAL FLOW MATRIX</span>
                 </div>
 
-                <!-- 🚀 STREAMLINED: Clean layout with title bars removed completely -->
+                <!-- 🚀 FIXED CONSOLE: Inline dimensions stripped to unlock dynamic dragging & resizing -->
                 <div id="matrixFlowChartWrapper" class="flow-chart-wrapper" style="position: relative; background: #070a13; border: 1px solid #1e293b; border-radius: 12px; margin-bottom: 20px;">
                     
-                    <!-- SINGLE CONTROL INSIDE-GRID TRAY OVERLAY -->
-                    <div id="inlineActionTrayWrapper" class="matrix-action-icon-tray" style="position: absolute; top: 16px; right: 16px; display: flex; align-items: center; justify-content: center; z-index: 100000; background: rgba(7, 10, 19, 0.85); padding: 4px 8px; border-radius: 8px; border: 1px solid #1e293b; backdrop-filter: blur(4px);">
+                    <!-- 🚀 VISIBLE DRAG BAR BANNER: Shows up ONLY when the window is detached floating -->
+                    <div id="floatingChartTitleBar" class="floating-window-titlebar" style="display: none; align-items: center; justify-content: space-between; background: #0f172a; padding: 6px 12px; border-bottom: 1px solid #1e293b; border-radius: 12px 12px 0 0; cursor: move; user-select: none;">
+                        <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; color: #38bdf8; letter-spacing: 1px;">FINANCIAL FLOW MATRIX PANEL</span>
+                        
+                        <!-- Action Icon Control Housing Container -->
+                        <div class="action-icon-wrapper" style="display: inline-flex; width: 22px; height: 22px; align-items: center; justify-content: center;">
+                            <button id="btnPinChartFloat" onclick="toggleMatrixChartFloatingState()" title="Unpin Floating View" style="background: none; border: none; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #f87171; cursor: pointer; padding: 0; margin: 0;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: block; pointer-events: none;">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- The original inline icon tray stays visible ONLY when in standard inline tracking layout mode -->
+                    <div id="inlineActionTrayWrapper" class="matrix-action-icon-tray" style="position: absolute; top: 16px; right: 16px; display: flex; align-items: center; justify-content: center; z-index: 1000;">
                         <div class="action-icon-wrapper" style="display: inline-flex; width: 28px; height: 28px; align-items: center; justify-content: center;">
-                            <button id="btnPinChartFloat" onclick="toggleMatrixChartFloatingState()" title="Pin Detached View" style="background: none; border: none; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #64748b; cursor: pointer; padding: 0; margin: 0;">
+                            <button id="btnPinChartFloatInline" onclick="toggleMatrixChartFloatingState()" title="Pin Detached View" style="background: none; border: none; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #64748b; cursor: pointer; padding: 0; margin: 0;">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: block; pointer-events: none;">
                                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
@@ -169,10 +199,10 @@
                         </div>
                     </div>
 
-                    <!-- Central Hardware Surface Drawing Canvas -->
+                    <!-- Canvas surface layout container -->
                     <canvas id="flowChart" style="display: block; width: 100%; height: 100%;"></canvas>
                     
-                    <!-- Opacity slider tray configuration stays right here -->
+                    <!-- Opacity configuration slider tray -->
                     <div id="opacitySliderContainer" style="display: none; position: absolute; bottom: 12px; left: 16px; align-items: center; gap: 8px; font-size: 10px; color: #64748b; background: rgba(15, 23, 42, 0.9); padding: 4px 10px; border-radius: 6px; border: 1px solid #1e293b; backdrop-filter: blur(4px); z-index: 100;">
                         <label for="chartOpacitySlider" style="letter-spacing: 1px; font-weight: 700; color: #38bdf8; margin: 0;">OPACITY:</label>
                         <input type="range" id="chartOpacitySlider" min="20" max="100" value="95" style="width: 70px; height: 4px; accent-color: #38bdf8; cursor: pointer; margin: 0;">
@@ -223,8 +253,11 @@
                         <span class="dot dot-withholding"></span> Withholding Balance: <strong id="taxWithholding">$0.00</strong>
                     </div>
                 </div>
+                <!-- ========================================================================= -->
+                <!-- 🚀 REPAIRED CONTROL PANEL WORKSPACE: INLINE ONCLICK TAGS PURGED           -->
+                <!-- ========================================================================= -->
 
-                <!-- Annual Revenue Weight Controls -->
+                <!-- Annual Revenue Control Block -->
                 <div class="full-width-control">
                     <div class="control-header">
                         <span>ANNUAL REVENUE CONFIGURATION (UP TO 1 BILLION)</span>
@@ -245,75 +278,77 @@
                         </div>
                     </div>
                     <div class="stepper-wrapper">
-                        <button class="step-btn macro-btn" onclick="adjustRevenueViaMultiplier(-1)">-</button>
+                        <!-- 🎯 REPAIRED REVENUE MINUS: Linked to revenue target engine via data attributes -->
+                        <button class="step-btn macro-btn" data-slider-target="inputRevenue" data-direction="-1">-</button>
                         <input type="range" id="inputRevenue" min="0" max="1000000000" step="1" value="100000" class="slider slider-blue">
-                        <button class="step-btn macro-btn" onclick="adjustRevenueViaMultiplier(1)">+</button>
+                        <!-- 🎯 REPAIRED REVENUE PLUS -->
+                        <button class="step-btn macro-btn" data-slider-target="inputRevenue" data-direction="1">+</button>
                     </div>  
                 </div>
 
-                   
-                <div class="control-block">
-                    <div class="control-header">
-                        <span>EXPENSES RATIO</span>
-                        <span id="valRatio" class="text-red">30%</span>
-                    </div>
-                    <div class="stepper-wrapper">
-                        <button class="step-btn" onclick="adjustSliderStep('inputRatio', -0.1, true)">-</button>
-                        <input type="range" id="inputRatio" min="0" max="90" step="0.1" value="30" class="slider slider-red">
-                        <button class="step-btn" onclick="adjustSliderStep('inputRatio', 0.1, true)">+</button>
-                    </div>
-                </div>
-
-                <div class="control-block">
-                    <div class="control-header">
-                        <span>BASE TARGET TAX RATE</span>
-                        <span id="valTaxRate" class="text-yellow">15%</span>
-                    </div>
-                    <div class="stepper-wrapper">
-                        <button class="step-btn" onclick="adjustSliderStep('inputTaxRate', -0.1, true)">-</button>
-                        <input type="range" id="inputTaxRate" min="0" max="50" step="0.1" value="15" class="slider slider-yellow">
-                        <button class="step-btn" onclick="adjustSliderStep('inputTaxRate', 0.1, true)">+</button>
-                    </div>
-                </div>
-
-                                <!-- Predictive Breakdown Allocations Sliders -->
-                <div class="sidebar-header" style="margin-bottom: 12px; letter-spacing: 2px;">PREDICTIVE BREAKDOWN ALLOCATIONS</div>
                 <div class="settings-grid">
- 
+                    <!-- Expenses Ratio Control Block -->
+                    <div class="control-block">
+                        <div class="control-header">
+                            <span>EXPENSES RATIO</span>
+                            <span id="valRatio" class="text-red">30%</span>
+                        </div>
+                        <div class="stepper-wrapper">
+                            <button class="step-btn" data-slider-target="inputRatio" data-direction="-1">-</button>
+                            <input type="range" id="inputRatio" min="0" max="90" step="0.1" value="30" class="slider slider-red">
+                            <button class="step-btn" data-slider-target="inputRatio" data-direction="1">+</button>
+                        </div>
+                    </div>
 
+                    <!-- Base Target Tax Rate Control Block -->
+                    <div class="control-block">
+                        <div class="control-header">
+                            <span>BASE TARGET TAX RATE</span>
+                            <span id="valTaxRate" class="text-yellow">15%</span>
+                        </div>
+                        <div class="stepper-wrapper">
+                            <button class="step-btn" data-slider-target="inputTaxRate" data-direction="-1">-</button>
+                            <input type="range" id="inputTaxRate" min="0" max="50" step="0.1" value="15" class="slider slider-yellow">
+                            <button class="step-btn" data-slider-target="inputTaxRate" data-direction="1">+</button>
+                        </div>
+                    </div>
+
+                    <!-- Income Allocation Mix Control Block -->
                     <div class="control-block">
                         <div class="control-header">
                             <span>INCOME: ACTIVE vs OTHERS MIX</span>
                             <span id="valIncomeSplitText" class="text-white">65% / 35%</span>
                         </div>
                         <div class="stepper-wrapper">
-                            <button class="step-btn" onclick="adjustSliderStep('inputIncomeSplit', -0.1)">-</button>
+                            <button class="step-btn" data-slider-target="inputIncomeSplit" data-direction="-1">-</button>
                             <input type="range" id="inputIncomeSplit" min="0" max="100" step="0.1" value="65" class="slider slider-blue">
-                            <button class="step-btn" onclick="adjustSliderStep('inputIncomeSplit', 0.1)">+</button>
+                            <button class="step-btn" data-slider-target="inputIncomeSplit" data-direction="1">+</button>
                         </div>
                     </div>
 
+                    <!-- Expense Allocation Mix Control Block -->
                     <div class="control-block">
                         <div class="control-header">
                             <span>EXPENSES: BIZ EXPENSES vs PLATFORM FEES MIX</span>
                             <span id="valExpenseSplitText" class="text-red">60% / 40%</span>
                         </div>
                         <div class="stepper-wrapper">
-                            <button class="step-btn" onclick="adjustSliderStep('inputExpenseSplit', -0.1)">-</button>
+                            <button class="step-btn" data-slider-target="inputExpenseSplit" data-direction="-1">-</button>
                             <input type="range" id="inputExpenseSplit" min="0" max="100" step="0.1" value="60" class="slider slider-red">
-                            <button class="step-btn" onclick="adjustSliderStep('inputExpenseSplit', 0.1)">+</button>
+                            <button class="step-btn" data-slider-target="inputExpenseSplit" data-direction="1">+</button>
                         </div>
                     </div>
 
+                    <!-- Tax Vault Allocation Mix Control Block -->
                     <div class="control-block">
                         <div class="control-header">
                             <span>TAX VAULT: INCOME TAX vs WITHHOLDING MIX</span>
                             <span id="valTaxSplitText" class="text-yellow">80% / 20%</span>
                         </div>
                         <div class="stepper-wrapper">
-                            <button class="step-btn" onclick="adjustSliderStep('inputTaxSplit', -0.1)">-</button>
+                            <button class="step-btn" data-slider-target="inputTaxSplit" data-direction="-1">-</button>
                             <input type="range" id="inputTaxSplit" min="0" max="100" step="0.1" value="80" class="slider slider-yellow">
-                            <button class="step-btn" onclick="adjustSliderStep('inputTaxSplit', 0.1)">+</button>
+                            <button class="step-btn" data-slider-target="inputTaxSplit" data-direction="1">+</button>
                         </div>
                     </div>
 

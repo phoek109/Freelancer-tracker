@@ -1,7 +1,10 @@
+// =========================================================================
+// 🚀 LOCATED AT THE VERY TOP OF YOUR sheets-sync.js FILE:
+// =========================================================================
 const apiInput = document.getElementById('apiEndpoint');
 
 // Global dynamic active view tracking target indicators
-window.activeMatrixCurrencyScopeMode = "home"; // Toggles between "received" or "home" pipelines
+window.activeMatrixCurrencyScopeMode = "home"; 
 window.currentlyPinnedLogIndex = null;
 window.cachedHistoricalLogs = [];
 
@@ -13,36 +16,42 @@ window.addEventListener('DOMContentLoaded', () => {
         document.getElementById('baseCurrencyConfig').value = localStorage.getItem('userBaseCurrencyConfig');
     }
     
-    // REPAIRED INITIALIZATION SYNC TRACK:
     if (localStorage.getItem('userBaseTaxRateConfig')) {
         const cachedTax = localStorage.getItem('userBaseTaxRateConfig');
-        
-        // 1. Force the sidebar setup text field value to match memory cache
         if (document.getElementById('baseTaxRateConfig')) {
             document.getElementById('baseTaxRateConfig').value = cachedTax;
         }
-        // 2. Force the predictive slider handle position to match memory cache
         if (document.getElementById('inputTaxRate')) {
             document.getElementById('inputTaxRate').value = cachedTax;
         }
-        // 3. Force the dashboard percentage status label to match memory cache
         if (document.getElementById('valTaxRate')) {
             document.getElementById('valTaxRate').innerText = `${parseFloat(cachedTax).toFixed(1)}%`;
         }
     }
-    // Set standard calendar defaults to active current date format parameters
     if (document.getElementById('formDate')) {
         document.getElementById('formDate').valueAsDate = new Date();
     }
     
-    if (typeof resizeCanvas === 'function') resizeCanvas();
-    if (typeof updateBaseCurrencyConfigSymbols === 'function') updateBaseCurrencyConfigSymbols();
+    // 🚀 INJECT THESE MULTIPLE SWEEPS RIGHT HERE TO REMOVE BOOTUP DELAYS:
+    if (typeof enforceDynamicViewportCanvasSizing === 'function') {
+        enforceDynamicViewportCanvasSizing(); 
+    }
+    if (typeof updateBaseCurrencyConfigSymbols === 'function') {
+        updateBaseCurrencyConfigSymbols();
+    }
 
     // Safety timeout framework execution routines to launch your tickers
     setTimeout(() => {
-        if (typeof resizeCanvas === 'function') resizeCanvas();
-        if (typeof dynamicallyHydrateGlobalCurrencies === 'function') dynamicallyHydrateGlobalCurrencies();
-        if (typeof fetchAndHydrateLogCachesFromSheet === 'function') fetchAndHydrateLogCachesFromSheet();
+        // 🚀 INJECT THIS SECOND RE-MEASURING RUN INSIDE THE TIMEOUT BOX TOO:
+        if (typeof enforceDynamicViewportCanvasSizing === 'function') {
+            enforceDynamicViewportCanvasSizing();
+        }
+        if (typeof dynamicallyHydrateGlobalCurrencies === 'function') {
+            dynamicallyHydrateGlobalCurrencies();
+        }
+        if (typeof fetchAndHydrateLogCachesFromSheet === 'function') {
+            fetchAndHydrateLogCachesFromSheet();
+        }
     }, 50);
 });
 
@@ -205,6 +214,14 @@ async function dispatchLedgerTransactionBundle() {
             document.getElementById('formExactCashAmt').style.borderColor = "";
         }
     }
+    // =========================================================================
+    // 🚀 LOCATED INSIDE dispatchLedgerTransactionBundle() IN sheets-sync.js
+    // =========================================================================
+    
+    // Extract real-time visual system snapshots active on the left sidebar configs right now
+    const selectedHomeBaseCurrencyCode = String(document.getElementById('baseCurrencyConfig')?.value || "USD").toUpperCase().trim();
+    const selectedInstantSystemTaxRate = (parseFloat(document.getElementById('baseTaxRateConfig')?.value) || 0) / 100;
+
     const payload = {
         data: {
             "Date": date,
@@ -218,7 +235,11 @@ async function dispatchLedgerTransactionBundle() {
             "Business Expenses": amtExpense,
             "Conversion Mode": convMode,
             "Exact Cash Input": exactCashAmt,
-            "Custom Rate Input": customRateVal
+            "Custom Rate Input": customRateVal,
+            
+            // 🚀 STRAP EXCLUSIVE SNAPSHOT METRICS TO THE SECURE DATA BUNDLE PACKET
+            "System Home Base Currency": selectedHomeBaseCurrencyCode,
+            "System Snapshot Tax Rate": selectedInstantSystemTaxRate
         }
     };
 
@@ -741,18 +762,21 @@ async function fetchAndHydrateLogCachesFromSheet() {
         const response = await fetch(endpoint, { method: 'GET' });
         const result = await response.json();
 
+        // 🚀 INJECT INSTEAD OF THE OLD PARSING LOOPS INSIDE sheets-sync.js
         if (result.status === "success" && result.summary) {
             window.liveSheetMetrics = result.summary;
             window.localHistoryTotals = result.summary.totals;
             window.cachedHistoricalLogs = result.summary.logs || [];
             
-            console.log(`✔ Boot Sync Engine: Loaded ${window.cachedHistoricalLogs.length} historical entries smoothly.`);
-            
+            // Safety verification check: Make sure historical data charts paint sharply
+            console.log(`✔ Cache Synchronized: Loaded ${window.cachedHistoricalLogs.length} isolated rows definitions.`);
+ 
             // SPINNER SUCCESS HOOK
             if (typeof updateSyncSpinnerState === 'function') updateSyncSpinnerState("success");
 
             if (typeof updateMatrixData === 'function') updateMatrixData();
             if (typeof renderHistoricalSidebarLogs === 'function') renderHistoricalSidebarLogs();
+        
         } else {
             // Configuration recovery frame fallback handling loop
             const postResponse = await fetch(endpoint, { 
