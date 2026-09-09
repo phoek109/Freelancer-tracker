@@ -845,3 +845,86 @@ body:has(.sidebar-collapsed-hidden-state) .matrix-container {
     cursor: not-allowed !important;
     transition: opacity 0.25s ease !important;
 }
+
+/* ========================================================================= */
+/* 📱 HIGH-FIDELITY MOBILE OVERHAUL RENDERING ENGINE                        */
+/* ========================================================================= */
+@media screen and (max-width: 768px) {
+    body {
+        overflow-y: auto !important; /* Allow the entire application layout page to scroll vertically */
+        height: auto !important;
+    }
+
+    .app-layout {
+        flex-direction: column !important; /* Stack input sidebar cleanly on top of your matrix charts dashboard layout */
+        height: auto !important;
+        overflow-y: visible !important;
+        width: 100vw !important;
+    }
+
+    /* 1. Transform Sidebar Menu Controller into an Elegant Top Section Card Block */
+    .sidebar {
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        border-right: none !important;
+        border-bottom: 1px solid #1e293b;
+        padding: 20px !important;
+        box-sizing: border-box;
+        overflow-y: visible !important;
+    }
+
+    /* Form Fields Grid: Split fields evenly into pairs of 2 columns on mobile to conserve space gracefully */
+    .form-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+    }
+
+    .form-block, .input-group, #btnSubmit {
+        grid-column: span 2 !important; /* Force critical primary action items to span full mobile screen row widths */
+    }
+
+    /* 2. Transform the Main Canvas Content Workspace Panel to Occupy Full Proportional Width Elements */
+    .main-content {
+        width: 100% !important;
+        height: auto !important;
+        padding: 16px !important;
+        box-sizing: border-box;
+        overflow-y: visible !important;
+    }
+
+    .matrix-container {
+        padding: 16px !important;
+        border-radius: 16px !important;
+    }
+
+    /* 3. Re-adjust Multi-Chart Flow Graphics Element Envelopes Heights Proportions */
+    .flow-chart-wrapper {
+        height: 280px !important; /* Prevent chart clipping on smaller phone hardware screen heights footprints */
+    }
+
+    /* 4. Overhaul Core Readout Stat Row Elements Matrix Layout Proportions Configuration Grid */
+    .metric-row {
+        grid-template-columns: repeat(2, 1fr) !important; /* Split metrics readouts into a crisp 2x2 grid layout */
+        padding: 16px 0 !important;
+        gap: 16px !important;
+    }
+
+    .metric-item {
+        align-items: flex-start !important; /* Left-align the metric metrics labels strings cards text strings */
+        border-left: 2px solid #1e293b;
+        padding-left: 10px;
+    }
+
+    .metric-item .value {
+        font-size: 18px !important; /* Scale text weight size properties nicely down to eliminate line wrappings distortion errors */
+    }
+
+    /* 5. Hide Desktop Specific Float Pin Control Buttons */
+    #sidebarToggleArrowTrigger, 
+    #inlineActionTrayWrapper {
+        display: none !important; /* Remove un-draggable window control blocks parameters on mobile viewports screens layers */
+    }
+}
