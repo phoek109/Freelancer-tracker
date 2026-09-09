@@ -1104,4 +1104,12 @@ body:has(.sidebar-collapsed-hidden-state) .matrix-container {
         height: 14px !important;
     }
 
+
+/* ========================================================================= */
+/* ⚡ AUTOMATIC SECURITY VAULT AUTHENTICATION ACCENT STYLES                  */
+/* ========================================================================= */
+.vault-auth-success-glow {
+    border: 1px solid #4ade80 !important;
+    box-shadow: 0 0 10px rgba(74, 222, 128, 0.15), inset 0 0 6px rgba(74, 222, 128, 0.05) !important;
+}
 }

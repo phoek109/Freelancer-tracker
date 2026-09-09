@@ -9,9 +9,16 @@ window.currentlyPinnedLogIndex = null;
 window.cachedHistoricalLogs = [];
 
 window.addEventListener('DOMContentLoaded', () => {
+    // Locate this inside window.addEventListener('DOMContentLoaded', () => { ...
     if (localStorage.getItem('userSheetDB')) {
         apiInput.value = localStorage.getItem('userSheetDB');
     }
+    // 🚀 INJECT THE NEW VAULT TOKEN CACHE LOADER:
+    if (localStorage.getItem('userApiShieldToken')) {
+        const tokenEl = document.getElementById('apiSecurityTokenInput');
+        if (tokenEl) tokenEl.value = localStorage.getItem('userApiShieldToken');
+    }
+
     if (localStorage.getItem('userBaseCurrencyConfig')) {
         document.getElementById('baseCurrencyConfig').value = localStorage.getItem('userBaseCurrencyConfig');
     }
@@ -55,6 +62,14 @@ window.addEventListener('DOMContentLoaded', () => {
     }, 50);
 });
 
+// 📍 REPLACE THIS ENTIRE FUNCTION SITTING RIGHT HERE:
+function updateSyncSpinnerState(state) {
+    const spinner = document.getElementById('syncSpinner');
+    if (!spinner) return;
+    
+    spinner.className = "neon-spinner-ring";
+}
+
 // Helper utility to safely toggle your existing cyberpunk loader states
 function updateSyncSpinnerState(state) {
     const spinner = document.getElementById('syncSpinner');
@@ -94,7 +109,7 @@ apiInput.addEventListener('input', (e) => {
     const urlValue = e.target.value.trim();
     localStorage.setItem('userSheetDB', urlValue);
     
-    if (urlValue.startsWith('https://google.com')) {
+    if (urlValue.startsWith('https://Script.google.com')) {
         console.log("Valid Google Web App detected. Initializing database hydration stream...");
         if (typeof dynamicallyHydrateGlobalCurrencies === 'function') {
             dynamicallyHydrateGlobalCurrencies();
@@ -102,6 +117,16 @@ apiInput.addEventListener('input', (e) => {
     }
 });
 
+// =========================================================================
+// 🚀 PASTE THE NEW TOKEN BINDING LISTENER RIGHT HERE:
+// =========================================================================
+const tokenInputEl = document.getElementById('apiSecurityTokenInput');
+if (tokenInputEl) {
+    tokenInputEl.addEventListener('input', (e) => {
+        // Automatically caches the private shield password as the user types
+        localStorage.setItem('userApiShieldToken', e.target.value.trim());
+    });
+}
 async function updateBaseCurrencySettingsInSheet() {
     if (typeof updateBaseCurrencyConfigSymbols === 'function') updateBaseCurrencyConfigSymbols();
     
@@ -114,7 +139,11 @@ async function updateBaseCurrencySettingsInSheet() {
     localStorage.setItem('userBaseCurrencyConfig', baseCurrencyValue);
     localStorage.setItem('userBaseTaxRateConfig', document.getElementById('baseTaxRateConfig').value);
 
+    // 🚀 THE SECURE UPGRADE: Extract the current password pin from the hidden UI tray block
+    const secureAuthPassword = document.getElementById('apiSecurityTokenInput')?.value.trim() || "";
+
     const payload = {
+        apiToken: secureAuthPassword, // 🛡️ SENDS PASSWORD HANDSHAKE TO SERVER
         configUpdate: true,
         "Base Currency": baseCurrencyValue,
         "Tax Rate": targetTaxRateValue
@@ -128,14 +157,13 @@ async function updateBaseCurrencySettingsInSheet() {
         const result = await response.json();
         if (result.status === "success") {
             console.log("⚡ Logcat Core: Global base configuration values saved.");
-            // SPINNER SUCCESS HOOK
             if (typeof updateSyncSpinnerState === 'function') updateSyncSpinnerState("success");
         } else {
+            console.error("🛑 Server Error: " + result.message);
             if (typeof updateSyncSpinnerState === 'function') updateSyncSpinnerState("error");
         }
     } catch (e) {
         console.log("Configuration tracking network sync lag error.");
-        // SPINNER ERROR HOOK
         if (typeof updateSyncSpinnerState === 'function') updateSyncSpinnerState("error");
     }
 }
@@ -221,9 +249,10 @@ async function dispatchLedgerTransactionBundle() {
     // Extract real-time visual system snapshots active on the left sidebar configs right now
     const selectedHomeBaseCurrencyCode = String(document.getElementById('baseCurrencyConfig')?.value || "USD").toUpperCase().trim();
     const selectedInstantSystemTaxRate = (parseFloat(document.getElementById('baseTaxRateConfig')?.value) || 0) / 100;
+    const secureAuthPassword = document.getElementById('apiSecurityTokenInput')?.value.trim() || "";
 
-    // 🚀 THE FIX: Enforce explicit decimal extraction on numeric strings
     const payload = {
+        apiToken: secureAuthPassword, // 🚀 AUTOMATIC SERVER PASSKEY HANDSHAKE
         data: {
             "Date": date,
             "Client Name": client,
@@ -368,7 +397,11 @@ function streamBreakdownProportionsToSheet() {
     const expenseSplitVal = (parseFloat(document.getElementById('inputExpenseSplit').value) || 0) / 100;
     const taxSplitVal = (parseFloat(document.getElementById('inputTaxSplit').value) || 0) / 100;
 
+    // 🚀 THE SECURE UPGRADE: Grab private token key dynamically
+    const secureAuthPassword = document.getElementById('apiSecurityTokenInput')?.value.trim() || "";
+
     const payload = {
+        apiToken: secureAuthPassword, // 🛡️ AUTHORIZES SLIDER SYNC OPERATION ON THE SHEET
         configUpdate: true,
         "Income Split": incomeSplitVal,   
         "Expense Split": expenseSplitVal, 
@@ -379,13 +412,20 @@ function streamBreakdownProportionsToSheet() {
     clearTimeout(splitSyncTimeout);
     splitSyncTimeout = setTimeout(async () => {
         try {
-            await fetch(endpoint, { method: 'POST', body: JSON.stringify(payload) });
-            console.log("✔ Proportional matrix splits backed up to Google Sheet.");
+            const response = await fetch(endpoint, { method: 'POST', body: JSON.stringify(payload) });
+            const result = await response.json();
+            
+            if (result.status === "success") {
+                console.log("✔ Proportional matrix splits backed up to Google Sheet.");
+            } else {
+                console.warn("⚠️ Sync Blocked by Server: " + result.message);
+            }
         } catch (e) {
             console.log("Database synchronization pipeline lag.");
         }
     }, 800);
 }
+
 // =========================================================================
 // 🚀 FIXED: ZERO HARDCODING. AUTOMATICALLY EXTRACT ANY GLOBAL SYMBOL
 // =========================================================================

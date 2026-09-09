@@ -7,25 +7,41 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="app-layout">
+<div class="app-layout">
         
-                <!-- LEFT SIDEBAR: Ledger Entry Form & Backend Configuration -->
-                <!-- 🚀 SIDEBAR HOUSING OVERHAUL: Injected dynamic click listeners & overlay collapse prongs -->
+        <!-- 🚀 SIDEBAR HOUSING OVERHAUL: Embedded Collapsible Admin Vault Tray -->
         <div class="sidebar" id="appInputSidebarPanel">
             
-            <div class="sidebar-header">DATABASE SETUP</div>
-            <!-- Rest of your original sidebar input elements stay exactly as they are here... -->
-
-            <div class="form-block">
-                <div class="url-input-container" style="position: relative; display: flex; align-items: center; width: 100%;">
-                    <input type="text" id="apiEndpoint" placeholder="Paste Google Web App URL here..." value="" style="padding-right: 40px;">
+            <!-- 🚀 PREMIUM COLLAPSIBLE SECURITY CONFIGURATION TRUNK -->
+            <details id="adminVaultAccordionPanel" class="admin-vault-accordion" style="background: rgba(7, 10, 19, 0.4); border: 1px dashed #1e293b; border-radius: 10px; padding: 12px; margin-bottom: 8px; width: 100%; box-sizing: border-box; transition: border 0.3s ease, box-shadow 0.3s ease;">
+                <summary style="font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 800; color: #64748b; cursor: pointer; user-select: none; display: flex; align-items: center; gap: 8px; outline: none;">
+                    ⚙️ SECURE BACKEND CONFIG CONTROL
+                </summary>
+                
+                <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 10px; width: 100%; box-sizing: border-box;">
                     
-                    <!-- DYNAMIC NEON STATUS SPINNER TARGET ANCHOR -->
-                    <div id="syncSpinner" class="neon-spinner-ring state-idle" style="display: none; position: absolute; right: 12px; width: 16px; height: 16px;"></div>
-                </div>
-                <small class="help-text">Deploy your Google Sheet script to get an unlimited backend link.</small>
-            </div>
+                    <!-- Secured Web App Endpoint Field Container -->
+                    <div class="form-block" style="width: 100%;">
+                        <label style="font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #475569; font-weight: 700; display: block; margin-bottom: 4px; letter-spacing: 0.5px;">GOOGLE WEB APP ENDPOINT URL</label>
+                        <div class="url-input-container" style="position: relative; display: flex; align-items: center; width: 100%;">
+                            <input type="password" id="apiEndpoint" placeholder="Paste deployment URL here..." value="" style="padding-right: 40px; font-size: 12px; font-family: monospace;">
+                            
+                            <!-- DYNAMIC NEON STATUS SPINNER TARGET ANCHOR -->
+                            <div id="syncSpinner" class="neon-spinner-ring state-idle" style="display: none; position: absolute; right: 12px; width: 14px; height: 14px; box-sizing: border-box;"></div>
+                        </div>
+                    </div>
 
+                    <!-- Secured API Passkey Field Container -->
+                    <div class="form-block" style="width: 100%;">
+                        <label style="font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #475569; font-weight: 700; display: block; margin-bottom: 4px; letter-spacing: 0.5px;">VAULT API SHIELD TOKEN (CELL B3)</label>
+                        <input type="password" id="apiSecurityTokenInput" placeholder="Enter private master passkey..." value="" style="font-size: 12px; font-family: monospace; width: 100%; box-sizing: border-box;">
+                    </div>
+                    
+                    <small class="help-text" style="font-size: 10px; color: #334155; line-height: 1.3; display: block; margin-top: 2px;">Credentials are cached securely in your local environment storage profile layers.</small>
+                </div>
+            </details>
+
+            <!-- Sidebar breaks out immediately into the primary data flow forms below -->
             <div class="sidebar-header">ADD INCOME ENTRY</div>
             <div class="form-grid">
                 
@@ -394,6 +410,7 @@
                         </div>
                     </div>
 
+                    <!-- Display Base Currency Control Block -->
                     <div class="control-block">
                         <div class="control-header" id="displayBaseCurrencyTitle">DISPLAY BASE CURRENCY CONTROL PANEL</div>
                         <div class="currency-btn-group" id="dualCurrencyControlGrid" style="display: flex; gap: 8px; background: #070a13; padding: 4px; border-radius: 10px; border: 1px solid #1e293b;">
@@ -401,8 +418,7 @@
                         </div>
                     </div>
 
-<!-- Inside index.html -> near the bottom of your code structure: -->
-
+                    <!-- Ledger Mode Integration Integration Control Block -->
                     <div class="control-block">
                         <div class="control-header">LEDGER INTEGRATION</div>
                         <button id="btnToggleMode" onclick="toggleDatabaseMode()" class="toggle-mode-btn">MODE: LIVE TRACKING</button>
@@ -414,21 +430,12 @@
 
     </div> <!-- Close app-layout -->
     
-    
-    <!-- 📍 PASTE THE FLOATING TRIGGER PILL BUTTON RIGHT HERE, JUST ABOVE THE SCRIPT ENGINES: -->
-    <button id="mobileFloatingDrawerTriggerBtn" onclick="toggleMobileSidebarTraySheetState()" style="display: none; position: fixed; bottom: 20px; right: 20px; background: linear-gradient(135deg, #0f172a, #1e293b); border: 2px solid #38bdf8; color: #38bdf8; padding: 12px 20px; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 800; letter-spacing: 1px; border-radius: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.5), 0 0 15px rgba(56,189,248,0.25); z-index: 9999999; cursor: pointer; transition: all 0.2s ease-in-out; align-items: center; gap: 8px;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" id="mobileTriggerToggleBtnVectorIcon">
-            <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-        <span id="mobileTriggerToggleBtnLabelStringText">LOG ENTRY</span>
-    </button>
-
-
-    <!-- Original Script engines stay exactly as they were underneath: -->
+    <!-- 🚀 THE COMPACT SCRIPT HOOK TRACE: The cluttering floating overlay pill node has been cleanly expunged -->
     <script src="matrix-engine.js"></script>
     <script src="sheets-sync.js"></script>
 </body>
 </html>
+
 
     
 
