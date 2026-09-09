@@ -1237,3 +1237,85 @@ function toggleLeftInputSidebarPanelState() {
         }
     }, 30);
 }
+
+// =========================================================================
+// 🚀 DYNAMIC LAYOUT DEVICE SWAP BROADCASTER CONTROLLER
+// =========================================================================
+
+window.isMobileDrawerSheetOpenStateActive = false;
+
+function toggleMobileSidebarTraySheetState() {
+    const sidebarPanel = document.getElementById('appInputSidebarPanel');
+    const floatingBtn  = document.getElementById('mobileFloatingDrawerTriggerBtn');
+    const textLabel    = document.getElementById('mobileTriggerToggleBtnLabelStringText');
+    const arrowIcon    = document.getElementById('mobileTriggerToggleBtnVectorIcon');
+
+    if (!sidebarPanel || !floatingBtn) return;
+
+    window.isMobileDrawerSheetOpenStateActive = !window.isMobileDrawerSheetOpenStateActive;
+
+    if (window.isMobileDrawerSheetOpenStateActive) {
+        // Slide drawer up into active focus profile view
+        sidebarPanel.classList.add('drawer-active-mobile');
+        
+        // Transform the floating pill design to an entry collapse style framework
+        floatingBtn.style.borderColor = "#f87171";
+        floatingBtn.style.color = "#f87171";
+        if (textLabel) textLabel.innerText = "CLOSE MENU";
+        if (arrowIcon) {
+            arrowIcon.innerHTML = `<line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>`;
+        }
+    } else {
+        // Return tray down out of screen view area bounds
+        sidebarPanel.classList.remove('drawer-active-mobile');
+        
+        // Revert to primary cyan accent configurations profile themes
+        floatingBtn.style.borderColor = "#38bdf8";
+        floatingBtn.style.color = "#38bdf8";
+        if (textLabel) textLabel.innerText = "LOG ENTRY";
+        if (arrowIcon) {
+            arrowIcon.innerHTML = `<line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>`;
+        }
+    }
+}
+
+// Intercept viewport size mutations to manage visibility constraints of the drawer trigger handles
+function evaluateResponsiveInterfaceStateAnchors() {
+    const mobileBtn = document.getElementById('mobileFloatingDrawerTriggerBtn');
+    const sidebarPanel = document.getElementById('appInputSidebarPanel');
+    if (!mobileBtn || !sidebarPanel) return;
+
+    if (window.innerWidth <= 768) {
+        mobileBtn.style.display = "flex"; // Mount floating trigger card asset element track
+    } else {
+        mobileBtn.style.display = "none";  // Wipe mobile elements track on standard screen bounds
+        sidebarPanel.classList.remove('drawer-active-mobile');
+        window.isMobileDrawerSheetOpenStateActive = false;
+    }
+}
+
+// Attach operational resize triggers natively to the DOM cycle loop tracks
+document.addEventListener('DOMContentLoaded', () => {
+    evaluateResponsiveInterfaceStateAnchors();
+    window.addEventListener('resize', evaluateResponsiveInterfaceStateAnchors);
+});
+
+// Auto-collapse bottom drawer tray view sheet right after streaming payload records completes to clear visual paths
+const originalDispatchTransactionBundle = window.dispatchLedgerTransactionBundle;
+if (typeof originalDispatchTransactionBundle === 'function') {
+    // Intercept submit button callbacks down across internal sync engine flows
+    const submitBtnActionEl = document.getElementById('btnSubmit');
+    if (submitBtnActionEl) {
+        submitBtnActionEl.addEventListener('click', () => {
+            setTimeout(() => {
+                const statusMessageElement = document.getElementById('syncStatus');
+                if (statusMessageElement && statusMessageElement.innerText.indexOf("✔") > -1) {
+                    if (window.innerWidth <= 768 && window.isMobileDrawerSheetOpenStateActive) {
+                        toggleMobileSidebarTraySheetState(); // Auto-dismiss tray upon validation loops completions
+                    }
+                }
+            }, 1200);
+        });
+    }
+}
+

@@ -406,6 +406,8 @@
                         </div>
                     </div>
 
+<!-- Inside index.html -> near the bottom of your code structure: -->
+
                     <div class="control-block">
                         <div class="control-header">LEDGER INTEGRATION</div>
                         <button id="btnToggleMode" onclick="toggleDatabaseMode()" class="toggle-mode-btn">MODE: LIVE TRACKING</button>
@@ -417,11 +419,20 @@
 
     </div> <!-- Close app-layout -->
     
-
-
-
-    <script src="matrix-engine.js"></script>
     
+    <!-- 📍 PASTE THE FLOATING TRIGGER PILL BUTTON RIGHT HERE, JUST ABOVE THE SCRIPT ENGINES: -->
+    <button id="mobileFloatingDrawerTriggerBtn" onclick="toggleMobileSidebarTraySheetState()" style="display: none; position: fixed; bottom: 20px; right: 20px; background: linear-gradient(135deg, #0f172a, #1e293b); border: 2px solid #38bdf8; color: #38bdf8; padding: 12px 20px; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 800; letter-spacing: 1px; border-radius: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.5), 0 0 15px rgba(56,189,248,0.25); z-index: 9999999; cursor: pointer; transition: all 0.2s ease-in-out; align-items: center; gap: 8px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" id="mobileTriggerToggleBtnVectorIcon">
+            <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span id="mobileTriggerToggleBtnLabelStringText">LOG ENTRY</span>
+    </button>
+
+
+    <!-- Original Script engines stay exactly as they were underneath: -->
+    <script src="matrix-engine.js"></script>
     <script src="sheets-sync.js"></script>
 </body>
 </html>
+
+
