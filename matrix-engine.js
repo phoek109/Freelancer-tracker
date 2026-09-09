@@ -208,59 +208,22 @@ function initializeMatrixCanvasResizeObserverEngine() {
 }
 
 // =========================================================================
-// 🚀 HIGH-DENSITY DPR RENDERING ENGINE (ULTRA-OPTIMIZED RETINA EDITION)
+// 🚀 HIGH-DENSITY DPR RENDERING ENGINE (ELIMINATES BLURRY CANVAS TEXT)
 // =========================================================================
-
-window.matrixCanvasResizeTimeoutId = null;
 
 function enforceDynamicViewportCanvasSizing() {
     const canvasElement = document.getElementById('flowChart');
     if (!canvasElement || !canvasElement.parentElement) return;
 
-    // 🚀 PERFORMANCE GUARD: Debounce rapid consecutive window/drawer resize triggers
-    clearTimeout(window.matrixCanvasResizeTimeoutId);
+    const parentContainerBoundingBox = canvasElement.parentElement.getBoundingClientRect();
     
-    window.matrixCanvasResizeTimeoutId = setTimeout(() => {
-        // Schedule redraw to sync smoothly with the mobile device's screen refresh rate
-        requestAnimationFrame(() => {
-            const ctx = canvasElement.getContext('2d');
-            const parentContainerBoundingBox = canvasElement.parentElement.getBoundingClientRect();
-            
-            // 1. Grab physical pixel density coefficient (Retina/High-DPI aware)
-            const devicePixelRatioScale = window.devicePixelRatio || 1;
-            
-            const targetWidth  = Math.floor(parentContainerBoundingBox.width);
-            const targetHeight = Math.floor(parentContainerBoundingBox.height);
+    // Fixed broken tracking parameter cuts:
+    canvasElement.width = parentContainerBoundingBox.width;
+    canvasElement.height = parentContainerBoundingBox.height;
 
-            // 🚀 MEMORY PROTECTION: Quit early if parent dimensions are zero or unchanged
-            if (targetWidth <= 0 || targetHeight <= 0) return;
-            if (canvasElement.width === targetWidth * devicePixelRatioScale && 
-                canvasElement.style.width === targetWidth + 'px') {
-                // If dimensions match perfectly, just re-hydrate data without clearing buffer arrays
-                if (typeof window.updateMatrixData === 'function') window.updateMatrixData();
-                return;
-            }
-            
-            // 2. Lock the internal canvas hardware high-res dimensions
-            canvasElement.width  = targetWidth * devicePixelRatioScale;
-            canvasElement.height = targetHeight * devicePixelRatioScale;
-
-            // 3. Compress container layout presentation using standard CSS pixels
-            canvasElement.style.width  = targetWidth + 'px';
-            canvasElement.style.height = targetHeight + 'px';
-
-            // 4. Wrap rendering coordinate systems inside an isolated state frame block
-            ctx.save();
-            ctx.scale(devicePixelRatioScale, devicePixelRatioScale);
-
-            // 5. Force custom presentation layers to draw shapes instantly
-            if (typeof window.updateMatrixData === 'function') {
-                window.updateMatrixData();
-            }
-            
-            ctx.restore(); // Reverts coordinate metrics back safely
-        });
-    }, 40); // 40ms safety buffer eliminates micro-stuttering on smartphone viewports
+    if (typeof window.updateMatrixData === 'function') {
+        window.updateMatrixData();
+    }
 }
 
 // Ensure event listener anchors are cleanly attached during boot sequence phases
