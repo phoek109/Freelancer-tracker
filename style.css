@@ -26,21 +26,15 @@ body {
     background: #38bdf8;
 }
 
-.app-layout {
-    display: flex;
-    height: 100vh;
-    /* 🚀 CRITICAL RECONSTRUCT: Lock layout bounds cleanly to the total screen width profile */
-    width: 100vw !important; 
-    max-width: 100vw !important;
-    overflow: hidden; 
-    background-color: #0b0f19;
-    box-sizing: border-box;
-}
+/* ========================================================================= */
+/* 💻 DESKTOP CONSISTENT FRAMEWORK (CLEARED FORCE WIDTH OVERRIDES)           */
+/* ========================================================================= */
 
+/* 1. Update your desktop sidebar wrapper to ONLY hold width on desktop screen rules */
 .sidebar {
-    width: 340px !important;
-    min-width: 340px !important; /* Hard-locks the width profile */
-    max-width: 340px !important;
+    width: 340px;
+    min-width: 340px;
+    max-width: 340px;
     background-color: #0f1626;
     border-right: 1px solid #1e293b;
     padding: 24px;
@@ -48,9 +42,29 @@ body {
     display: flex;
     flex-direction: column;
     gap: 20px;
-    overflow-y: auto;          /* Unlocks standard internal sidebar scrolling */
+    overflow-y: auto;
     height: 100vh;
-    flex-shrink: 0;            /* CRUCIAL FIX: Blocks the main content from flattening the sidebar */
+    flex-shrink: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 2. Wrap your layout framework blocks to stretch natively */
+.app-layout {
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.main-content {
+    flex: 1;
+    height: 100vh;
+    padding: 40px;
+    position: relative;
+    overflow-y: auto;
+    box-sizing: border-box;
 }
 
 .sidebar-header {
@@ -187,21 +201,6 @@ body {
     text-align: center;
     margin-top: 8px;
     font-weight: 600;
-}
-
-.main-content {
-    flex: 1 !important;
-    /* 🚀 ACCELERATOR COMMAND: Directs the canvas workspace to pull every available remaining pixel */
-    width: calc(100vw - 340px) !important; 
-    
-    padding: 40px;
-    display: flex;
-    justify-content: flex-start !important; 
-    align-items: flex-start;
-    overflow-y: auto !important; 
-    box-sizing: border-box;
-    height: 100vh;
-    position: relative !important;
 }
 
 /* Update this layout handle cleanly to stretch everything */
@@ -869,13 +868,6 @@ body:has(.sidebar-collapsed-hidden-state) .matrix-container {
     box-sizing: border-box;
 }
 
-.main-content {
-    flex: 1 !important;
-    height: 100vh !important;
-    box-sizing: border-box;
-    overflow-y: auto !important;
-}
-
 /* 📱 High-Fidelity Fluid Breakdown on Mobile Screen Sizes */
 @media screen and (max-width: 768px) {
     body {
@@ -912,14 +904,6 @@ body:has(.sidebar-collapsed-hidden-state) .matrix-container {
     /* Force primary input components to occupy full width blocks */
     .form-block, .input-group, #btnSubmit {
         grid-column: span 2 !important; 
-    }
-
-    /* Expand Canvas Container Workspace edge to edge full screen */
-    .main-content {
-        width: 100% !important;
-        height: auto !important;
-        padding: 16px !important;
-        overflow-y: visible !important;
     }
 
     .matrix-container {
