@@ -955,41 +955,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// 🚀 CONTROL ENGINE HOOK 1: Floating state controller utilizing the updated minimal box icon button
-function toggleMatrixChartFloatingState() {
-    const wrapper = document.getElementById('matrixFlowChartWrapper');
-    const button = document.getElementById('btnPinChartFloat');
-    const sliderGroup = document.getElementById('opacitySliderContainer');
-    
-    if (!wrapper || !button || !sliderGroup) return;
-
-    // Direct protection: If fullscreen mode is active, completely block floating actions
-    if (window.isMatrixCanvasMaximizeViewActive) return;
-
-    window.isMatrixChartDetachedFloating = !window.isMatrixChartDetachedFloating;
-
-    if (window.isMatrixChartDetachedFloating) {
-        wrapper.classList.add('detached-floating-window');
-        button.style.color = "#f87171"; // Switch icon alert status hue to pastel red
-        button.setAttribute('title', 'Unpin Floating View');
-        sliderGroup.style.display = "flex"; 
-        
-        const activeOpacitySlider = document.getElementById('chartOpacitySlider');
-        if (activeOpacitySlider) {
-            wrapper.style.opacity = (parseFloat(activeOpacitySlider.value) / 100);
-        }
-    } else {
-        wrapper.classList.remove('detached-floating-window');
-        wrapper.style.opacity = ""; 
-        button.style.color = "";
-        button.setAttribute('title', 'Pin Detached View');
-        sliderGroup.style.display = "none"; 
-    }
-
-    if (typeof enforceDynamicViewportCanvasSizing === 'function') {
-        enforceDynamicViewportCanvasSizing();
-    }
-}
 
 // 🚀 CONTROL ENGINE HOOK 2: Fullscreen modal presentation view control toggle engine handler
 function toggleMatrixChartFullscreenViewMode() {

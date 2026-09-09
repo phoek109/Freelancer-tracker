@@ -895,21 +895,26 @@ body:has(.sidebar-collapsed-hidden-state) .matrix-container {
     min-width: 0 !important;
 }
 
-/* 📱 Fluid Mobile Breakdown Configuration Rules */
+/* ========================================================================= */
+/* 📱 MOBILE STICKY POP-OUT OVERHAUL: PLUG AND PLAY TRACKS ARCHITECTURE       */
+/* ========================================================================= */
 @media screen and (max-width: 768px) {
+    
     body {
         overflow-y: auto !important;
+        overflow-x: hidden !important;
         height: auto !important;
     }
 
     .app-layout {
-        flex-direction: column !important; /* Stack form sidebar cleanly on top of dashboards card panels */
+        display: flex !important;
+        flex-direction: column !important;
         height: auto !important;
+        min-height: 100vh !important;
         overflow-y: visible !important;
-        width: 100vw !important;
+        overflow-x: hidden !important;
     }
 
-    /* Transform Sidebar space to sit full breed as a mobile header container section card */
     .sidebar {
         width: 100% !important;
         min-width: 100% !important;
@@ -923,7 +928,6 @@ body:has(.sidebar-collapsed-hidden-state) .matrix-container {
         flex-direction: column !important;
     }
 
-    /* Input Fields Matrix Grid: Split inputs cleanly down across double column tracks layout handles */
     .form-grid {
         display: grid !important;
         grid-template-columns: repeat(2, 1fr) !important;
@@ -931,23 +935,20 @@ body:has(.sidebar-collapsed-hidden-state) .matrix-container {
         width: 100% !important;
     }
 
-    /* Force primary input blocks components to occupy 100% horizontal screen footprint */
     .form-block, .input-group, #btnSubmit {
         grid-column: span 2 !important; 
         width: 100% !important;
     }
 
-    /* Un-trap header typography labels classes out of layout grids constraints blocks */
     .sidebar-header {
         width: 100% !important;
         display: block !important;
         margin-top: 16px !important;
     }
 
-    /* 🚀 UNIFORM MOBILE STACK MATRIX LAYER: Forces full width usage with no text squeezing */
     .mobile-logs-flex-row {
         display: flex !important;
-        flex-direction: column !important; /* Stacks data feed cards underneath search filters */
+        flex-direction: column !important; 
         gap: 12px !important;
         width: 100% !important;
         min-width: 100% !important;
@@ -964,14 +965,12 @@ body:has(.sidebar-collapsed-hidden-state) .matrix-container {
         box-sizing: border-box !important;
     }
 
-    /* Make start and end dates fields adjust row footprints cleanly sideways */
     .sidebar .log-controls > div:first-child {
         display: flex !important;
         width: 100% !important;
         gap: 12px !important;
     }
 
-    /* Expand ledger scrollable logs list envelope to occupy 100% full grid layout bounds */
     .sidebar #sidebarLogContainer {
         display: flex !important;
         flex-direction: column !important;
@@ -979,8 +978,7 @@ body:has(.sidebar-collapsed-hidden-state) .matrix-container {
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
-        
-        height: 280px !important; /* Deep scroll view container layout */
+        height: 280px !important; 
         max-height: 280px !important;
         overflow-y: auto !important;
         background: rgba(7, 10, 19, 0.3) !important;
@@ -998,22 +996,57 @@ body:has(.sidebar-collapsed-hidden-state) .matrix-container {
         margin: 0 0 4px 0 !important;
     }
 
-    /* Expand Canvas Container Workspace edge to edge full screen */
+    /* ─── 🚀 THE CRITICAL LAYER CHANGE ─── */
     .main-content {
         width: 100% !important;
         height: auto !important;
         padding: 16px !important;
         overflow-y: visible !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        flex-direction: column !important;
+        
+        /* 🚀 THE SWITCH BUFFER: If a child is fixed inside this, open up a smooth adaptive transition */
+        transition: padding-top 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    /* 🚀 TARGET DOCK INJECTOR: Pushes standard body data cards down ONLY when active pop out view is engaged */
+    body:has(.detached-floating-window) .main-content {
+        padding-top: 312px !important; /* Reserves explicit pixel spacing room (280px chart + 32px safety clearance) */
     }
 
     .matrix-container {
         padding: 16px !important;
         border-radius: 16px !important;
         max-width: 100% !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
     }
 
     .flow-chart-wrapper {
         height: 280px !important; 
+        width: 100% !important;
+        box-sizing: border-box !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    /* 🚀 THE ABSOLUTE FLOATING OVERLAY ENGINE OVERHAUL */
+    .flow-chart-wrapper.detached-floating-window {
+        position: fixed !important;   /* Hard locks element space directly on device physical screen pixels */
+        top: 0 !important;            /* Snaps cleanly over native status bar layouts */
+        left: 0 !important;
+        width: 100vw !important;      /* Forces edge-to-edge container expansion width */
+        height: 280px !important;     /* Locks layout proportions to ensure structural grid text remains crisp */
+        
+        /* Promotes visual canvas stack layer order index above metric grid boxes, but beneath sidebar input drawers */
+        z-index: 999999 !important;   
+        
+        background: #070a13 !important;
+        border-radius: 0 0 16px 16px !important; /* Rounds bottom borders cleanly to frame moving numbers */
+        border: none !important;
+        border-bottom: 2px solid #38bdf8 !important; /* Cyan active visual state accent guide */
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.95), 0 0 25px rgba(56, 189, 248, 0.15) !important;
+        margin: 0 !important;
     }
 
     .metric-row {
@@ -1027,6 +1060,7 @@ body:has(.sidebar-collapsed-hidden-state) .matrix-container {
         border-left: 2px solid #1e293b;
         padding-left: 10px;
     }
+
 
    /* Inside style.css -> inside your mobile media query block near the very bottom: */
 

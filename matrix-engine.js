@@ -123,7 +123,9 @@ window.isMatrixCanvasMaximizeViewActive = false;
 // 🚀 MASTER WINDOW DEPLOYMENT ENGINE: Re-injecting clean header mappings
 window.floatingMatrixWindowCoordinates = { x: null, y: null, width: null, height: null };
 
-// 🚀 REPAIRED POP-OUT ENGINE: Maintains absolute size and grid position
+// =========================================================================
+// 🚀 REPAIRED POP-OUT ENGINE: REMOVED ABSOLUTE SLIDER DEPENDENCY BLOCKS
+// =========================================================================
 function toggleMatrixChartFloatingState() {
     const wrapper = document.getElementById('matrixFlowChartWrapper');
     const sliderGroup = document.getElementById('opacitySliderContainer');
@@ -132,14 +134,20 @@ function toggleMatrixChartFloatingState() {
     const btnFloatInline = document.getElementById('btnPinChartFloatInline');
     const btnFloatActive = document.getElementById('btnPinChartFloat');
     
-    if (!wrapper || !sliderGroup) return;
+    // 🚀 THE CRITICAL FIX: Only bail out if the main 'wrapper' is missing!
+    // If sliderGroup is missing because we deleted it, the engine passes safely right through.
+    if (!wrapper) return;
 
     window.isMatrixChartDetachedFloating = !window.isMatrixChartDetachedFloating;
 
     if (window.isMatrixChartDetachedFloating) {
-        // 🚀 CRITICAL TRANSITION: Lifts the chart context above the sidebar/forms layout sheets
+        // Lifts the chart context above the sidebar/forms layout sheets
         wrapper.classList.add('detached-floating-window');
-        sliderGroup.style.display = "flex"; 
+        
+        // Safe optional check: only modify sliderGroup if it actually exists in your HTML
+        if (sliderGroup) {
+            sliderGroup.style.display = "flex"; 
+        }
 
         // Update color profiles on whichever button is processing the active session trigger
         if (btnFloatInline) btnFloatInline.style.color = "#f87171";
@@ -148,12 +156,19 @@ function toggleMatrixChartFloatingState() {
         const activeOpacitySlider = document.getElementById('chartOpacitySlider');
         if (activeOpacitySlider) {
             wrapper.style.opacity = (parseFloat(activeOpacitySlider.value) / 100);
+        } else {
+            // Fallback default to keep the window perfectly visible with your new gesture swipe engine
+            wrapper.style.opacity = "0.95";
         }
     } else {
         // Return chart cleanly back down to default baseline workflow depths
         wrapper.classList.remove('detached-floating-window');
         wrapper.style.opacity = ""; 
-        sliderGroup.style.display = "none"; 
+        
+        // Safe optional check: only modify sliderGroup if it actually exists in your HTML
+        if (sliderGroup) {
+            sliderGroup.style.display = "none"; 
+        }
 
         if (btnFloatInline) btnFloatInline.style.color = "";
         if (btnFloatActive) btnFloatActive.style.color = "";
@@ -193,22 +208,59 @@ function initializeMatrixCanvasResizeObserverEngine() {
 }
 
 // =========================================================================
-// 🚀 HIGH-DENSITY DPR RENDERING ENGINE (ELIMINATES BLURRY CANVAS TEXT)
+// 🚀 HIGH-DENSITY DPR RENDERING ENGINE (ULTRA-OPTIMIZED RETINA EDITION)
 // =========================================================================
+
+window.matrixCanvasResizeTimeoutId = null;
 
 function enforceDynamicViewportCanvasSizing() {
     const canvasElement = document.getElementById('flowChart');
     if (!canvasElement || !canvasElement.parentElement) return;
 
-    const parentContainerBoundingBox = canvasElement.parentElement.getBoundingClientRect();
+    // 🚀 PERFORMANCE GUARD: Debounce rapid consecutive window/drawer resize triggers
+    clearTimeout(window.matrixCanvasResizeTimeoutId);
     
-    // Fixed broken tracking parameter cuts:
-    canvasElement.width = parentContainerBoundingBox.width;
-    canvasElement.height = parentContainerBoundingBox.height;
+    window.matrixCanvasResizeTimeoutId = setTimeout(() => {
+        // Schedule redraw to sync smoothly with the mobile device's screen refresh rate
+        requestAnimationFrame(() => {
+            const ctx = canvasElement.getContext('2d');
+            const parentContainerBoundingBox = canvasElement.parentElement.getBoundingClientRect();
+            
+            // 1. Grab physical pixel density coefficient (Retina/High-DPI aware)
+            const devicePixelRatioScale = window.devicePixelRatio || 1;
+            
+            const targetWidth  = Math.floor(parentContainerBoundingBox.width);
+            const targetHeight = Math.floor(parentContainerBoundingBox.height);
 
-    if (typeof window.updateMatrixData === 'function') {
-        window.updateMatrixData();
-    }
+            // 🚀 MEMORY PROTECTION: Quit early if parent dimensions are zero or unchanged
+            if (targetWidth <= 0 || targetHeight <= 0) return;
+            if (canvasElement.width === targetWidth * devicePixelRatioScale && 
+                canvasElement.style.width === targetWidth + 'px') {
+                // If dimensions match perfectly, just re-hydrate data without clearing buffer arrays
+                if (typeof window.updateMatrixData === 'function') window.updateMatrixData();
+                return;
+            }
+            
+            // 2. Lock the internal canvas hardware high-res dimensions
+            canvasElement.width  = targetWidth * devicePixelRatioScale;
+            canvasElement.height = targetHeight * devicePixelRatioScale;
+
+            // 3. Compress container layout presentation using standard CSS pixels
+            canvasElement.style.width  = targetWidth + 'px';
+            canvasElement.style.height = targetHeight + 'px';
+
+            // 4. Wrap rendering coordinate systems inside an isolated state frame block
+            ctx.save();
+            ctx.scale(devicePixelRatioScale, devicePixelRatioScale);
+
+            // 5. Force custom presentation layers to draw shapes instantly
+            if (typeof window.updateMatrixData === 'function') {
+                window.updateMatrixData();
+            }
+            
+            ctx.restore(); // Reverts coordinate metrics back safely
+        });
+    }, 40); // 40ms safety buffer eliminates micro-stuttering on smartphone viewports
 }
 
 // Ensure event listener anchors are cleanly attached during boot sequence phases
@@ -1350,3 +1402,136 @@ if (typeof originalDispatchTransactionBundle === 'function') {
     }
 }
 
+// =========================================================================
+// 🎛 PREMIUM VERTICAL DRAG ENGINE: RIGHT-EDGE GESTURE OPERATOR (PINNED SCROLL ONLY)
+// =========================================================================
+
+(function initRightPanelDragGestureEngine() {
+    const wrapper = document.getElementById('matrixFlowChartWrapper');
+    const canvas = document.getElementById('flowChart');
+    if (!wrapper || !canvas) return;
+
+    let isDraggingOpacity = false;
+    let globalOpacityValue = 0.95; 
+
+    function commitNewOpacityLevel(newAlpha) {
+        globalOpacityValue = Math.max(0.10, Math.min(1.00, newAlpha)); // Hard clamps opacity between 10% and 100%
+        canvas.style.opacity = globalOpacityValue;
+        
+        // Synchronize detached floating wrapper panel card state visibility seamlessly
+        if (wrapper.classList.contains('detached-floating-window')) {
+            wrapper.style.opacity = globalOpacityValue;
+        }
+    }
+
+    // Mathematical boundary filter: Intercept actions occurring strictly in the right 15% width zone
+    function checkIsWithinRightSidePanelBounds(clientX, clientY) {
+        // 🔒 SCOPE SECURITY GUARD: Exit instantly if the chart is NOT detached/popped out!
+        if (!wrapper.classList.contains('detached-floating-window') && !window.isMatrixChartDetachedFloating) {
+            return false;
+        }
+
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const touchXPositionInsideWrapper = clientX - wrapperRect.left;
+        const touchYPositionInsideWrapper = clientY - wrapperRect.top;
+        
+        // 🚀 PROTECTION SHIELD GATE: If the pointer is anywhere near the top 60px action ribbon, 
+        // completely ignore it so buttons like Pin and Fullscreen work flawlessly!
+        if (touchYPositionInsideWrapper < 60) return false;
+
+        // Returns true only if the user drags inside the far right strip
+        return touchXPositionInsideWrapper > (wrapperRect.width * 0.85); 
+    }
+
+    function calculateOpacityFromVerticalPosition(clientY) {
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const touchYPositionInsideWrapper = clientY - wrapperRect.top;
+        
+        // Vertical sliding scale map logic: sliding UP dims the value, sliding DOWN brightens it
+        const rawRatioValue = 1 - (touchYPositionInsideWrapper / wrapperRect.height);
+        commitNewOpacityLevel(rawRatioValue);
+    }
+
+    // 🖱️ DESKTOP MOUSE INTERACTION CAPTURE HANDLERS
+    wrapper.addEventListener('mousedown', (e) => {
+        if (checkIsWithinRightSidePanelBounds(e.clientX, e.clientY)) {
+            isDraggingOpacity = true;
+            wrapper.style.cursor = 'ns-resize'; // Changes cursor symbol to a vertical re-size track
+            calculateOpacityFromVerticalPosition(e.clientY);
+            e.preventDefault();
+        }
+    });
+
+    window.addEventListener('mousemove', (e) => {
+        if (!isDraggingOpacity) return;
+        calculateOpacityFromVerticalPosition(e.clientY);
+    });
+
+    window.addEventListener('mouseup', () => {
+        if (isDraggingOpacity) {
+            isDraggingOpacity = false;
+            wrapper.style.cursor = '';
+        }
+    });
+
+    // 📱 SMARTPHONE TOUCH INTERACTION GESTURE HANDLERS
+    wrapper.addEventListener('touchstart', (e) => {
+        if (!e.touches || e.touches.length === 0) return;
+        const mobileFirstTouchPoint = e.touches[0];
+        
+        if (checkIsWithinRightSidePanelBounds(mobileFirstTouchPoint.clientX, mobileFirstTouchPoint.clientY)) {
+            isDraggingOpacity = true;
+            calculateOpacityFromVerticalPosition(mobileFirstTouchPoint.clientY);
+            e.preventDefault(); // Blocks mobile viewport scrolling while adjusting opacity values
+        }
+    }, { passive: false });
+
+    wrapper.addEventListener('touchmove', (e) => {
+        if (!isDraggingOpacity) return;
+        if (!e.touches || e.touches.length === 0) return;
+        const mobileFirstTouchPoint = e.touches[0];
+        
+        calculateOpacityFromVerticalPosition(mobileFirstTouchPoint.clientY);
+        e.preventDefault();
+    }, { passive: false });
+
+    wrapper.addEventListener('touchend', () => {
+        isDraggingOpacity = false;
+    });
+})();
+
+// =========================================================================
+// 🚀 THE ULTIMATE POP-OUT BINDER HOOK (FIXES DEAD CLICK TRAAPS)
+// =========================================================================
+
+window.addEventListener('DOMContentLoaded', () => {
+    // 1. Gather all potential button click targets across desktop and mobile screens
+    const mobileTrayBtn  = document.getElementById('inlineActionTrayWrapper');
+    const desktopFloatBtn = document.getElementById('btnPinChartFloat');
+    const inlineFloatBtn  = document.getElementById('btnPinChartFloatInline');
+
+    // 🎯 MOBILE BINDER: If the user taps anywhere on your new mini left-aligned action tray box
+    if (mobileTrayBtn) {
+        mobileTrayBtn.addEventListener('click', (e) => {
+            console.log("⚡ Success: Mobile Chart Pin click detected!");
+            if (typeof toggleMatrixChartFloatingState === 'function') {
+                toggleMatrixChartFloatingState();
+            }
+            e.stopPropagation(); // Prevents touch drag engine from stealing the click asset
+        });
+        mobileTrayBtn.style.cursor = 'pointer'; // Forces a hand symbol indicator on hover
+    }
+
+    // 🎯 DESKTOP BINDERS: Safely attach click handlers to your desktop buttons if present
+    if (desktopFloatBtn) {
+        desktopFloatBtn.addEventListener('click', () => {
+            if (typeof toggleMatrixChartFloatingState === 'function') toggleMatrixChartFloatingState();
+        });
+    }
+
+    if (inlineFloatBtn) {
+        inlineFloatBtn.addEventListener('click', () => {
+            if (typeof toggleMatrixChartFloatingState === 'function') toggleMatrixChartFloatingState();
+        });
+    }
+});
