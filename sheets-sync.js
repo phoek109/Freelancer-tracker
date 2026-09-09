@@ -222,26 +222,27 @@ async function dispatchLedgerTransactionBundle() {
     const selectedHomeBaseCurrencyCode = String(document.getElementById('baseCurrencyConfig')?.value || "USD").toUpperCase().trim();
     const selectedInstantSystemTaxRate = (parseFloat(document.getElementById('baseTaxRateConfig')?.value) || 0) / 100;
 
+    // 🚀 THE FIX: Enforce explicit decimal extraction on numeric strings
     const payload = {
         data: {
             "Date": date,
             "Client Name": client,
-            "Invoice Amount": amtIncome,
+            "Invoice Amount": parseFloat(amtIncome) || 0, // Force pure float number
             "Currency Received": subIncome.toUpperCase().trim(),
-            "Withholding Tax Deducted": isWithholding.toUpperCase().trim(),
-            "Withholding Amount": amtTax, 
-            "Platform Fees Deducted": isPlatformFeesDeducted.toUpperCase().trim(),
-            "Platform Percentage": feePercentage, 
-            "Business Expenses": amtExpense,
-            "Conversion Mode": convMode,
-            "Exact Cash Input": exactCashAmt,
-            "Custom Rate Input": customRateVal,
+            "Withholding Tax Deducted": String(isWithholding).toUpperCase().trim(),
+            "Withholding Amount": parseFloat(amtTax) || 0, // Force pure float number
+            "Platform Fees Deducted": String(isPlatformFeesDeducted).toUpperCase().trim(),
+            "Platform Percentage": parseFloat(feePercentage) || 0, // Force pure float number
+            "Business Expenses": parseFloat(amtExpense) || 0, // Force pure float number
+            "Conversion Mode": String(convMode).trim().toLowerCase(),
+            "Exact Cash Input": parseFloat(exactCashAmt) || 0,
+            "Custom Rate Input": parseFloat(customRateVal) || 1,
             
-            // 🚀 STRAP EXCLUSIVE SNAPSHOT METRICS TO THE SECURE DATA BUNDLE PACKET
             "System Home Base Currency": selectedHomeBaseCurrencyCode,
-            "System Snapshot Tax Rate": selectedInstantSystemTaxRate
+            "System Snapshot Tax Rate": parseFloat(selectedInstantSystemTaxRate) || 0 // Fix payload leakage
         }
     };
+
 
     const submitBtn = document.getElementById('btnSubmit');
     submitBtn.disabled = true;

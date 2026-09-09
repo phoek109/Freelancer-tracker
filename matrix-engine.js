@@ -714,9 +714,9 @@ function updateMatrixData() {
         let calculatedIncomeTaxReserve = 0, calculatedWithholdingTaxHome = 0;
 
         targetLogPool.forEach(logItem => {
-            const invoiceAmt = parseFloat(logItem.amount) || 0;
+            const invoiceAmt     = parseFloat(logItem.amount) || 0;
             const platformPctVal = parseFloat(logItem.platformPct) || 0;
-            const fxRateVal = parseFloat(logItem.fxRate) || 1;
+            const fxRateVal      = parseFloat(logItem.fxRate) || 1;
             const rawWithholdAmt = parseFloat(logItem.withholdAmt) || 0;
             
             grossValueCalculated += (parseFloat(logItem.homeIncome) || parseFloat(logItem.netHomeIncome) || 0);
@@ -725,7 +725,10 @@ function updateMatrixData() {
             takeHomeValueCalculated += (parseFloat(logItem.takeHomePay) || 0);
 
             const isPlat = (logItem.platformToggle === "YES" || platformPctVal > 0);
-            calculatedPlatformFees += isPlat ? (invoiceAmt * platformPctVal * fxRateVal) : 0;
+            
+            // 📍 TRAP THE NaN LEAK BY UPDATING THIS SPECIFIC LINE LIKE THIS:
+            const computedPlatformFeeHome = invoiceAmt * platformPctVal * fxRateVal;
+            calculatedPlatformFees += isNaN(computedPlatformFeeHome) ? 0 : computedPlatformFeeHome;
             if (logItem.withholdingToggle === "YES" || rawWithholdAmt > 0) {
                 calculatedWithholdingTaxHome += (rawWithholdAmt * fxRateVal);
             }
