@@ -121,7 +121,6 @@
                         <option value="">Loading base targets...</option>
                     </select>
                 </div>
-
                 <div class="input-group">
                     <label>Global Tax Table Rate (%)</label>
                     <input type="number" id="baseTaxRateConfig" value="0" class="bright-input">
@@ -130,12 +129,17 @@
                 <button id="btnSubmit" onclick="dispatchLedgerTransactionBundle()">STREAM TO SHEET</button>
                 <p id="syncStatus" class="status-text"></p>
                 
-                                <!-- TRANSACTION LOG PANELS -->
-                <div class="sidebar-header" style="margin-top:24px;">TRANSACTION DATABASE LOGS</div>
+            </div> <!-- 🚀 THE REPAIR: Closes the form-grid container before starting logs -->
+            
+            <!-- TRANSACTION LOG PANELS (Now safely broken out of the narrow input grid space!) -->
+            <div class="sidebar-header" style="margin-top:24px;">TRANSACTION DATABASE LOGS</div>
+
+            <!-- 🚀 RESPONSIVE WRAPPER OPENING: Expands edge-to-edge naturally -->
+            <div class="mobile-logs-flex-row">
 
                 <div class="log-controls">
-                    <!-- 🚀 NEW VISIBLE COMPONENT: MASTER DATE RANGE INTERVAL FILTERS -->
-                    <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+                    <!-- MASTER DATE RANGE INTERVAL FILTERS -->
+                    <div style="display: flex; gap: 6px; margin-bottom: 8px; width: 100%;">
                         <div class="input-group" style="flex: 1; margin-bottom: 0;">
                             <label style="font-size: 9px;">START DATE</label>
                             <input type="date" id="filterStartDate" onchange="renderHistoricalSidebarLogs(); if(typeof window.updateMatrixData === 'function') window.updateMatrixData();" style="padding: 6px; font-size: 11px;">
@@ -147,15 +151,12 @@
                     </div>
 
                     <!-- Search and sorting tracks -->
-                    <input type="text" id="logSearchInput" placeholder="Search client or currency..." oninput="renderHistoricalSidebarLogs()">
-                    <!-- 🚀 UPGRADED SORTING MATRIX: Comprehensive professional financial filters grid -->
-                    <select id="logSortSelect" onchange="renderHistoricalSidebarLogs()" style="width: 100%; padding: 8px; background: #070a13; border: 1px solid #1e293b; color: #f8fafc; border-radius: 6px; font-size: 12px; box-sizing: border-box; cursor: pointer; font-family: 'JetBrains Mono', monospace;">
-                        
+                    <input type="text" id="logSearchInput" placeholder="Search client or currency..." oninput="renderHistoricalSidebarLogs()" style="width: 100%; box-sizing: border-box;">
+                    <select id="logSortSelect" onchange="renderHistoricalSidebarLogs()" style="width: 100%; padding: 8px; background: #070a13; border: 1px solid #1e293b; color: #f8fafc; border-radius: 6px; font-size: 12px; box-sizing: border-box; cursor: pointer; font-family: 'JetBrains Mono', monospace; margin-bottom: 8px;">
                         <optgroup label="CHRONOLOGICAL ORDER" style="background:#0f172a; color:#64748b;">
                             <option value="date_desc" selected>Date: Newest First (Default)</option>
                             <option value="date_asc">Date: Oldest First</option>
                         </optgroup>
-
                         <optgroup label="REVENUE & CASH VOLUME" style="background:#0f172a; color:#64748b;">
                             <option value="amt_desc">Invoice Amount: Highest First</option>
                             <option value="amt_asc">Invoice Amount: Lowest First</option>
@@ -180,27 +181,25 @@
                         
                     </select>
 
-                    
-                    <!-- 🚀 UPGRADED: Added real-time tracking span placeholders to show record item metrics counts -->
-                    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(30, 41, 59, 0.2); padding: 6px 10px; border-radius: 6px; border: 1px solid #1e293b;">
+                    <!-- DYNAMIC COUNT SUMMARY readout placeholder text label -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(30, 41, 59, 0.2); padding: 6px 10px; border-radius: 6px; border: 1px solid #1e293b; width: 100%; box-sizing: border-box;">
                         <div style="display: flex; flex-direction: column; gap: 2px;">
                             <span style="font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700; color: #64748b; letter-spacing: 0.5px;">MULTI-SELECT MODE</span>
-                            <!-- 🎯 DYNAMIC COUNT SUMMARY readout placeholder text label -->
                             <span id="selectedLogsCountDisplay" style="font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; color: #38bdf8;">Showing: 0 | Selected: 0</span>
                         </div>
                         <button id="btnBulkSelectClear" onclick="clearAllHistoricalCardSelections()" style="display: none; background: rgba(248, 113, 113, 0.15); border: 1px solid #f87171; color: #f87171; padding: 4px 10px; border-radius: 4px; font-size: 9px; font-weight: 700; cursor: pointer; transition: background 0.2s; white-space: nowrap;">RESET SELECTION</button>
                     </div>
-                </div>
+                </div> <!-- Close log-controls -->
 
                 <div id="sidebarLogContainer" class="sidebar-records-scroll-tray">
                     <div class="empty-tray-text">No records streamed yet.</div>
                 </div>
 
-            </div> <!-- Close form-grid -->
-        </div> <!-- Close sidebar -->
+            </div> <!-- Close mobile-logs-flex-row -->
+
+        </div> <!-- 🚀 THE EXPLICIT SIDEBAR CLOSURE: Seals the entire sidebar wrapper panel right here -->
+
         <!-- RIGHT PANEL: Matrix Simulation Dashboard -->
-
-
         <div class="main-content">
             
             <!-- STANDALONE BOUNDARY INTERACTION LEVER (Stays fully visible when sidebar slides away) -->

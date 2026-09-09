@@ -26,15 +26,21 @@ body {
     background: #38bdf8;
 }
 
-/* ========================================================================= */
-/* 💻 DESKTOP CONSISTENT FRAMEWORK (CLEARED FORCE WIDTH OVERRIDES)           */
-/* ========================================================================= */
+.app-layout {
+    display: flex;
+    height: 100vh;
+    /* 🚀 CRITICAL RECONSTRUCT: Lock layout bounds cleanly to the total screen width profile */
+    width: 100vw !important; 
+    max-width: 100vw !important;
+    overflow: hidden; 
+    background-color: #0b0f19;
+    box-sizing: border-box;
+}
 
-/* 1. Update your desktop sidebar wrapper to ONLY hold width on desktop screen rules */
 .sidebar {
-    width: 340px;
-    min-width: 340px;
-    max-width: 340px;
+    width: 340px !important;
+    min-width: 340px !important; /* Hard-locks the width profile */
+    max-width: 340px !important;
     background-color: #0f1626;
     border-right: 1px solid #1e293b;
     padding: 24px;
@@ -42,29 +48,9 @@ body {
     display: flex;
     flex-direction: column;
     gap: 20px;
-    overflow-y: auto;
+    overflow-y: auto;          /* Unlocks standard internal sidebar scrolling */
     height: 100vh;
-    flex-shrink: 0;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* 2. Wrap your layout framework blocks to stretch natively */
-.app-layout {
-    display: flex;
-    flex-direction: row;
-    height: 100vh;
-    width: 100vw;
-    overflow: hidden;
-    box-sizing: border-box;
-}
-
-.main-content {
-    flex: 1;
-    height: 100vh;
-    padding: 40px;
-    position: relative;
-    overflow-y: auto;
-    box-sizing: border-box;
+    flex-shrink: 0;            /* CRUCIAL FIX: Blocks the main content from flattening the sidebar */
 }
 
 .sidebar-header {
@@ -201,6 +187,21 @@ body {
     text-align: center;
     margin-top: 8px;
     font-weight: 600;
+}
+
+.main-content {
+    flex: 1 !important;
+    /* 🚀 ACCELERATOR COMMAND: Directs the canvas workspace to pull every available remaining pixel */
+    width: calc(100vw - 340px) !important; 
+    
+    padding: 40px;
+    display: flex;
+    justify-content: flex-start !important; 
+    align-items: flex-start;
+    overflow-y: auto !important; 
+    box-sizing: border-box;
+    height: 100vh;
+    position: relative !important;
 }
 
 /* Update this layout handle cleanly to stretch everything */
@@ -849,7 +850,7 @@ body:has(.sidebar-collapsed-hidden-state) .matrix-container {
 /* 💻 CONTAINER FLEXIBILITY BREAKPOINTS RULES (DESKTOP AND MOBILE RESILIENT) */
 /* ========================================================================= */
 
-/* Desktop Baseline Safety Overrides */
+/* Desktop Baseline Defaults (Keeps sidebar locked on left and dashboards on right) */
 .app-layout {
     display: flex;
     flex-direction: row;
@@ -866,23 +867,49 @@ body:has(.sidebar-collapsed-hidden-state) .matrix-container {
     height: 100vh !important;
     flex-shrink: 0;
     box-sizing: border-box;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
 }
 
-/* 📱 High-Fidelity Fluid Breakdown on Mobile Screen Sizes */
+.form-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    width: 100% !important;
+}
+
+.mobile-logs-flex-row {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    width: 100% !important;
+}
+
+.main-content {
+    flex: 1 !important;
+    height: 100vh !important;
+    box-sizing: border-box;
+    overflow-y: auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+}
+
+/* 📱 Fluid Mobile Breakdown Configuration Rules */
 @media screen and (max-width: 768px) {
     body {
-        overflow-y: auto !important; /* Allow the entire application stack to scroll naturally */
+        overflow-y: auto !important;
         height: auto !important;
     }
 
     .app-layout {
-        flex-direction: column !important; /* Stack forms section vertically on phone viewports */
+        flex-direction: column !important; /* Stack form sidebar cleanly on top of dashboards card panels */
         height: auto !important;
         overflow-y: visible !important;
         width: 100vw !important;
     }
 
-    /* Transform Sidebar Panel into a Clean Top Header Form Section Card */
+    /* Transform Sidebar space to sit full breed as a mobile header container section card */
     .sidebar {
         width: 100% !important;
         min-width: 100% !important;
@@ -892,18 +919,91 @@ body:has(.sidebar-collapsed-hidden-state) .matrix-container {
         border-bottom: 1px solid #1e293b;
         padding: 20px !important;
         overflow-y: visible !important;
+        display: flex !important;
+        flex-direction: column !important;
     }
 
-    /* Transform input field columns list into a compact double-column layout grid */
+    /* Input Fields Matrix Grid: Split inputs cleanly down across double column tracks layout handles */
     .form-grid {
         display: grid !important;
         grid-template-columns: repeat(2, 1fr) !important;
         gap: 12px !important;
+        width: 100% !important;
     }
 
-    /* Force primary input components to occupy full width blocks */
+    /* Force primary input blocks components to occupy 100% horizontal screen footprint */
     .form-block, .input-group, #btnSubmit {
         grid-column: span 2 !important; 
+        width: 100% !important;
+    }
+
+    /* Un-trap header typography labels classes out of layout grids constraints blocks */
+    .sidebar-header {
+        width: 100% !important;
+        display: block !important;
+        margin-top: 16px !important;
+    }
+
+    /* 🚀 UNIFORM MOBILE STACK MATRIX LAYER: Forces full width usage with no text squeezing */
+    .mobile-logs-flex-row {
+        display: flex !important;
+        flex-direction: column !important; /* Stacks data feed cards underneath search filters */
+        gap: 12px !important;
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .sidebar .log-controls {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 10px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Make start and end dates fields adjust row footprints cleanly sideways */
+    .sidebar .log-controls > div:first-child {
+        display: flex !important;
+        width: 100% !important;
+        gap: 12px !important;
+    }
+
+    /* Expand ledger scrollable logs list envelope to occupy 100% full grid layout bounds */
+    .sidebar #sidebarLogContainer {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 10px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        
+        height: 280px !important; /* Deep scroll view container layout */
+        max-height: 280px !important;
+        overflow-y: auto !important;
+        background: rgba(7, 10, 19, 0.3) !important;
+        border: 1px solid #1e293b !important;
+        border-radius: 12px !important;
+        padding: 12px !important;
+        margin: 0 !important;
+    }
+
+    .sidebar .transaction-card {
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        margin: 0 0 4px 0 !important;
+    }
+
+    /* Expand Canvas Container Workspace edge to edge full screen */
+    .main-content {
+        width: 100% !important;
+        height: auto !important;
+        padding: 16px !important;
+        overflow-y: visible !important;
     }
 
     .matrix-container {
@@ -912,12 +1012,10 @@ body:has(.sidebar-collapsed-hidden-state) .matrix-container {
         max-width: 100% !important;
     }
 
-    /* Reduce flow chart graphics bounding limits parameters to avoid mobile squishing */
     .flow-chart-wrapper {
         height: 280px !important; 
     }
 
-    /* Re-split Stat readouts into a crisp, legible 2x2 layout grid matrix */
     .metric-row {
         grid-template-columns: repeat(2, 1fr) !important;
         padding: 16px 0 !important;
@@ -930,18 +1028,46 @@ body:has(.sidebar-collapsed-hidden-state) .matrix-container {
         padding-left: 10px;
     }
 
-    .metric-item .value {
-        font-size: 18px !important; /* Prevents long currency figures from breaking across lines */
+   /* Inside style.css -> inside your mobile media query block near the very bottom: */
+
+    .metric-item .value { font-size: 18px !important; }
+    .settings-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
+
+    /* ========================================================================= */
+    /* 📱 ACTION PANEL CONFIGURATOR: PERFECT FAR-RIGHT GRID EDGE MOUNT           */
+    /* ========================================================================= */
+
+    #sidebarToggleArrowTrigger { 
+        display: none !important; 
     }
 
-    .settings-grid {
-        grid-template-columns: 1fr !important; /* Linear stack for sliders row blocks */
-        gap: 16px !important;
-    }
-
-    /* Hide desktop specific interface control levers on narrow browser layers */
-    #sidebarToggleArrowTrigger, 
     #inlineActionTrayWrapper {
-        display: none !important;
+        display: flex !important; 
+        position: absolute !important;
+        
+        /* 🚀 THE FIXED COORDS: Drops it horizontally level with tabs, snaps it right against the grid wall */
+        top: 40px !important;
+        right: 1px !important; 
+        left: auto !important; 
+        
+        z-index: 100002 !important; 
+        background: rgba(7, 10, 19, 0.85) !important;
+        border: 1px solid #1e293b !important;
+        padding: 2px 4px !important;
+        border-radius: 6px !important;
     }
+
+    .matrix-action-icon-tray .action-icon-wrapper {
+        display: inline-flex !important;
+        width: 22px !important;
+        height: 22px !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    .matrix-action-icon-tray .action-icon-wrapper svg {
+        width: 14px !important;
+        height: 14px !important;
+    }
+
 }

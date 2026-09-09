@@ -192,6 +192,10 @@ function initializeMatrixCanvasResizeObserverEngine() {
     window.matrixResizeObserverInstance.observe(wrapper);
 }
 
+// =========================================================================
+// 🚀 HIGH-DENSITY DPR RENDERING ENGINE (ELIMINATES BLURRY CANVAS TEXT)
+// =========================================================================
+
 function enforceDynamicViewportCanvasSizing() {
     const canvasElement = document.getElementById('flowChart');
     if (!canvasElement || !canvasElement.parentElement) return;
@@ -279,8 +283,11 @@ function drawFlowLines(gross, expensesValue, taxValue, takeHomeValue) {
 function executeOriginalSankeyCurvesEngine(ctx, canvas, w, h, gross, expensesValue, taxValue, takeHomeValue) {
     if (typeof drawBackgroundGrid === 'function') drawBackgroundGrid(ctx, w, h);
 
-    // DYNAMIC EDGE COMPENSATOR: Increase endX padding to give long floating strings more buffer room
-    const startX = 140; const startY = h / 2; const endX = w - 180;
+    // 🚀 ADAPTIVE MOBILE CANVAS BOUNDS: Shrink padding defensively on narrow viewports
+    const isMobileViewport = w < 500;
+    const startX = isMobileViewport ? 50 : 140; 
+    const startY = h / 2; 
+    const endX = isMobileViewport ? w - 90 : w - 180;
 
     const expRatio = gross > 0 ? (expensesValue / gross) : 0;
     const taxRatio = gross > 0 ? (taxValue / gross) : 0;
@@ -297,23 +304,30 @@ function executeOriginalSankeyCurvesEngine(ctx, canvas, w, h, gross, expensesVal
     ctx.beginPath(); ctx.moveTo(0, startY); ctx.lineTo(startX, startY);
     ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 4; ctx.stroke();
     
-    ctx.font = 'bold 11px "Plus Jakarta Sans", sans-serif';
-    ctx.fillStyle = '#38bdf8'; ctx.fillText("GROSS INPUT", 20, startY - 14);
+    ctx.font = isMobileViewport ? 'bold 9px "Plus Jakarta Sans", sans-serif' : 'bold 11px "Plus Jakarta Sans", sans-serif';
+    ctx.fillStyle = '#38bdf8'; 
+    ctx.fillText("GROSS INPUT", isMobileViewport ? 8 : 20, startY - 14);
 
     function drawCurve(endY, color, baseText, percentValue, numericValue) {
         ctx.beginPath(); ctx.moveTo(startX, startY);
         ctx.bezierCurveTo(startX + (w * 0.25), startY, endX - (w * 0.25), endY, endX, endY);
         ctx.strokeStyle = color; ctx.lineWidth = 4;
         
-        // REDUCED NEON GLOW INTENSITY: Scaled shadowBlur down from 10 to 3 for a subtle, cleaner look
         ctx.shadowBlur = 3; ctx.shadowColor = color; ctx.stroke(); ctx.shadowBlur = 0;
 
-        const formattedNumericValue = numericValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-        const labelText = `${baseText} (${percentValue}%) - ${window.currentCurrency || '$'}${formattedNumericValue}`;
-        const pillW = ctx.measureText(labelText).width + 24;
+        // 🚀 CLUTTER REDUCTION GATE: Strip raw dollar amounts entirely if rendering on phone screens
+        let labelText;
+        if (isMobileViewport) {
+            labelText = `${baseText}: ${percentValue}%`;
+        } else {
+            const formattedNumericValue = numericValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            labelText = `${baseText} (${percentValue}%) - ${window.currentCurrency || '$'}${formattedNumericValue}`;
+        }
+
+        ctx.font = isMobileViewport ? 'bold 9px "JetBrains Mono", monospace' : 'bold 11px "Plus Jakarta Sans", sans-serif';
+        const pillW = ctx.measureText(labelText).width + (isMobileViewport ? 14 : 24);
         
-        // 🚀 BOUNDARY GUARD INTERCEPTOR: If the label pill goes past the edge of the canvas, 
-        // dynamically push its draw position to the left so it never clips off-screen!
+        // BOUNDARY GUARD INTERCEPTOR
         let targetXPosition = endX;
         if ((targetXPosition + pillW) > (w - 10)) {
             targetXPosition = w - pillW - 10;
@@ -321,44 +335,45 @@ function executeOriginalSankeyCurvesEngine(ctx, canvas, w, h, gross, expensesVal
 
         ctx.beginPath(); ctx.roundRect(targetXPosition, endY - 11, pillW, 22, 11);
         ctx.fillStyle = color; ctx.fill();
-        ctx.fillStyle = '#ffffff'; ctx.fillText(labelText, targetXPosition + 12, endY + 4);
+        
+        // Premium contrast rule: dark text on light backgrounds looks much crisper on mobile screens
+        ctx.fillStyle = isMobileViewport ? '#070a13' : '#ffffff'; 
+        ctx.fillText(labelText, targetXPosition + (isMobileViewport ? 7 : 12), endY + 4);
     }
 
     drawCurve(endY_Expenses, '#f87171', 'Expenses', expPercent, expensesValue);
     drawCurve(endY_Tax, '#facc15', 'Tax Reserve', taxPercent, taxValue);
     drawCurve(endY_TakeHome, '#4ade80', 'Take-Home', homePercent, takeHomeValue);
 
-    ctx.beginPath(); ctx.arc(startX, startY, 13, 0, Math.PI * 2);
+    ctx.beginPath(); ctx.arc(startX, startY, isMobileViewport ? 9 : 13, 0, Math.PI * 2);
     ctx.fillStyle = '#3b82f6'; ctx.fill();
     ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center';
     ctx.fillText((window.currentCurrency || '$').trim(), startX, startY + 4); 
     ctx.textAlign = 'left';
 }
-
 // =========================================================================
 // 📈 PRESENTATION LAYER 2: PROFESSIONAL SIDE-BY-SIDE COLUMN CHART ENGINE
 // =========================================================================
 function executeStackedColumnRenderingEngine(ctx, w, h, gross, totalExpenses, taxReserve, takeHome) {
     if (typeof drawBackgroundGrid === 'function') drawBackgroundGrid(ctx, w, h);
     const activeSymbol = window.currentCurrency || '$ ';
+    const isMobileViewport = w < 500;
 
-    // 1. Establish chart margins and coordinate bounding dimensions
-    const paddingLeft   = 80;   // Room for vertical Y-axis currency text labels
-    const paddingRight  = 40;
-    const paddingTop    = 60;   // Room for the column data text values tags
-    const paddingBottom = 40;   // Room for horizontal X-axis column titles
+    // 🚀 RESPONSIVE VIEWPORT BOUNDS: Contract vertical paddings dynamically on phone layouts
+    const paddingLeft   = isMobileViewport ? 48 : 80;   
+    const paddingRight  = isMobileViewport ? 15 : 40;
+    const paddingTop    = isMobileViewport ? 32 : 60;   
+    const paddingBottom = 40;   
 
     const graphWidth  = w - paddingLeft - paddingRight;
     const graphHeight = h - paddingTop - paddingBottom;
     const baselineY   = h - paddingBottom;
 
-    // 2. Compute dynamic Y-axis ceiling limits based on your Gross Income volume
     const highestDataValuePoint = Math.max(gross, totalExpenses, taxReserve, takeHome);
-    const yAxisCeilingValue = highestDataValuePoint > 0 ? highestDataValuePoint * 1.15 : 10000; // 15% safety padding overhead
+    const yAxisCeilingValue = highestDataValuePoint > 0 ? highestDataValuePoint * 1.15 : 10000; 
 
-    // 3. Draw horizontal reference grid lines and Y-axis scale value markings
     ctx.save();
-    ctx.font = "9px 'JetBrains Mono', monospace";
+    ctx.font = isMobileViewport ? "8px 'JetBrains Mono', monospace" : "9px 'JetBrains Mono', monospace";
     ctx.textAlign = "right";
     ctx.textBaseline = "middle";
 
@@ -368,68 +383,66 @@ function executeStackedColumnRenderingEngine(ctx, w, h, gross, totalExpenses, ta
         const currentLineYPosition = baselineY - (graphHeight * lineRatio);
         const currentGridValueMarking = yAxisCeilingValue * lineRatio;
 
-        // Subtle background reference line tracks
         ctx.strokeStyle = "rgba(30, 41, 59, 0.35)";
         ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(paddingLeft, currentLineYPosition);
-        ctx.lineTo(w - paddingRight, currentLineYPosition);
-        ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(paddingLeft, currentLineYPosition); ctx.lineTo(w - paddingRight, currentLineYPosition); ctx.stroke();
 
-        // White axis indicator metrics ticks labels
         ctx.fillStyle = "#64748b";
-        ctx.fillText(
-            `${activeSymbol}${currentGridValueMarking.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
-            paddingLeft - 12,
-            currentLineYPosition
-        );
+        
+        // 🚀 SMART TICK SHORTENING: Use elegant compact K abbreviations for y-axis values on mobile screen bounds
+        let displayLabelStr;
+        if (isMobileViewport && currentGridValueMarking >= 1000) {
+            displayLabelStr = `${activeSymbol}${(currentGridValueMarking / 1000).toFixed(0)}K`;
+        } else {
+            displayLabelStr = `${activeSymbol}${currentGridValueMarking.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+        }
+            
+        ctx.fillText(displayLabelStr, paddingLeft - 8, currentLineYPosition);
     }
     ctx.restore();
 
     if (gross <= 0) return;
 
-    // 4. Calibrate column position math across the horizontal X-axis bounds
     const barsDataPool = [
-        { value: totalExpenses, color: "#f87171", title: "EXPENSES", ratio: totalExpenses / gross },
-        { value: taxReserve,    color: "#facc15", title: "TAX VAULT", ratio: taxReserve / gross },
-        { value: takeHome,      color: "#4ade80", title: "TAKE-HOME", ratio: takeHome / gross }
+        { value: totalExpenses, color: "#f87171", title: isMobileViewport ? "EXP" : "EXPENSES", ratio: totalExpenses / gross },
+        { value: taxReserve,    color: "#facc15", title: isMobileViewport ? "TAX" : "TAX VAULT", ratio: taxReserve / gross },
+        { value: takeHome,      color: "#4ade80", title: isMobileViewport ? "HOME" : "TAKE-HOME", ratio: takeHome / gross }
     ];
 
     const totalColumnsCount = barsDataPool.length;
-    const absoluteColumnWidth = (graphWidth / totalColumnsCount) * 0.55; // 55% bar footprint width, leaves 45% for padding spaces
+    const absoluteColumnWidth = (graphWidth / totalColumnsCount) * (isMobileViewport ? 0.65 : 0.55); 
     const gapBetweenColumns  = (graphWidth - (absoluteColumnWidth * totalColumnsCount)) / (totalColumnsCount + 1);
 
-    // 5. Run the rendering sweep loop to paint column pillars and text overlays
     barsDataPool.forEach((barItem, idx) => {
         const columnStartX = paddingLeft + gapBetweenColumns + (idx * (absoluteColumnWidth + gapBetweenColumns));
-        
-        // Map absolute currency volume value smoothly onto graph vertical pixel scale heights
         const computedColumnPixelHeight = (barItem.value / yAxisCeilingValue) * graphHeight;
         const columnStartY = baselineY - computedColumnPixelHeight;
 
         ctx.save();
 
-        // A. Draw Column Pillar Shapes
         ctx.fillStyle = barItem.color;
         ctx.beginPath();
-        // Generates clean upper rounded corners for a professional software look
         ctx.roundRect(columnStartX, columnStartY, absoluteColumnWidth, computedColumnPixelHeight > 0 ? computedColumnPixelHeight : 2, [6, 6, 0, 0]);
         ctx.fill();
 
-        // B. Draw Top Floating Data Value Indicators
-        ctx.font = "bold 10px 'JetBrains Mono', monospace";
+        ctx.font = isMobileViewport ? "bold 9px 'JetBrains Mono', monospace" : "bold 10px 'JetBrains Mono', monospace";
         ctx.fillStyle = barItem.color;
         ctx.textAlign = "center";
         
-        const valueLabelString = `${activeSymbol}${barItem.value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
-        const percentageLabelString = `(${Math.round(barItem.ratio * 100)}%)`;
-        
-        ctx.fillText(valueLabelString, columnStartX + (absoluteColumnWidth / 2), columnStartY - 16);
-        ctx.font = "9px 'JetBrains Mono', monospace";
-        ctx.fillStyle = "#64748b";
-        ctx.fillText(percentageLabelString, columnStartX + (absoluteColumnWidth / 2), columnStartY - 4);
+        // 🚀 OVERLAY CLUTTER REDUCTION GATE: Strip currency values completely to output percentages alone on mobile
+        if (isMobileViewport) {
+            const percentageLabelString = `${Math.round(barItem.ratio * 100)}%`;
+            ctx.fillText(percentageLabelString, columnStartX + (absoluteColumnWidth / 2), columnStartY - 10);
+        } else {
+            const valueLabelString = `${activeSymbol}${barItem.value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+            const percentageLabelString = `(${Math.round(barItem.ratio * 100)}%)`;
+            
+            ctx.fillText(valueLabelString, columnStartX + (absoluteColumnWidth / 2), columnStartY - 16);
+            ctx.font = "9px 'JetBrains Mono', monospace";
+            ctx.fillStyle = "#64748b";
+            ctx.fillText(percentageLabelString, columnStartX + (absoluteColumnWidth / 2), columnStartY - 4);
+        }
 
-        // C. Draw Bottom Horizontal X-Axis Category Labels
         ctx.font = "bold 9px 'JetBrains Mono', monospace";
         ctx.fillStyle = "#f8fafc";
         ctx.fillText(barItem.title, columnStartX + (absoluteColumnWidth / 2), baselineY + 16);
@@ -437,33 +450,29 @@ function executeStackedColumnRenderingEngine(ctx, w, h, gross, totalExpenses, ta
         ctx.restore();
     });
 
-    // Draw the baseline solid axis anchor rule line asset card track
-    ctx.strokeStyle = "#1e293b";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(paddingLeft, baselineY);
-    ctx.lineTo(w - paddingRight, baselineY);
-    ctx.stroke();
+    ctx.strokeStyle = "#1e293b"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(paddingLeft, baselineY); ctx.lineTo(w - paddingRight, baselineY); ctx.stroke();
 }
-
 // =========================================================================
 // 📈 PRESENTATION LAYER 3: COMPACT CHUNKY DONUT PIE BREAKDOWN MATRIX
 // =========================================================================
 function executeProportionPieRenderingEngine(ctx, w, h, gross, expensesValue, taxValue, takeHomeValue) {
     if (typeof drawBackgroundGrid === 'function') drawBackgroundGrid(ctx, w, h);
     const activeSymbol = window.currentCurrency || '$ ';
+    const isMobileViewport = w < 500;
     
-    // 1. Precise coordinates calibrations: Perfectly centered in the new expanded workspace height
-    const centerX = w * 0.38;
-    const centerY = h * 0.50; 
+    // 🚀 THE FIX: Shifts the wheel completely over to the right-hand side where you circled
+    const centerX = isMobileViewport ? w * 0.68 : w * 0.38;
     
-    // 🚀 THE FIX: Reduced track radius to 0.22 and chunked thickness to 54px to make the inner circle tighter!
-    const donutCenterRadiusTrack = Math.min(w, h) * 0.27; 
-    const donutRibbonThickness = 54; 
+    // 🚀 HEIGHT TUNER: Drops it to 0.44 to align with the middle of your left legend keys
+    const centerY = isMobileViewport ? h * 0.44 : h * 0.50; 
+    
+    // Proportional radius frames optimized for 375px viewport dimensions
+    const donutCenterRadiusTrack = isMobileViewport ? Math.min(w, h) * 0.17 : Math.min(w, h) * 0.27; 
+    const donutRibbonThickness   = isMobileViewport ? 34 : 54; 
 
     if (gross <= 0) return;
 
-    // Map dataset items pool arrays (Layering sort order preserved)
+
     const slices = [
         { value: expensesValue, color: "#f87171", label: "Expenses" },
         { value: taxValue,      color: "#facc15", label: "Tax Vault" },
@@ -471,8 +480,7 @@ function executeProportionPieRenderingEngine(ctx, w, h, gross, expensesValue, ta
     ];
 
     slices.sort((a, b) => b.value - a.value);
-
-    let currentStartAngle = -Math.PI / 2; // Always begin plotting cleanly at the top 12-o-clock line
+    let currentStartAngle = -Math.PI / 2; 
 
     slices.forEach((slice) => {
         const sliceAngleSize = (slice.value / gross) * (2 * Math.PI);
@@ -491,7 +499,6 @@ function executeProportionPieRenderingEngine(ctx, w, h, gross, expensesValue, ta
         currentStartAngle += sliceAngleSize;
     });
 
-    // Surgical hole mask cutout drawing routine
     ctx.save();
     ctx.beginPath();
     ctx.arc(centerX, centerY, donutCenterRadiusTrack - (donutRibbonThickness / 2) - 1, 0, 2 * Math.PI);
@@ -507,20 +514,27 @@ function executeProportionPieRenderingEngine(ctx, w, h, gross, expensesValue, ta
     ];
 
     originalLegendOrder.forEach((slice, idx) => {
-        const legendX = w * 0.64;
-        const legendY = (h * 0.38) + (idx * 24);
-
+        const legendX = isMobileViewport ? 24 : w * 0.64;
+        
+        // 🎯 ADJUSTED LEGEND POSITION: Moved down from 0.70 to 0.78 to make room for the wheel
+        const legendY = isMobileViewport ? (h * 0.78) + (idx * 18) : (h * 0.38) + (idx * 24);
         ctx.fillStyle = slice.color;
         ctx.beginPath();
-        ctx.arc(legendX, legendY - 4, 5, 0, 2 * Math.PI);
+        ctx.arc(legendX, legendY - 4, isMobileViewport ? 4 : 5, 0, 2 * Math.PI);
         ctx.fill();
 
-        ctx.font = "bold 11px 'Plus Jakarta Sans', sans-serif";
+        ctx.font = isMobileViewport ? "bold 9px 'JetBrains Mono', monospace" : "bold 11px 'Plus Jakarta Sans', sans-serif";
         ctx.fillStyle = "#f8fafc";
         
-        const numericString = slice.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         const percentageString = Math.round((slice.value / gross) * 100);
-        const labelTextString = `${slice.label.toUpperCase()}: ${activeSymbol}${numericString} (${percentageString}%)`;
+        
+        let labelTextString;
+        if (isMobileViewport) {
+            labelTextString = `${slice.label.toUpperCase()}: ${percentageString}%`;
+        } else {
+            const numericString = slice.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            labelTextString = `${slice.label.toUpperCase()}: ${activeSymbol}${numericString} (${percentageString}%)`;
+        }
         
         ctx.fillText(labelTextString, legendX + 14, legendY);
     });
@@ -530,27 +544,29 @@ function executeProportionPieRenderingEngine(ctx, w, h, gross, expensesValue, ta
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
-    ctx.font = "bold 8px 'JetBrains Mono', monospace";
+    ctx.font = isMobileViewport ? "bold 7px 'JetBrains Mono', monospace" : "bold 8px 'JetBrains Mono', monospace";
     ctx.fillStyle = "#64748b";
-    ctx.fillText("GROSS INCOME", centerX, centerY - 8);
+    ctx.fillText("GROSS INCOME", centerX, centerY - (isMobileViewport ? 5 : 8));
 
-    ctx.font = "bold 12px 'JetBrains Mono', monospace";
+    ctx.font = isMobileViewport ? "bold 9px 'JetBrains Mono', monospace" : "bold 12px 'JetBrains Mono', monospace";
     ctx.fillStyle = "#38bdf8"; 
+    
     const centerTotalString = `${activeSymbol}${gross.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
-    ctx.fillText(centerTotalString, centerX, centerY + 6);
+    ctx.fillText(centerTotalString, centerX, centerY + (isMobileViewport ? 5 : 6));
 
     ctx.restore();
 }
-
 // =========================================================================
 // 📈 PRESENTATION LAYER 4: STANDALONE HORIZONTAL BAR GRAPH FOR MATRIX PANEL
 // =========================================================================
 function executeHorizontalBarChartRenderingEngine(ctx, w, h, gross, totalExpenses, taxReserve, takeHome) {
     if (typeof drawBackgroundGrid === 'function') drawBackgroundGrid(ctx, w, h);
     const activeSymbol = window.currentCurrency || '$ ';
+    const isMobileViewport = w < 500;
 
-    const paddingLeft   = 100;  // Space for category titles on the left
-    const paddingRight  = 130;  // Space for floating total values on the right edge
+    // 🚀 RESPONSIVE WIDTH ADAPTERS: Shrink margins to prevent text trailing off-canvas on mobile
+    const paddingLeft   = isMobileViewport ? 60 : 100;  
+    const paddingRight  = isMobileViewport ? 48 : 130;  
     const paddingTop    = 40;
     const paddingBottom = 40;
 
@@ -562,11 +578,11 @@ function executeHorizontalBarChartRenderingEngine(ctx, w, h, gross, totalExpense
     const xAxisCeilingValue = highestDataValuePoint > 0 ? highestDataValuePoint * 1.15 : 10000;
 
     ctx.save();
-    ctx.font = "9px 'JetBrains Mono', monospace";
+    ctx.font = isMobileViewport ? "8px 'JetBrains Mono', monospace" : "9px 'JetBrains Mono', monospace";
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
 
-    const totalGridLinesCount = 4;
+    const totalGridLinesCount = isMobileViewport ? 3 : 4;
     for (let i = 0; i <= totalGridLinesCount; i++) {
         const lineRatio = i / totalGridLinesCount;
         const currentLineXPosition = baselineX + (graphWidth * lineRatio);
@@ -577,16 +593,25 @@ function executeHorizontalBarChartRenderingEngine(ctx, w, h, gross, totalExpense
         ctx.beginPath(); ctx.moveTo(currentLineXPosition, paddingTop); ctx.lineTo(currentLineXPosition, h - paddingBottom); ctx.stroke();
 
         ctx.fillStyle = "#64748b";
-        ctx.fillText(`${activeSymbol}${currentGridValueMarking.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, currentLineXPosition, h - paddingBottom + 8);
+        
+        // Mobile compact axis numbering filters
+        let displayXLabelStr;
+        if (isMobileViewport && currentGridValueMarking >= 1000) {
+            displayXLabelStr = `${activeSymbol}${(currentGridValueMarking / 1000).toFixed(0)}K`;
+        } else {
+            displayXLabelStr = `${activeSymbol}${currentGridValueMarking.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+        }
+        
+        ctx.fillText(displayXLabelStr, currentLineXPosition, h - paddingBottom + 8);
     }
     ctx.restore();
 
     if (gross <= 0) return;
 
     const barsDataPool = [
-        { value: totalExpenses, color: "#f87171", title: "EXPENSES", ratio: totalExpenses / gross },
-        { value: taxReserve,    color: "#facc15", title: "TAX VAULT", ratio: taxReserve / gross },
-        { value: takeHome,      color: "#4ade80", title: "TAKE-HOME", ratio: takeHome / gross }
+        { value: totalExpenses, color: "#f87171", title: isMobileViewport ? "EXP" : "EXPENSES", ratio: totalExpenses / gross },
+        { value: taxReserve,    color: "#facc15", title: isMobileViewport ? "TAX" : "TAX VAULT", ratio: taxReserve / gross },
+        { value: takeHome,      color: "#4ade80", title: isMobileViewport ? "HOME" : "TAKE-HOME", ratio: takeHome / gross }
     ];
 
     const totalBarsCount = barsDataPool.length;
@@ -604,16 +629,22 @@ function executeHorizontalBarChartRenderingEngine(ctx, w, h, gross, totalExpense
         ctx.fill();
 
         ctx.font = "bold 9px 'JetBrains Mono', monospace"; ctx.fillStyle = "#f8fafc"; ctx.textAlign = "right"; ctx.textBaseline = "middle";
-        ctx.fillText(barItem.title, baselineX - 16, barStartY + (absoluteBarHeight / 2));
+        ctx.fillText(barItem.title, baselineX - 10, barStartY + (absoluteBarHeight / 2));
 
-        ctx.textAlign = "left"; ctx.font = "bold 10px 'JetBrains Mono', monospace"; ctx.fillStyle = barItem.color;
-        const valueLabelString = `${activeSymbol}${barItem.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        ctx.textAlign = "left"; ctx.font = "bold 9px 'JetBrains Mono', monospace"; ctx.fillStyle = barItem.color;
         const percentageLabelString = `${Math.round(barItem.ratio * 100)}%`;
-        ctx.fillText(`${valueLabelString} (${percentageLabelString})`, baselineX + computedBarPixelWidth + 12, barStartY + (absoluteBarHeight / 2));
+        
+        // 🚀 OVERLAY CLUTTER REDUCTION GATE: Suppress large dollar strings on smartphone screen boundaries
+        if (isMobileViewport) {
+            ctx.fillText(percentageLabelString, baselineX + computedBarPixelWidth + 8, barStartY + (absoluteBarHeight / 2));
+        } else {
+            const valueLabelString = `${activeSymbol}${barItem.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            ctx.fillText(`${valueLabelString} (${percentageLabelString})`, baselineX + computedBarPixelWidth + 12, barStartY + (absoluteBarHeight / 2));
+        }
         ctx.restore();
     });
 
-    ctx.strokeStyle = "#1e293b"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(baselineX, paddingTop); ctx.lineTo(baselineX, h - paddingBottom); ctx.stroke();
+    ctx.strokeStyle = "#1e293b"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(baselineX, paddingTop); ctx.lineTo(baselineX, h - paddingBottom); stroke();
 }
 
 // 🚀 REPAIRED NAVIGATION CONTROLLER: Include 'hhoriz' into your tabs list highlight sweep loop
