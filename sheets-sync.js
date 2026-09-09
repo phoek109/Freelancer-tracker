@@ -885,9 +885,9 @@ function renderHistoricalSidebarLogs() {
 async function fetchAndHydrateLogCachesFromSheet() {
     const endpoint = apiInput.value.trim();
     const container = document.getElementById('sidebarLogContainer');
+    const connectBtn = document.getElementById('btnConnectVault');
     
-    // REPAIRED VALIDATION MATCH: Now correctly checks for script.google.com URLs
-    if (!endpoint || !endpoint.startsWith('https://script.google.com')) {
+    if (!endpoint || !endpoint.startsWith('https://google.com')) {
         console.warn("⚠️ Logcat Engine Trace: Please paste a valid Google Web App URL.");
         if (container) {
             container.innerHTML = `<div class="empty-tray-text" style="color: #64748b;">Waiting for a valid Google Script Web App URL...</div>`;
@@ -896,53 +896,63 @@ async function fetchAndHydrateLogCachesFromSheet() {
     }
 
     if (container) {
-        container.innerHTML = `<div class="empty-tray-text" style="color: #38bdf8;">LOADING LEDGER FROM CLOUD...</div>`;
+        container.innerHTML = `<div class="empty-tray-text" style="color: #38bdf8;">LOADING SECURE LEDGER FROM CLOUD...</div>`;
     }
 
-    console.log("⚡ Boot Sync Engine: Requesting historical spreadsheet records cache...");
-    
-    // SPINNER ACTIVATION HOOK
+    // 🚀 VISUAL FEEDBACK: Lock button and show active tracking state
+    if (connectBtn) {
+        connectBtn.disabled = true;
+        connectBtn.innerText = "AUTHENTICATING VAULT...";
+        connectBtn.style.borderColor = "#eab308";
+        connectBtn.style.color = "#eab308";
+    }
+
+    const buyerInputPassword = document.getElementById('apiSecurityTokenInput')?.value.trim() || "";
+    const payload = {
+        apiToken: buyerInputPassword,
+        bootLoad: true 
+    };
+
     if (typeof updateSyncSpinnerState === 'function') updateSyncSpinnerState("loading");
 
     try {
-        const response = await fetch(endpoint, { method: 'GET' });
+        const response = await fetch(endpoint, { 
+            method: 'POST', 
+            body: JSON.stringify(payload) 
+        });
         const result = await response.json();
 
-        // 🚀 INJECT INSTEAD OF THE OLD PARSING LOOPS INSIDE sheets-sync.js
         if (result.status === "success" && result.summary) {
             window.liveSheetMetrics = result.summary;
             window.localHistoryTotals = result.summary.totals;
             window.cachedHistoricalLogs = result.summary.logs || [];
             
-            // Safety verification check: Make sure historical data charts paint sharply
-            console.log(`✔ Cache Synchronized: Loaded ${window.cachedHistoricalLogs.length} isolated rows definitions.`);
+            console.log(`✔ Cache Synchronized: Loaded ${window.cachedHistoricalLogs.length} isolated rows.`);
  
-            // SPINNER SUCCESS HOOK
             if (typeof updateSyncSpinnerState === 'function') updateSyncSpinnerState("success");
+
+            // 🚀 SUCCESS FEEDBACK STATE
+            if (connectBtn) {
+                connectBtn.innerText = "SECURELY CONNECTED ✔";
+                connectBtn.style.borderColor = "#4ade80";
+                connectBtn.style.color = "#4ade80";
+            }
 
             if (typeof updateMatrixData === 'function') updateMatrixData();
             if (typeof renderHistoricalSidebarLogs === 'function') renderHistoricalSidebarLogs();
         
         } else {
-            // Configuration recovery frame fallback handling loop
-            const postResponse = await fetch(endpoint, { 
-                method: 'POST', 
-                body: JSON.stringify({ configUpdate: false, data: null }) 
-            });
-            const postResult = await postResponse.json();
+            console.error("🛑 Security Exception: " + result.message);
+            if (container) {
+                container.innerHTML = `<div class="empty-tray-text" style="color: #f87171; font-weight:700;">🔒 SECURE ACCESS DENIED: Check your API Shield Password Token!</div>`;
+            }
+            if (typeof updateSyncSpinnerState === 'function') updateSyncSpinnerState("error");
             
-            if (postResult.summary) {
-                window.liveSheetMetrics = postResult.summary;
-                window.localHistoryTotals = postResult.summary.totals;
-                window.cachedHistoricalLogs = postResult.summary.logs || [];
-                
-                // SPINNER SUCCESS HOOK
-                if (typeof updateSyncSpinnerState === 'function') updateSyncSpinnerState("success");
-
-                if (typeof updateMatrixData === 'function') updateMatrixData();
-                if (typeof renderHistoricalSidebarLogs === 'function') renderHistoricalSidebarLogs();
-            } else {
-                if (typeof updateSyncSpinnerState === 'function') updateSyncSpinnerState("error");
+            // 🛑 BREAK FEEDBACK STATE
+            if (connectBtn) {
+                connectBtn.innerText = "AUTHENTICATION FAILED 🛑";
+                connectBtn.style.borderColor = "#f87171";
+                connectBtn.style.color = "#f87171";
             }
         }
     } catch (err) {
@@ -950,10 +960,34 @@ async function fetchAndHydrateLogCachesFromSheet() {
         if (container) {
             container.innerHTML = `<div class="empty-tray-text" style="color: #f87171;">Database Sync Failed. Check URL connection parameters!</div>`;
         }
-        // SPINNER ERROR HOOK
         if (typeof updateSyncSpinnerState === 'function') updateSyncSpinnerState("error");
+        
+        if (connectBtn) {
+            connectBtn.innerText = "SERVER CONNECTION FAILED";
+            connectBtn.style.borderColor = "#f87171";
+            connectBtn.style.color = "#f87171";
+        }
+    } finally {
+        // 🚀 TIMEOUT RESET: Re-enable the button after 3 seconds so users can adjust fields if they failed
+        setTimeout(() => {
+            if (connectBtn) {
+                connectBtn.disabled = false;
+                
+                // If it was a success, keep a clean indicator, otherwise reset to default prompt text strings
+                if (connectBtn.innerText.includes("CONNECTED")) {
+                    connectBtn.innerText = "REFRESH VAULT CONNECTION";
+                    connectBtn.style.borderColor = "#4ade80";
+                    connectBtn.style.color = "#4ade80";
+                } else {
+                    connectBtn.innerText = "CONNECT & AUTHENTICATE";
+                    connectBtn.style.borderColor = "#38bdf8";
+                    connectBtn.style.color = "#38bdf8";
+                }
+            }
+        }, 3000);
     }
 }
+
 // NEW VISIBILITY CONTROL HUB: Handles Option A vs Option B form block switching dynamically
 function toggleConversionInputFields() {
     const modeSelect = document.getElementById('formConversionMode');
