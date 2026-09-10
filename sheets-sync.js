@@ -1509,3 +1509,51 @@ function selectPaletteViaVisualChips(targetPaletteKey) {
         applyThemeViaIconToggle(activeTheme);
     }
 }
+// =========================================================================
+// 🚀 DYNAMIC THEME SWITCHER: THEME-SENSITIVE SCROLLBAR TINT ENGAGEMENT
+// =========================================================================
+function applyThemeViaIconToggle(targetThemeName) {
+    const btnDark  = document.getElementById('themeBtnDark');
+    const btnLight = document.getElementById('themeBtnLight');
+    const drawerOverlay = document.getElementById('adminVaultConfigDrawerOverlay'); // Target drawer
+    if (!btnDark || !btnLight) return;
+
+    // 1. Force state transformations across root document nodes
+    document.documentElement.setAttribute('data-theme', targetThemeName);
+    localStorage.setItem('userInterfaceThemeModeState', targetThemeName);
+    
+    // Extract real-time active color parameters
+    const activeColorHex = getComputedStyle(document.documentElement).getPropertyValue('--color-takehome').trim() || '#38bdf8';
+    const isThemeLightNow = (targetThemeName === 'light');
+
+    // 🎯 2. THE DYNAMIC SCROLLBAR FIX: Overrides the browser rail color scheme context in real-time
+    if (drawerOverlay) {
+        drawerOverlay.style.setProperty('color-scheme', targetThemeName, 'important');
+    }
+
+    // 3. Adjust interactive visual outline styling weights dynamically (Vector OS Glow Model)
+    if (isThemeLightNow) {
+        // --- CRISP LIGHT LAYOUT CONFIGURATIONS ---
+        btnDark.style.setProperty('color', '#94a3b8', 'important'); 
+        btnDark.style.setProperty('background', 'transparent', 'important');
+        btnDark.style.setProperty('box-shadow', 'none', 'important');
+        
+        btnLight.style.setProperty('color', '#ea580c', 'important'); 
+        btnLight.style.setProperty('background', 'rgba(234, 88, 12, 0.12)', 'important'); 
+        btnLight.style.shadowBlur = "none";
+        btnLight.style.setProperty('box-shadow', '0 4px 12px rgba(234, 88, 12, 0.15)', 'important');
+    } else {
+        // --- DARK LAYOUT NEON CYBER THEME CONFIGURATIONS ---
+        btnDark.style.setProperty('color', activeColorHex, 'important'); 
+        btnDark.style.setProperty('background', `${activeColorHex}1F`, 'important'); 
+        btnDark.style.setProperty('box-shadow', `0 0 16px ${activeColorHex}40`, 'important'); 
+        
+        btnLight.style.setProperty('color', '#475569', 'important');
+        btnLight.style.setProperty('background', 'transparent', 'important');
+        btnLight.style.setProperty('box-shadow', 'none', 'important');
+    }
+
+    if (typeof window.updateMatrixData === 'function') {
+        window.updateMatrixData();
+    }
+}
