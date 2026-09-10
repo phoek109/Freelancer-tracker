@@ -406,33 +406,90 @@ body:has(.sidebar-collapsed-hidden-state) .matrix-container {
 .tax-seg { background-color: #facc15; }
 .takehome-seg { background-color: #4ade80; }
 
+/* =========================================================================
+   🎛️ TWO-TIER RESPONSE INTERFACE GRID OVERHAUL
+   ========================================================================= */
+
 .metric-row {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    border-top: 1px solid #1e293b;
-    border-bottom: 1px solid #1e293b;
-    padding: 24px 0;
+    grid-template-columns: repeat(2, 1fr); /* 🚀 Enforces a permanent 2x2 asymmetric block */
+    gap: 16px;
+    width: 100%;
     margin-bottom: 24px;
-    gap: 12px;
+    box-sizing: border-box;
 }
 
 .metric-item {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
+    padding: 14px 18px;
+    border-radius: 12px;
+    min-width: 0;
+    box-sizing: border-box;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* 📥 Light Mode Fallback Layer Matching Your Premium Workspace Selection */
+[data-theme="light"] .metric-item {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] .metric-item {
+    background: rgba(30, 41, 59, 0.3);
+    border: 1px solid #1e293b;
+}
+
+/* ⭐ VISUAL HIERARCHY TRAY: Highlighting Priority Metrics */
+.metric-item.priority-card {
+    padding: 18px 22px; /* Amplified padding to make top tier cards feel premium */
+    border-width: 1.5px;
+}
+
+[data-theme="light"] .metric-item.priority-card {
+    background: #f8fafc;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
 .metric-item .label {
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
-    font-weight: 700;
+    font-weight: 800;
     color: #64748b;
+    letter-spacing: 0.75px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
 }
 
 .metric-item .value {
-    font-size: 24px;
+    font-family: 'JetBrains Mono', monospace;
     font-weight: 800;
-    margin-top: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+/* Dynamic Text Sizing for Tier 1 vs Tier 2 */
+.priority-card .value {
+    font-size: clamp(20px, 2.2vw, 26px); /* Bold headline scale */
+}
+
+.overhead-card .value {
+    font-size: clamp(16px, 1.8vw, 21px); /* Slightly more compact sub-headline scale */
+}
+
+/* 📱 Smartphone Viewport Optimization Override */
+@media (max-width: 540px) {
+    .metric-row {
+        grid-template-columns: 1fr; /* Drop cleanly down to a vertical scroll layout stack on small bounds */
+        gap: 12px;
+    }
+    .metric-item.priority-card {
+        padding: 14px 18px;
+    }
 }
 
 .text-white { color: #f8fafc; }
@@ -489,11 +546,32 @@ body:has(.sidebar-collapsed-hidden-state) .matrix-container {
     gap: 10px;
 }
 
+/* =========================================================================
+   🎛️ ASYMMETRICAL PROPORTIONAL STEPPER GRID REPAIR OVERHAUL
+   ========================================================================= */
+
 .settings-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* Split items evenly into pairs of 2 columns */
-    gap: 20px 36px;
-    margin-top: 15px;
+    grid-template-columns: repeat(2, 1fr); /* Native 50/50 dual column mapping */
+    gap: 20px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* 🎯 THE OVERRIDE: Forces the target item to span across both grid track columns */
+.settings-grid .control-block.full-row-span {
+    grid-column: span 2 !important;
+    width: 100%;
+}
+
+/* 📱 Mobile Safety: Drop grid to vertical layout blocks cleanly on phone screens */
+@media (max-width: 640px) {
+    .settings-grid {
+        grid-template-columns: 1fr !important;
+    }
+    .settings-grid .control-block.full-row-span {
+        grid-column: span 1 !important;
+    }
 }
 
 .control-block {
@@ -1827,4 +1905,340 @@ body:has(.sidebar-collapsed-hidden-state) .matrix-container {
     color: #0284c7 !important;    /* Sharp corporate navy blue text matching headers */
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06) !important;
     border-radius: 5px;
+}
+/* =========================================================================
+   🚀 REFINED BALANCED PALETTE SLIDERS (NO WHITE BORDER, SUBTLE GLOW)
+   ========================================================================= */
+
+/* --- 1. ANNUAL REVENUE SLIDER (Tied to Take-Home Pay Color) --- */
+#inputRevenue.slider-blue::-webkit-slider-thumb {
+    background: var(--color-takehome, #00f0ff) !important;
+    border: none !important; /* 🎯 REMOVED THE WHITE CIRCLE BORDER LINE */
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), 0 0 6px var(--color-takehome, rgba(0, 240, 255, 0.25)) !important; /* 🎯 TONED DOWN NEONING */
+    cursor: pointer;
+    -webkit-appearance: none;
+    transition: transform 0.1s ease, box-shadow 0.2s ease;
+}
+#inputRevenue.slider-blue::-moz-range-thumb {
+    background: var(--color-takehome, #00f0ff) !important;
+    border: none !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), 0 0 6px var(--color-takehome, rgba(0, 240, 255, 0.25)) !important;
+    cursor: pointer;
+}
+#inputRevenue.slider-blue:active::-webkit-slider-thumb {
+    transform: scale(1.15);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5), 0 0 10px var(--color-takehome, #00f0ff) !important;
+}
+
+/* --- 2. EXPENSES RATIO SLIDER (Tied to Total Expenses Color) --- */
+#inputRatio.slider-red::-webkit-slider-thumb {
+    background: var(--color-expenses, #ff007f) !important;
+    border: none !important; /* 🎯 REMOVED THE WHITE CIRCLE BORDER LINE */
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), 0 0 6px var(--color-expenses, rgba(255, 0, 127, 0.25)) !important; /* 🎯 TONED DOWN NEONING */
+    cursor: pointer;
+    -webkit-appearance: none;
+    transition: transform 0.1s ease, box-shadow 0.2s ease;
+}
+#inputRatio.slider-red::-moz-range-thumb {
+    background: var(--color-expenses, #ff007f) !important;
+    border: none !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), 0 0 6px var(--color-expenses, rgba(255, 0, 127, 0.25)) !important;
+    cursor: pointer;
+}
+#inputRatio.slider-red:active::-webkit-slider-thumb {
+    transform: scale(1.15);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5), 0 0 10px var(--color-expenses, #ff007f) !important;
+}
+
+/* --- 3. BASE TARGET TAX RATE SLIDER (Tied to Tax Reserve Color) --- */
+#inputTaxRate.slider-yellow::-webkit-slider-thumb {
+    background: var(--color-tax, #7000ff) !important;
+    border: none !important; /* 🎯 REMOVED THE WHITE CIRCLE BORDER LINE */
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), 0 0 6px var(--color-tax, rgba(112, 0, 255, 0.25)) !important; /* 🎯 TONED DOWN NEONING */
+    cursor: pointer;
+    -webkit-appearance: none;
+    transition: transform 0.1s ease, box-shadow 0.2s ease;
+}
+#inputTaxRate.slider-yellow::-moz-range-thumb {
+    background: var(--color-tax, #7000ff) !important;
+    border: none !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), 0 0 6px var(--color-tax, rgba(112, 0, 255, 0.25)) !important;
+    cursor: pointer;
+}
+#inputTaxRate.slider-yellow:active::-webkit-slider-thumb {
+    transform: scale(1.15);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5), 0 0 10px var(--color-tax, #7000ff) !important;
+}
+/* Symmetrical flex behavior for the inline bottom console deck row */
+@media (max-width: 640px) {
+    .footer-control-deck-row {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+    }
+}
+/* =========================================================================
+   🚀 DYNAMIC PALETTE ENGAGEMENT: LOWER SLIDER ALLOCATION MIXES
+   ========================================================================= */
+
+/* --- 1. INCOME ALLOCATION MIX SLIDER (Tied to Take-Home Pay Color) --- */
+#inputIncomeSplit.slider-blue::-webkit-slider-thumb {
+    background: var(--color-takehome, #00f0ff) !important;
+    border: none !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), 0 0 6px var(--color-takehome, rgba(0, 240, 255, 0.25)) !important;
+    cursor: pointer;
+    -webkit-appearance: none;
+    transition: transform 0.1s ease, box-shadow 0.2s ease;
+}
+#inputIncomeSplit.slider-blue::-moz-range-thumb {
+    background: var(--color-takehome, #00f0ff) !important;
+    border: none !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), 0 0 6px var(--color-takehome, rgba(0, 240, 255, 0.25)) !important;
+    cursor: pointer;
+}
+#inputIncomeSplit.slider-blue:active::-webkit-slider-thumb {
+    transform: scale(1.15);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5), 0 0 10px var(--color-takehome, #00f0ff) !important;
+}
+
+/* --- 2. EXPENSES ALLOCATION MIX SLIDER (Tied to Total Expenses Color) --- */
+#inputExpenseSplit.slider-red::-webkit-slider-thumb {
+    background: var(--color-expenses, #ff007f) !important;
+    border: none !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), 0 0 6px var(--color-expenses, rgba(255, 0, 127, 0.25)) !important;
+    cursor: pointer;
+    -webkit-appearance: none;
+    transition: transform 0.1s ease, box-shadow 0.2s ease;
+}
+#inputExpenseSplit.slider-red::-moz-range-thumb {
+    background: var(--color-expenses, #ff007f) !important;
+    border: none !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), 0 0 6px var(--color-expenses, rgba(255, 0, 127, 0.25)) !important;
+    cursor: pointer;
+}
+#inputExpenseSplit.slider-red:active::-webkit-slider-thumb {
+    transform: scale(1.15);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5), 0 0 10px var(--color-expenses, #ff007f) !important;
+}
+
+/* --- 3. TAX VAULT ALLOCATION MIX SLIDER (Tied to Tax Reserve Color) --- */
+#inputTaxSplit.slider-yellow::-webkit-slider-thumb {
+    background: var(--color-tax, #7000ff) !important;
+    border: none !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), 0 0 6px var(--color-tax, rgba(112, 0, 255, 0.25)) !important;
+    cursor: pointer;
+    -webkit-appearance: none;
+    transition: transform 0.1s ease, box-shadow 0.2s ease;
+}
+#inputTaxSplit.slider-yellow::-moz-range-thumb {
+    background: var(--color-tax, #7000ff) !important;
+    border: none !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), 0 0 6px var(--color-tax, rgba(112, 0, 255, 0.25)) !important;
+    cursor: pointer;
+}
+#inputTaxSplit.slider-yellow:active::-webkit-slider-thumb {
+    transform: scale(1.15);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5), 0 0 10px var(--color-tax, #7000ff) !important;
+}
+/* =========================================================================
+   🎛️ FIXED SLIDE-OUT OVERLAY DRAWER CONFIGURATIONS ENGINE (SCROLLABLE)
+   ========================================================================= */
+
+.config-drawer-overlay-plane {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 320px; /* Perfectly covers the width boundary of your sidebar */
+    height: 100vh;
+    background: #0b0f19; /* Solid deep canvas hue blocks underlying form inputs */
+    border-right: 1px solid #1e293b;
+    padding: 20px;
+    box-sizing: border-box;
+    z-index: 999999; /* Higher layer plane floats securely on top of all elements */
+    
+    /* 🚀 THE FIXED SCROLL CRITICAL FIX */
+    overflow-y: auto !important; /* Activates internal scrolling plane for the 20 swatches */
+    overflow-x: hidden !important; /* Locks out horizontal trailing drift glitches */
+    scrollbar-width: thin; /* Modern minimalist scrollbar rendering */
+    
+    /* 🚀 HIDDEN PROFILE STATE: Shifts completely out of workspace sight by default */
+    transform: translateX(-100%);
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: none;
+}
+
+/* Custom Scrollbar Rail Design to match Terminal Aesthetic layout */
+.config-drawer-overlay-plane::-webkit-scrollbar {
+    width: 4px;
+}
+.config-drawer-overlay-plane::-webkit-scrollbar-track {
+    background: transparent;
+}
+.config-drawer-overlay-plane::-webkit-scrollbar-thumb {
+    background: #1e293b;
+    border-radius: 2px;
+}
+.config-drawer-overlay-plane::-webkit-scrollbar-thumb:hover {
+    background: #334155;
+}
+
+/* Light theme customization overlay matching your light parameters */
+[data-theme="light"] .config-drawer-overlay-plane {
+    background: #f8fafc;
+    border-right: 1px solid #e2e8f0;
+}
+[data-theme="light"] .config-drawer-overlay-plane::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+}
+
+/* 🔥 THE TRIGGER CLASS: Slides the utility box smoothly out into focus view area */
+.config-drawer-overlay-plane.drawer-open-active {
+    transform: translateX(0);
+    box-shadow: 20px 0 50px rgba(0, 0, 0, 0.6);
+}
+
+/* Accent button hover highlight adjustment tracker */
+#btnToggleConfigDrawer:hover {
+    border-color: #38bdf8;
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.02);
+}
+
+/* =========================================================================
+   🎛️ SIDEBAR LOW-PROFILE TOOLBAR TEXT INTERACTION TYPOGRAPHY
+   ========================================================================= */
+
+#btnToggleConfigDrawer:hover {
+    color: #f8fafc !important; /* Transitions to a crisp white marking state on mouse hover */
+    text-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+}
+
+#btnToggleConfigDrawer:active {
+    transform: scale(0.96); /* Provides interactive physical haptic click feedback */
+}
+/* =========================================================================
+   🎛️ SYSTEM THEME TOGGLE ICON STATE MARKERS
+   ========================================================================= */
+
+.theme-icon-toggle-deck button:hover {
+    color: #f8fafc;
+    background: rgba(30, 41, 59, 0.4);
+}
+
+/* Light mode overlay customizations to match container borders */
+[data-theme="light"] .theme-icon-toggle-deck {
+    background: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
+}
+/* =========================================================================
+   🎛️ PREMIUM MINIMALIST THEME TOGGLE ICON OUTLINES DECK
+   ========================================================================= */
+
+.theme-icon-toggle-deck {
+    display: flex;
+    gap: 12px;
+    background: transparent !important; /* 🎯 Completely unmasks background fills */
+    border: none !important; /* Strips old bulky deck border */
+    padding: 0 !important;
+}
+/* =========================================================================
+   🎛             PREMIUM OUTLINELESS OS GLOW SELECTION DECK (SVG HARMONIZED)
+   ========================================================================= */
+
+.theme-icon-toggle-deck button {
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 50% !important; /* Flawless circular geometric profiles */
+    background: transparent !important;
+    border: none !important; /* 🎯 Completely borderless base layout */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    outline: none !important;
+    
+    /* Smooth timing curves match native mobile application frameworks */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important; 
+}
+
+/* 🎯 VECTOR VECTOR ALIGNMENT FORCING: Controls unselected paths color output */
+.theme-icon-toggle-deck button svg {
+    stroke: #475569 !important; /* Muted inactive path color */
+    transition: stroke 0.3s ease, transform 0.2s ease !important;
+}
+
+/* Elegant, low-profile background hover change on mouse glide */
+.theme-icon-toggle-deck button:hover svg {
+    stroke: #94a3b8 !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+}
+
+/* 📥 LIGHT MODE PASS THEME ADAPTERS */
+[data-theme="light"] .theme-icon-toggle-deck button svg {
+    stroke: #94a3b8 !important;
+}
+[data-theme="light"] .theme-icon-toggle-deck button:hover svg {
+    stroke: #475569 !important;
+    background: rgba(0, 0, 0, 0.03) !important;
+}
+/* =========================================================================
+   🎛️ LOW-PROFILE COMPACT PALETTE SWATCH MATRIX GRID
+   ========================================================================= */
+
+.color-palette-swatch-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 🚀 Creates a smooth 4-column visual matrix grid */
+    gap: 10px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.color-palette-swatch-grid .swatch-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px; /* Tight, professional spacing for our mini color circle dots */
+    height: 38px;
+    background: rgba(30, 41, 59, 0.15);
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    cursor: pointer;
+    padding: 0;
+    box-sizing: border-box;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+}
+
+/* Perfect circle palette swatch dots (Mini Slider Thumb Emulations) */
+.color-palette-swatch-grid .chip-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    pointer-events: none;
+}
+
+.color-palette-swatch-grid .swatch-btn:hover {
+    border-color: #334155;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* 🎯 THE ACTIVE STATE: Soft backdrop gradient halo + matching translucent background tint */
+.color-palette-swatch-grid .swatch-btn.swatch-active {
+    background: rgba(56, 189, 248, 0.08) !important;
+    border: 1.5px solid #38bdf8 !important;
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+}
+
+/* 📥 Premium Light Appearance Configuration Overrides */
+[data-theme="light"] .color-palette-swatch-grid .swatch-btn {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+}
+[data-theme="light"] .color-palette-swatch-grid .swatch-btn.swatch-active {
+    background: rgba(2, 132, 199, 0.06) !important;
+    border-color: #0284c7 !important;
+    box-shadow: 0 4px 10px rgba(2, 132, 199, 0.1);
 }

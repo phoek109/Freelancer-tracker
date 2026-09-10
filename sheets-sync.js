@@ -511,16 +511,26 @@ function synchronizeDualCurrencyActionButtons() {
         renderHistoricalSidebarLogs();
     };
 
+    // =========================================================================
+    // 🚀 FIXED INSIDE synchronizeDualCurrencyActionButtons() IN SHEETS-SYNC.JS
+    // =========================================================================
     buttonGrid.appendChild(btnReceived);
     buttonGrid.appendChild(btnHome);
 
-    // Dynamic header visual display notification tracking title modifiers
+    // 🎯 REPAIRED STRING INJECTOR: Preserves the symmetrical flex split alignment over the button grid
     if (window.currentlyPinnedLogIndex !== null) {
-        titleLabel.innerHTML = `MATRIX TRACKING VIEW: <span style="color:#a855f7;font-weight:800;">HISTORICAL LOG FILE [LOCKED]</span>`;
+        titleLabel.innerHTML = `
+            <div style="flex: 1; text-align: left;">RECIEVED CURRENCY CODE:</div>
+            <div style="flex: 1; text-align: left; padding-left: 4px; color: #a855f7;">HISTORICAL LOG FILE [LOCKED]</div>
+        `;
     } else {
-        titleLabel.innerHTML = `MATRIX TRACKING VIEW: <span style="color:#38bdf8;font-weight:700;">LIVE STREAMING CONSOLE</span>`;
+        titleLabel.innerHTML = `
+            <div style="flex: 1; text-align: left;">RECIEVED CURRENCY CODE:</div>
+            <div style="flex: 1; text-align: left; padding-left: 4px;">HOME CURRENCY CODE</div>
+        `;
     }
 }
+
 
 // =========================================================================
 // 🚀 REPAIRED TRACKER: MASTER AUTOMATED AUTO-TUNING EVENT LISTENERS
@@ -1224,15 +1234,47 @@ function applyGlobalColorPaletteContext() {
 
 // Ensure visual styles populate smoothly right during initial application setup phases
 window.addEventListener('DOMContentLoaded', () => {
-    if (localStorage.getItem('userInterfaceThemeModeState')) {
-        const savedTheme = localStorage.getItem('userInterfaceThemeModeState');
-        document.getElementById('themeModeSelector').value = savedTheme;
-        document.documentElement.setAttribute('data-theme', savedTheme);
-    }
+    // =========================================================================
+    // 🚀 FIXED CHIP INITIALIZATION: BIND VISUAL ACTIVE SWATCHES ON BOOT UP
+    // =========================================================================
+    
+    // 1. Initial color palette hydration pass must execute first to populate CSS variables
     if (localStorage.getItem('userInterfaceColorPaletteState')) {
         const savedPalette = localStorage.getItem('userInterfaceColorPaletteState');
-        document.getElementById('colorPaletteSelector').value = savedPalette;
-        applyGlobalColorPaletteContext();
+        
+        // 🚀 SYNC ACTIVE SWATCH CHIP BUTTON STATE IMMEDIATELY ON BOOT UP
+        setTimeout(() => {
+            if (typeof selectPaletteViaVisualChips === 'function') {
+                selectPaletteViaVisualChips(savedPalette);
+            }
+        }, 80); // 80ms delay guarantees root layout variables initialize cleanly
+    } else {
+        // Safe baseline system startup default if no local cache string exists (Cyber Neon Pop)
+        setTimeout(() => {
+            if (typeof selectPaletteViaVisualChips === 'function') {
+                selectPaletteViaVisualChips('cyber');
+            }
+        }, 80);
+    }
+
+    // 2. Hydrate the application appearance skin configuration settings
+    if (localStorage.getItem('userInterfaceThemeModeState')) {
+        const savedTheme = localStorage.getItem('userInterfaceThemeModeState');
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        
+        // 🚀 THE OUTLINE STATE INJECTOR: Renders the active palette-aware neon ring outline perfectly on boot up
+        setTimeout(() => {
+            if (typeof applyThemeViaIconToggle === 'function') {
+                applyThemeViaIconToggle(savedTheme);
+            }
+        }, 60); // 60ms delay ensures the theme properties paint seamlessly behind the hardware canvas
+    } else {
+        // Fallback default system safety trigger if no local cache string is found (Dark Mode initialization)
+        setTimeout(() => {
+            if (typeof applyThemeViaIconToggle === 'function') {
+                applyThemeViaIconToggle('dark');
+            }
+        }, 60);
     }
 });
 
@@ -1335,5 +1377,135 @@ async function requestServerLedgerTransactionRollback() {
         btn.innerText = "UNDO STREAM";
         btn.style.borderColor = "";
         btn.style.color = "";
+    }
+}
+// =========================================================================
+// 🚀 REPAIRED OVERLAY DRAWER VISIBILITY CONTROLLER IN SHEETS-SYNC.JS
+// =========================================================================
+
+window.isSettingsFloatingOverlayDrawerOpen = false;
+
+function toggleSettingsDrawerPanelState() {
+    const drawerElement = document.getElementById('adminVaultConfigDrawerOverlay');
+    if (!drawerElement) return;
+
+    window.isSettingsFloatingOverlayDrawerOpen = !window.isSettingsFloatingOverlayDrawerOpen;
+
+    if (window.isSettingsFloatingOverlayDrawerOpen) {
+        // Slide drawer outward onto the screen plane over underlying form fields smoothly
+        drawerElement.classList.add('drawer-open-active');
+    } else {
+        // Return overlay panel cleanly back off the left edge of workspace bounds
+        drawerElement.classList.remove('drawer-open-active');
+    }
+}
+// =========================================================================
+// 🚀 REPAIRED VECTOR DRIVER: PALETTE-BIASED OVERLAY INDUCTION
+// =========================================================================
+function applyThemeViaIconToggle(targetThemeName) {
+    const btnDark  = document.getElementById('themeBtnDark');
+    const btnLight = document.getElementById('themeBtnLight');
+    if (!btnDark || !btnLight) return;
+
+    // 1. Force state transformations across root document nodes
+    document.documentElement.setAttribute('data-theme', targetThemeName);
+    localStorage.setItem('userInterfaceThemeModeState', targetThemeName);
+    
+    // Extract real-time active system palette color (e.g., Cyber Neon Pink or Electric Cyan Blue)
+    const activeColorHex = getComputedStyle(document.documentElement).getPropertyValue('--color-takehome').trim() || '#38bdf8';
+    const isThemeLightNow = (targetThemeName === 'light');
+
+    // 2. Adjust interactive visual styling weights dynamically (Vector OS Glow Model)
+    if (isThemeLightNow) {
+        // --- CRISP LIGHT LAYOUT CONFIGURATIONS ---
+        btnDark.style.setProperty('color', '#94a3b8', 'important'); /* Muted vector line color */
+        btnDark.style.setProperty('background', 'transparent', 'important');
+        btnDark.style.setProperty('box-shadow', 'none', 'important');
+        
+        // ☀️ Active Solar Element: Injects solar orange text vector line + a matching translucent mask background
+        btnLight.style.setProperty('color', '#ea580c', 'important'); 
+        btnLight.style.setProperty('background', 'rgba(234, 88, 12, 0.12)', 'important'); /* 12% solar orange tint fill */
+        btnLight.style.setProperty('box-shadow', '0 4px 12px rgba(234, 88, 12, 0.15)', 'important');
+    } else {
+        // --- DARK LAYOUT NEON CYBER THEME CONFIGURATIONS ---
+        // 🌙 Active Lunar Element: Automatically matches your selected color palette with a soft backdrop aura glow!
+        btnDark.style.setProperty('color', activeColorHex, 'important'); 
+        btnDark.style.setProperty('background', `${activeColorHex}1F`, 'important'); /* 12% active palette color tint fill */
+        btnDark.style.setProperty('box-shadow', `0 0 16px ${activeColorHex}40`, 'important'); /* Smooth wide drop aura shadow */
+        
+        btnLight.style.setProperty('color', '#475569', 'important');
+        btnLight.style.setProperty('background', 'transparent', 'important');
+        btnLight.style.setProperty('box-shadow', 'none', 'important');
+    }
+
+    if (typeof window.updateMatrixData === 'function') {
+        window.updateMatrixData();
+    }
+}
+// =========================================================================
+// 🚀 EXPANDED MASTER PALETTE CHIP SWITCHER INTERCEPT IN SHEETS-SYNC.JS
+// =========================================================================
+function selectPaletteViaVisualChips(targetPaletteKey) {
+    const root = document.documentElement;
+    
+    // Complete 20-Preset Unified Object Map (System + Pride)
+    const paletteDefinitions = {
+        // --- CORE SYSTEM PRESETS ---
+        "default":         { expenses: "#f87171", tax: "#facc15", takehome: "#4ade80" },
+        "cyber":           { expenses: "#ff007f", tax: "#7000ff", takehome: "#00f0ff" }, 
+        "cyber_cyan":      { expenses: "#ff00aa", tax: "#0044ff", takehome: "#00f0ff" }, 
+        "mint":            { expenses: "#f59e0b", tax: "#6366f1", takehome: "#10b981" }, 
+        "nordic_frost":    { expenses: "#bfdbfe", tax: "#60a5fa", takehome: "#38bdf8" }, 
+        "dracula":         { expenses: "#ff5555", tax: "#bd93f9", takehome: "#50fa7b" }, 
+        "midnight_slate":  { expenses: "#475569", tax: "#94a3b8", takehome: "#cbd5e1" }, 
+        "sunset_amber":    { expenses: "#ea580c", tax: "#f59e0b", takehome: "#eab308" }, 
+        "synthwave":       { expenses: "#ff0055", tax: "#b000ff", takehome: "#2be6ff" }, 
+        "forest_moss":     { expenses: "#bc6c25", tax: "#dda15e", takehome: "#606c38" },
+        
+        // --- LGBTQ+ INCLUSION PRIDE PRESETS ---
+        "rainbow_pride":       { expenses: "#e40303", tax: "#ff8c00", takehome: "#008026" },
+        "rainbow_progress":    { expenses: "#ff007f", tax: "#74d4ec", takehome: "#7000ff" },
+        "rainbow_trans":       { expenses: "#5bc4f1", tax: "#ffffff", takehome: "#f5a9b8" },
+        "rainbow_bi":          { expenses: "#d60270", tax: "#9b4f96", takehome: "#0038a8" },
+        "rainbow_lesbian":     { expenses: "#d52600", tax: "#f1af84", takehome: "#a50062" },
+        "rainbow_pan":         { expenses: "#ff1b8d", tax: "#ffd300", takehome: "#1bb2ff" },
+        "rainbow_nonbinary":   { expenses: "#fff430", tax: "#9c59d1", takehome: "#2c2c2c" },
+        "rainbow_genderqueer": { expenses: "#b57edc", tax: "#ffffff", takehome: "#4a8123" },
+        "rainbow_asexual":     { expenses: "#a3a3a3", tax: "#ffffff", takehome: "#800080" },
+        "rainbow_intersex":    { expenses: "#ffd700", tax: "#ffd700", takehome: "#7a0099" }
+    };
+
+    // 1. Force state transformations across root custom CSS variables
+    const selectedColors = paletteDefinitions[targetPaletteKey] || paletteDefinitions["default"];
+    
+    root.style.setProperty('--color-expenses', selectedColors.expenses);
+    root.style.setProperty('--color-tax', selectedColors.tax);
+    root.style.setProperty('--color-takehome', selectedColors.takehome);
+
+    // Light mode text visibility safety filter
+    const cleanTaxColor = selectedColors.tax.toLowerCase().trim();
+    if (cleanTaxColor === "#ffffff" || cleanTaxColor === "#fff") {
+        root.style.setProperty('--color-tax-text-lightmode-fallback', '#0f172a');
+    } else {
+        root.style.setProperty('--color-tax-text-lightmode-fallback', selectedColors.tax);
+    }
+
+    localStorage.setItem('userInterfaceColorPaletteState', targetPaletteKey);
+
+    // 2. Clear old state flags and highlight the selected button swatch
+    document.querySelectorAll('.color-palette-swatch-grid .swatch-btn').forEach(btn => {
+        btn.classList.remove('swatch-active');
+    });
+
+    const activeBtnEl = document.getElementById(`swatch_${targetPaletteKey}`);
+    if (activeBtnEl) {
+        activeBtnEl.classList.add('swatch-active');
+    }
+
+    // 3. Force live canvas metrics, sliders, and vector line paths to color-match instantly
+    if (typeof window.updateMatrixData === 'function') window.updateMatrixData();
+    if (typeof applyThemeViaIconToggle === 'function') {
+        const activeTheme = localStorage.getItem('userInterfaceThemeModeState') || 'dark';
+        applyThemeViaIconToggle(activeTheme);
     }
 }

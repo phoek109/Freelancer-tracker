@@ -469,9 +469,11 @@ function executeStackedColumnRenderingEngine(ctx, w, h, gross, totalExpenses, ta
 
         ctx.fillStyle = getComputedCanvasColorStyleValue('--text-main', '#64748b');
         
-        // 🚀 SMART TICK SHORTENING: Use elegant compact K abbreviations for y-axis values on mobile screen bounds
+        // 🚀 SMART TICK SHORTENING: Handle Millions (M) and Billions compactly on high ranges
         let displayLabelStr;
-        if (isMobileViewport && currentGridValueMarking >= 1000) {
+        if (currentGridValueMarking >= 1000000) {
+            displayLabelStr = `${activeSymbol}${(currentGridValueMarking / 1000000).toFixed(0)}M`;
+        } else if (currentGridValueMarking >= 1000) {
             displayLabelStr = `${activeSymbol}${(currentGridValueMarking / 1000).toFixed(0)}K`;
         } else {
             displayLabelStr = `${activeSymbol}${currentGridValueMarking.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
@@ -683,9 +685,11 @@ function executeHorizontalBarChartRenderingEngine(ctx, w, h, gross, totalExpense
 
         ctx.fillStyle = getComputedCanvasColorStyleValue('--text-main', '#64748b');
         
-        // Mobile compact axis numbering filters
+        // 🚀 SMART TICK SHORTENING: Handle Millions (M) and Billions compactly on horizontal bounds
         let displayXLabelStr;
-        if (isMobileViewport && currentGridValueMarking >= 1000) {
+        if (currentGridValueMarking >= 1000000) {
+            displayXLabelStr = `${activeSymbol}${(currentGridValueMarking / 1000000).toFixed(0)}M`;
+        } else if (currentGridValueMarking >= 1000) {
             displayXLabelStr = `${activeSymbol}${(currentGridValueMarking / 1000).toFixed(0)}K`;
         } else {
             displayXLabelStr = `${activeSymbol}${currentGridValueMarking.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
@@ -887,10 +891,21 @@ function updateMatrixData() {
         taxReserveValueCalculated = calculatedIncomeTaxReserve + calculatedWithholdingTaxHome;
         if (targetLogPool.length === 0) takeHomeValueCalculated = 0;
 
-        if (document.getElementById('grossDisplay')) document.getElementById('grossDisplay').innerText = `${activeSymbol}${grossValueCalculated.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
-        if (document.getElementById('expensesDisplay')) document.getElementById('expensesDisplay').innerText = `${activeSymbol}${totalExpensesValueCalculated.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
-        if (document.getElementById('taxDisplay')) document.getElementById('taxDisplay').innerText = `${activeSymbol}${taxReserveValueCalculated.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
-        if (document.getElementById('takeHomeDisplay')) document.getElementById('takeHomeDisplay').innerText = `${activeSymbol}${takeHomeValueCalculated.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+        // Inside updateMatrixData() -> Find your metric card text innerText injections:
+        const activeSymbol = window.currentCurrency || '$ ';
+
+        if (document.getElementById('grossDisplay')) {
+            document.getElementById('grossDisplay').innerText = formatHighDensityDashboardMetric(gross, activeSymbol);
+        }
+        if (document.getElementById('expensesDisplay')) {
+            document.getElementById('expensesDisplay').innerText = formatHighDensityDashboardMetric(totalExpenses, activeSymbol);
+        }
+        if (document.getElementById('taxDisplay')) {
+            document.getElementById('taxDisplay').innerText = formatHighDensityDashboardMetric(taxReserve, activeSymbol);
+        }
+        if (document.getElementById('takeHomeDisplay')) {
+            document.getElementById('takeHomeDisplay').innerText = formatHighDensityDashboardMetric(takeHome, activeSymbol);
+        }
 
         if (document.getElementById('incActive')) document.getElementById('incActive').innerText = `${activeSymbol}${grossValueCalculated.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
         if (document.getElementById('incOthers')) document.getElementById('incOthers').innerText = `${activeSymbol}0.00`;
@@ -1242,7 +1257,7 @@ function adjustRevenueViaMultiplier(direction) {
     let newValue = currentValue + (direction * stepMultiplier);
 
     if (newValue < 0) newValue = 0;
-    if (newValue > 1000000000) newValue = 1000000000;
+    if (newValue > 1000000000000) newValue = 1000000000000;
 
     slider.value = newValue;
     
@@ -1756,3 +1771,21 @@ ctx.beginPath();
 ctx.arc(centerX, centerY, donutCenterRadiusTrack - (donutRibbonThickness / 2) - 1, 0, 2 * Math.PI);
 ctx.fillStyle = colorBgMain; // ✔️ FIXED: Fills center hole smoothly with theme matching backgrounds
 ctx.fill();
+
+// =========================================================================
+// 🚀 METRIC PACK FORMATTER: CLEARS DASHBOARD CLUTTER FOR LARGE FIGURES
+// =========================================================================
+function formatHighDensityDashboardMetric(numericValue, activeSymbol) {
+    const cleanNum = parseFloat(numericValue) || 0;
+    const isMobile = window.innerWidth <= 768;
+
+    // 🎯 THRESHOLD SWITCH: If values pass 1 Million, use compact M abbreviations on small or crowded viewports
+    if (cleanNum >= 10000000) { // Triggers at 10 Million
+        return `${activeSymbol}${(cleanNum / 1000000).toFixed(2)}M`;
+    } else if (cleanNum >= 1000000) { // Triggers at 1 Million
+        return `${activeSymbol}${(cleanNum / 1000000).toFixed(3)}M`;
+    }
+    
+    // Default fallback layout double decimal representation for standard figures
+    return `${activeSymbol}${cleanNum.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
