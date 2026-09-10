@@ -1,39 +1,163 @@
 @import url('https://googleapis.com');
 
+/* ========================================================================= */
+/* 🎨 ✔️ FULL THEME MATRIX OVERHAUL (RESTORES SIDEBAR TEXT VISIBILITY)        */
+/* ========================================================================= */
+
+:root {
+    /* DEFAULT STATE: Dark Cyber Mode values lock here */
+    --bg-main: #0b0f19;
+    --bg-card: linear-gradient(145deg, #131b2e, #0f1626);
+    --bg-sidebar: #0f1626;
+    --border-primary: #1e293b;
+    --grid-lines: rgba(30, 41, 59, 0.25);
+    --text-main: #94a3b8;
+    --text-heading: #38bdf8;
+    --text-white: #f8fafc; /* Glowing cyber white */
+    
+    /* Control Blocks Background Elements */
+    --bg-control: rgba(30, 41, 59, 0.15);
+    --border-control: #1e293b;
+
+    /* Data Palette Defaults */
+    --color-expenses: #f87171;
+    --color-tax: #facc15;
+    --color-takehome: #4ade80;
+}
+
+/* OVERRIDE STATE: Triggers ONLY when data-theme="light" attribute is active */
+[data-theme="light"] {
+    --bg-main: #f8fafc;
+    --bg-card: #ffffff;
+    --bg-sidebar: #ffffff;
+    --border-primary: #cbd5e1;
+    --grid-lines: rgba(148, 163, 184, 0.15);
+    --text-main: #334155;     /* Dark Charcoal for readable text fields */
+    --text-heading: #0284c7;  /* Deep Professional Navy Blue */
+    --text-white: #0f172a;    /* Pitch Black Navy text replacements */
+    
+    /* Light Mode Sandbox Multiplier Containers */
+    --bg-control: #f1f5f9;
+    --border-control: #cbd5e1;
+}
+
+/* ========================================================================= */
+/* ⚡ DYNAMIC TYPOGRAPHY RE-BINDINGS & CONTRAST MANAGERS                      */
+/* ========================================================================= */
+
+/* Fixes global white value cards to match layout theme selection rules */
+.text-white { 
+    color: var(--text-white) !important; 
+}
+#grossDisplay {
+    color: var(--text-white) !important;
+}
+
+/* Fixes sidebar form and date range container headers labels */
+.input-group label,
+.sidebar-header,
+.control-header,
+.control-header span,
+.multiplier-box label {
+    color: var(--text-white) !important;
+    opacity: 1 !important;
+}
+
+/* Fixes right panel simulation slider card blocks */
+.full-width-control,
+.control-block {
+    background: var(--bg-control) !important;
+    border-color: var(--border-control) !important;
+}
+
+/* Fixes breakdown boxes and description lists strings labels */
+.dashboard-breakdowns {
+    background: var(--bg-control) !important;
+    border: 1px solid var(--border-primary) !important;
+    color: var(--text-main) !important;
+}
+.breakdown-title,
+.breakdown-box,
+.breakdown-box strong {
+    color: var(--text-white) !important;
+}
+
+/* Force standard input text fields to invert natively */
+.sidebar input, 
+.sidebar select {
+    background-color: var(--bg-main) !important;
+    border: 1px solid var(--border-primary) !important;
+    color: var(--text-white) !important;
+}
+
+/* Dynamic Card Themes for Historical Log Lists */
+[data-theme="light"] .transaction-card {
+    background-color: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
+}
+[data-theme="light"] .card-client-title {
+    color: #0f172a !important;
+}
+[data-theme="light"] .card-row-top span {
+    color: #475569 !important;
+}
+
+
+.breakdown-title {
+    color: var(--text-white) !important;
+}
+
+.breakdown-box strong {
+    color: var(--text-white) !important;
+}
+
+/* YOUR EXISTING STYLES CONTINUE HERE NATIVELY... */
 body {
     font-family: 'Plus Jakarta Sans', sans-serif;
-    background-color: #0b0f19;
-    color: #94a3b8;
+    background-color: var(--bg-main) !important; /* Updated from #0b0f19 */
+    color: var(--text-main) !important;       /* Updated from #94a3b8 */
     margin: 0;
     padding: 0;
     height: 100vh;
     overflow: hidden;
 }
 
-/* FIXED: Premium Custom Cyberpunk Scrollbar Configuration Styles */
+/* ========================================================================= */
+/* 🚀 THEME-AWARE CYBERPUNK SCROLLBAR CONFIGURATION STYLES                   */
+/* ========================================================================= */
+
 ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
 }
+
 ::-webkit-scrollbar-track {
-    background: #070a13;
-}
-::-webkit-scrollbar-thumb {
-    background: #1e293b;
-    border-radius: 9999px;
-}
-::-webkit-scrollbar-thumb:hover {
-    background: #38bdf8;
+    /* ✔️ FIXED: Uses your main background variable color instead of hardcoded #070a13 */
+    background: var(--bg-main); 
 }
 
+::-webkit-scrollbar-thumb {
+    /* ✔️ FIXED: Smooth slate-gray handles that blend cleanly into light and dark tracks */
+    background: var(--border-primary);
+    border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    /* Maintains your signature glow transition across all modes */
+    background: var(--text-heading);
+}
+
+/* 🔄 REWRITE your existing .app-layout rule block to look exactly like this: */
 .app-layout {
     display: flex;
     height: 100vh;
-    /* 🚀 CRITICAL RECONSTRUCT: Lock layout bounds cleanly to the total screen width profile */
     width: 100vw !important; 
     max-width: 100vw !important;
     overflow: hidden; 
-    background-color: #0b0f19;
+    
+    /* ✔️ FIXED: Swapped from explicit #0b0f19 to the theme-aware variable hook */
+    background-color: var(--bg-main) !important; 
+    
     box-sizing: border-box;
 }
 
@@ -41,8 +165,8 @@ body {
     width: 340px !important;
     min-width: 340px !important; /* Hard-locks the width profile */
     max-width: 340px !important;
-    background-color: #0f1626;
-    border-right: 1px solid #1e293b;
+    background-color: var(--bg-sidebar) !important; /* ✔️ FIXED: Rebound from #0f1626 */
+    border-right: 1px solid var(--border-primary) !important; /* ✔️ FIXED: Rebound from #1e293b */
     padding: 24px;
     box-sizing: border-box;
     display: flex;
@@ -80,9 +204,10 @@ body {
 .sidebar input, .sidebar select {
     width: 100%;
     box-sizing: border-box;
-    background-color: #070a13;
-    border: 1px solid #1e293b;
-    color: #f8fafc;
+    background-color: var(--bg-main) !important;      /* ✔️ Adapts to dark/light backgrounds */
+    border: 1px solid var(--border-primary) !important; /* ✔️ Grid lines shift dynamically */
+    color: var(--text-white) !important;               /* ✔️ Text changes from grey to pitch black */
+
     padding: 10px;
     border-radius: 8px;
     font-family: inherit;
@@ -225,8 +350,8 @@ body:has(.sidebar-collapsed-hidden-state) .main-content {
     /* 🚀 CRITICAL OVERRIDE: Swapped from 860px to 100% to fill the space permanently */
     max-width: 100% !important; 
     
-    background: linear-gradient(145deg, #131b2e, #0f1626);
-    border: 1px solid #1e293b;
+    background: var(--bg-card) !important; /* ✔️ FIXED: Rebound from linear gradient */
+    border: 1px solid var(--border-primary) !important; /* ✔️ FIXED: Rebound from #1e293b */
     border-radius: 24px;
     padding: 36px;
     box-sizing: border-box;
@@ -1104,7 +1229,7 @@ body:has(.sidebar-collapsed-hidden-state) .matrix-container {
         height: 14px !important;
     }
 
-
+}
 /* ========================================================================= */
 /* ⚡ AUTOMATIC SECURITY VAULT AUTHENTICATION ACCENT STYLES                  */
 /* ========================================================================= */
@@ -1112,4 +1237,594 @@ body:has(.sidebar-collapsed-hidden-state) .matrix-container {
     border: 1px solid #4ade80 !important;
     box-shadow: 0 0 10px rgba(74, 222, 128, 0.15), inset 0 0 6px rgba(74, 222, 128, 0.05) !important;
 }
+/* ========================================================================= */
+/* 🎨 ✔️ UPDATED: DYNAMIC VISUAL CONTRAST & TYPOGRAPHY RE-BINDINGS          */
+/* ========================================================================= */
+
+/* Fixes the disappearing Gross Income value card */
+.text-white { 
+    color: var(--text-white) !important; 
+    transition: color 0.25s ease;
+}
+
+/* Fixes the low-contrast bottom matrix breakdown labels */
+.breakdown-title { 
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700; 
+    min-width: 150px;
+    color: var(--text-white) !important; /* ✔️ Adaptive shift between slate-grey and dark navy */
+    opacity: 0.85;
+}
+
+/* Enhances general reading text inside dashboard breakdown item grids */
+.dashboard-breakdowns {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 28px;
+    background: rgba(30, 41, 59, 0.08) !important; /* ✔️ Soft light-tint backing */
+    padding: 16px 20px;
+    border-radius: 16px;
+    border: 1px solid var(--border-primary) !important;
+    color: var(--text-white) !important;
+}
+
+/* Adaptive styles for baseline metric numbers */
+.text-red { color: var(--color-expenses) !important; }
+.text-yellow { color: var(--color-tax) !important; }
+.text-green { color: var(--color-takehome) !important; }
+
+/* Horizontal Progress Bar split indicators configurations */
+.expenses-seg { background-color: var(--color-expenses) !important; }
+.tax-seg { background-color: var(--color-tax) !important; }
+.takehome-seg { background-color: var(--color-takehome) !important; }
+
+/* Legend circular accent indicator status pins */
+.dot-software { background: var(--color-expenses) !important; }
+.dot-marketing { background: var(--color-tax) !important; }
+.dot-hardware { background: var(--color-takehome) !important; }
+
+
+/* ========================================================================= */
+/* ⚡ HIGH-PRIORITY BLACK CONTRAST INJECTORS FOR LIGHT MODE                  */
+/* ========================================================================= */
+
+[data-theme="light"] .metric-item .label,
+[data-theme="light"] .breakdown-title,
+[data-theme="light"] .dashboard-breakdowns,
+[data-theme="light"] .dashboard-breakdowns div,
+[data-theme="light"] .dashboard-breakdowns strong {
+    color: #0f172a !important; /* Forces pitch black text on light grey boxes */
+}
+
+/* Force the Gross Income $29,624.00 card reading to turn black */
+[data-theme="light"] #grossDisplay,
+[data-theme="light"] .metric-item:first-child .value,
+[data-theme="light"] .metric-item .value.text-white {
+    color: #0f172a !important; 
+}
+
+/* Fix the tiny labels inside the breakdown lists (Active Invoice, Others, etc.) */
+[data-theme="light"] .breakdown-box {
+    color: #334155 !important; /* Dark charcoal color for the list labels */
+}
+
+/* ========================================================================= */
+/* 🎨 ✔️ FIXED: ADAPTIVE CYBERPUNK SELECTION CARDS FOR ALL THEMING STATES   */
+/* ========================================================================= */
+
+/* 1. Standard Dark Theme Active Selection Profile */
+.transaction-card.multi-selected-active {
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+    background: linear-gradient(145deg, #0c1c2e, #070a13) !important;
+}
+.transaction-card.multi-selected-active .card-client-title,
+.transaction-card.multi-selected-active .card-row-metrics strong {
+    color: #ffffff !important; /* Forces absolute clarity in standard view modes */
+}
+
+/* ========================================================================= */
+/* 🎨 ✔️ FULL REPAIR: ACCURATE ADAPTIVE LIGHT THEME CARD SELECTION MODIFIERS  */
+/* ========================================================================= */
+
+/* 1. Core Light Mode Forces: Overrides all dark presets when theme is toggled */
+[data-theme="light"] .transaction-card.multi-selected-active,
+[data-theme="light"] .transaction-card.pinned-active {
+    background: #e2e8f0 !important; /* Forces a soft crisp gray color right over the dark fill */
+    border-color: #0284c7 !important; /* Clean glowing navy-blue border track line */
+    box-shadow: 0 0 14px rgba(2, 132, 199, 0.25) !important;
+}
+
+/* 2. Text Visibility Fix inside Selected Light Mode Cards */
+[data-theme="light"] .transaction-card.multi-selected-active *,
+[data-theme="light"] .transaction-card.pinned-active * {
+    color: #0f172a !important; /* Forces every single character text string inside to turn pitch black */
+    opacity: 1 !important;
+}
+
+/* 3. Re-clarify currency accents to maintain structural dashboard highlights */
+[data-theme="light"] .transaction-card.multi-selected-active .card-row-metrics strong,
+[data-theme="light"] .transaction-card.pinned-active .card-row-metrics strong {
+    color: #0284c7 !important; /* Turns the net home metric numbers sharp deep blue */
+}
+
+/* 4. Keep baseline unselected dark cards look light gray in light mode profile layout */
+[data-theme="light"] .transaction-card:not(.multi-selected-active):not(.pinned-active) {
+    background: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
+    box-shadow: none !important;
+}
+[data-theme="light"] .transaction-card:not(.multi-selected-active):not(.pinned-active) .card-client-title {
+    color: #0f172a !important;
+}
+[data-theme="light"] .transaction-card:not(.multi-selected-active):not(.pinned-active) .card-row-top span {
+    color: #475569 !important;
+}
+[data-theme="light"] .transaction-card:not(.multi-selected-active):not(.pinned-active) .card-row-metrics span {
+    color: #64748b !important;
+}
+[data-theme="light"] .transaction-card:not(.multi-selected-active):not(.pinned-active) .card-row-metrics strong {
+    color: #0f172a !important;
+}
+
+/* 5. Keeps unselected dark cards light slate-gray to match the rest of the application layout in dark mode */
+:root:not([data-theme="light"]) .transaction-card .card-row-metrics span { 
+    color: #94a3b8 !important; 
+}
+:root:not([data-theme="light"]) .transaction-card .card-row-metrics strong { 
+    color: #ffffff !important; 
+}
+:root:not([data-theme="light"]) .transaction-card .card-row-top span { 
+    color: #64748b !important; 
+}
+
+/* ========================================================================= */
+/* 🛑 GLOBAL RIGHT-HAND SIDE WORKSPACE CONTRAST SWEEP FOR LIGHT MODE        */
+/* ========================================================================= */
+
+/* Forces every single layout text element inside the slider headers to turn pitch black */
+[data-theme="light"] div.control-header,
+[data-theme="light"] div.control-header *,
+[data-theme="light"] .control-header span,
+[data-theme="light"] .settings-grid div,
+[data-theme="light"] .settings-grid span {
+    color: #0f172a !important; /* Premium dark navy / pitch black */
+    opacity: 1 !important;
+    font-weight: 700 !important;
+}
+
+/* Forces the macro annual revenue header section to also pop in black */
+[data-theme="light"] .full-width-control div,
+[data-theme="light"] .full-width-control span,
+[data-theme="light"] #valRevenue {
+    color: #0f172a !important;
+    opacity: 1 !important;
+    font-weight: 800 !important;
+}
+
+/* Secondary override fallback block for slider subtitle tags */
+[data-theme="light"] #valRatio,
+[data-theme="light"] #valTaxRate,
+[data-theme="light"] #valIncomeSplitText,
+[data-theme="light"] #valExpenseSplitText,
+[data-theme="light"] #valTaxSplitText {
+    color: #0f172a !important;
+}
+/* ========================================================================= */
+/* ⚡ THEME-AWARE DROP-DOWN AND OPTGROUP OVERRIDES                           */
+/* ========================================================================= */
+
+/* Sets default dark mode parameters */
+#logSortSelect {
+    background-color: #070a13 !important;
+    color: #f8fafc !important;
+    border-color: #1e293b !important;
+}
+#logSortSelect optgroup {
+    background-color: #0f172a !important;
+    color: #64748b !important;
+}
+#logSortSelect option {
+    background-color: #070a13 !important;
+    color: #f8fafc !important;
+}
+
+/* Light Theme overrides layer */
+[data-theme="light"] #logSortSelect {
+    background-color: #f1f5f9 !important; /* Soft gray backing */
+    color: #0f172a !important;            /* High contrast dark text selection */
+    border-color: #cbd5e1 !important;     /* Light gray border line framework */
+}
+
+[data-theme="light"] #logSortSelect optgroup {
+    background-color: #e2e8f0 !important; /* Shaded group header banner block */
+    color: #1e293b !important;            /* Dark, highly visible group titles */
+    font-weight: bold !important;
+}
+
+[data-theme="light"] #logSortSelect option {
+    background-color: #ffffff !important; /* Clean premium list tiles */
+    color: #334155 !important;            /* High-contrast option names */
+}
+
+/* ========================================================================= */
+/* ⚡ THEME-AWARE SIDEBAR TOGGLE LEVER OVERRIDES                             */
+/* ========================================================================= */
+
+/* Baseline dark mode variables fallbacks for the toggle trigger lever button */
+#sidebarToggleArrowTrigger {
+    background: var(--bg-sidebar) !important;
+    border: 1px solid var(--border-primary) !important;
+    color: var(--text-heading) !important;
+    transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Light mode focus states: turns the button white with clean corporate blue accents */
+[data-theme="light"] #sidebarToggleArrowTrigger {
+    background: #ffffff !important;         /* Crisp premium clean white circle */
+    border: 1px solid #cbd5e1 !important;   /* Soft slate grey tracking circle line */
+    color: #0284c7 !important;            /* High-contrast sharp navy blue arrow vector */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08) !important; /* Elegant light drop shadow depth */
+}
+
+/* Interactive hover enhancement properties across both themes */
+#sidebarToggleArrowTrigger:hover {
+    background: var(--border-primary) !important;
+    color: var(--text-white) !important;
+}
+
+/* ========================================================================= */
+/* 🛡️ DYNAMIC CONTRAST ACCENT PROTECTOR FOR WHITE PALETTES IN LIGHT THEME     */
+/* ========================================================================= */
+
+/* 1. Detect if a metric text color property is forced to white against a white background */
+[data-theme="light"] .metric-item {
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+/* 2. AUTOMATIC FALLBACK SAFETY TRAIN: Forces deep navy blue visibility if values turn white */
+[data-theme="light"] .text-yellow,
+[data-theme="light"] #taxDisplay,
+[data-theme="light"] .metric-item:nth-child(3) .value {
+    /* If the active palette forces a pure white value variable, this intercepts and locks clear contrast */
+    color: var(--color-tax) !important;
+}
+
+/* 3. TARGET-LOCKED SAFETY SWITCH: If the raw palette text color calculation is exactly #ffffff */
+:root[style*="--color-tax: #ffffff"] [data-theme="light"] #taxDisplay,
+:root[style*="--color-tax: #ffffff"] [data-theme="light"] .text-yellow,
+:root[style*="--color-tax: #ffffff"] [data-theme="light"] .metric-item:nth-child(3) *,
+:root[style*="--color-tax: #ffffff"] [data-theme="light"] #taxIncome,
+:root[style*="--color-tax: #ffffff"] [data-theme="light"] #taxWithholding {
+    color: #0f172a !important; /* Forces pitch-black visibility for text and numbers */
+}
+
+/* 4. Ensure the slider title or metrics headers labels stay dark charcoal when they turn white */
+:root[style*="--color-tax: #ffffff"] [data-theme="light"] .metric-item:nth-child(3) .label {
+    color: #475569 !important; /* High contrast dark charcoal gray */
+    opacity: 1 !important;
+}
+
+/* 5. Fix the detailed bottom breakdown summary value panels targets */
+[data-theme="light"] #taxIncome,
+[data-theme="light"] #taxWithholding {
+    color: #0f172a !important;
+}
+
+/* ========================================================================= */
+/* ⚡ ULTIMATE LIGHT-MODE ACCENT METRICS READABILITY SAFEGUARD               */
+/* ========================================================================= */
+
+/* Forces the third column metric label (TAX RESERVE) to go crisp dark charcoal gray */
+[data-theme="light"] .metric-row .metric-item:nth-child(3) .label {
+    color: #475569 !important;
+    opacity: 1 !important;
+    font-weight: 700 !important;
+}
+
+/* Forces the third column metric value ($ 5,843.60) to pop in bold pitch-black navy */
+[data-theme="light"] .metric-row .metric-item:nth-child(3) .value,
+[data-theme="light"] #taxDisplay,
+[data-theme="light"] .text-yellow {
+    color: #0f172a !important; /* Pitch black navy override */
+    opacity: 1 !important;
+    font-weight: 800 !important;
+}
+
+/* Fixes the detailed bottom breakdown summary values at the footer area */
+[data-theme="light"] #taxIncome,
+[data-theme="light"] #taxWithholding,
+[data-theme="light"] .dashboard-breakdowns .text-yellow,
+[data-theme="light"] #taxVaultBreakdownDisplayValue {
+    color: #0f172a !important;
+    opacity: 1 !important;
+}
+/* ========================================================================= */
+/* 🎨 ✔️ FULL REPAIR: DYNAMIC INTERFACE CONTRAST MATRIX (ZERO HARDCODING)   */
+/* ========================================================================= */
+
+/* 1. GENERAL TEXT METRICS RULE: Follows the chosen palette variables dynamically */
+[data-theme="light"] #grossDisplay,
+[data-theme="light"] .metric-item:nth-child(1) .value {
+    color: var(--text-white) !important; /* Inverts cleanly to dark navy/black */
+}
+
+[data-theme="light"] #expensesDisplay,
+[data-theme="light"] .text-red,
+[data-theme="light"] .metric-item:nth-child(2) .value {
+    color: var(--color-expenses) !important; /* Follows Expenses Palette */
+}
+
+[data-theme="light"] #taxDisplay,
+[data-theme="light"] .text-yellow,
+[data-theme="light"] .metric-item:nth-child(3) .value {
+    color: var(--color-tax) !important; /* Follows Tax Palette */
+}
+
+[data-theme="light"] #takeHomeDisplay,
+[data-theme="light"] .text-green,
+[data-theme="light"] .metric-item:nth-child(4) .value {
+    color: var(--color-takehome) !important; /* Follows Take-Home Palette */
+}
+
+
+/* 2. 🛡️ TOTAL EXPENSES INSULATION SHIELD (Triggers ONLY on invisible bounds) */
+:root[style*="--color-expenses: #ffffff"] [data-theme="light"] #expensesDisplay,
+:root[style*="--color-expenses: #ffffff"] [data-theme="light"] .text-red,
+:root[style*="--color-expenses: #ffffff"] [data-theme="light"] .metric-item:nth-child(2) .value {
+    color: #0f172a !important; /* Inverts to black if palette is white */
+}
+:root[style*="--color-expenses: #000000"] [data-theme="light"] #expensesDisplay,
+:root[style*="--color-expenses: #000000"] [data-theme="light"] .text-red,
+:root[style*="--color-expenses: #000000"] [data-theme="light"] .metric-item:nth-child(2) .value {
+    color: #dc2626 !important; /* Falls back to readable crimson if palette is black */
+}
+
+
+/* ========================================================================= */
+/* 🛡️ THEME-AWARE METRICS RE-BINDING (SOLVES THE WHITE PALETTE DISAPPEARANCE) */
+/* ========================================================================= */
+
+/* General default behavior: Let subtitle header labels stay charcoal grey */
+[data-theme="light"] .metric-item .label {
+    color: #475569 !important;
+    opacity: 1 !important;
+    font-weight: 700 !important;
+}
+
+/* ✔️ TARGETED FIX: Binds your Light Theme tax display elements to our new helper property */
+[data-theme="light"] #taxDisplay,
+[data-theme="light"] .text-yellow,
+[data-theme="light"] .metric-item:nth-child(3) .value,
+[data-theme="light"] #taxIncome,
+[data-theme="light"] #taxWithholding,
+[data-theme="light"] .dashboard-breakdowns .text-yellow {
+    /* Pulls our script-guaranteed contrast fallback color seamlessly! */
+    color: var(--color-tax-text-lightmode-fallback) !important;
+    opacity: 1 !important;
+}
+
+/* ✔️ NEW: Ensure the subtitle title label also catches the 3-digit fallback shield */
+:root[style*="--color-tax: #ffffff"] [data-theme="light"] .metric-item:nth-child(3) .label,
+:root[style*="--color-tax: #fff"] [data-theme="light"] .metric-item:nth-child(3) .label {
+    color: #475569 !important; /* Bold charcoal grey profile label */
+    opacity: 1 !important;
+}
+
+
+/* 4. 🛡️ TAKE-HOME PAY INSULATION SHIELD (Triggers ONLY on invisible bounds) */
+:root[style*="--color-takehome: #ffffff"] [data-theme="light"] #takeHomeDisplay,
+:root[style*="--color-takehome: #ffffff"] [data-theme="light"] .text-green,
+:root[style*="--color-takehome: #ffffff"] [data-theme="light"] .metric-item:nth-child(4) .value {
+    color: #0f172a !important; /* Inverts to black if palette is white */
+}
+:root[style*="--color-takehome: #000000"] [data-theme="light"] #takeHomeDisplay,
+:root[style*="--color-takehome: #000000"] [data-theme="light"] .text-green,
+:root[style*="--color-takehome: #000000"] [data-theme="light"] .metric-item:nth-child(4) .value,
+:root[style*="--color-takehome: #000000"] [data-theme="light"] #takeHomePayBreakdownDisplayValue {
+    color: #16a34a !important; /* Falls back to readable green if palette is black */
+}
+
+
+/* 5. GENERAL CARD SUBTITLE LABELS CONTRAST LOCK */
+[data-theme="light"] .metric-item .label {
+    color: #475569 !important; /* Always clean slate-gray for headers */
+    opacity: 1 !important;
+}
+/* ========================================================================= */
+/* ⚡ THEME-AWARE MULTI-CHART SELECTOR RIBBON OVERRIDES                       */
+/* ========================================================================= */
+
+/* 1. Force the ribbon backing container to blend cleanly into Light Mode */
+[data-theme="light"] .matrix-chart-selector-ribbon {
+    background: rgba(241, 245, 249, 0.85) !important; /* Premium crisp light slate tint backing */
+    border: 1px solid #cbd5e1 !important;            /* Light gray outline framing ring track */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* 2. Force the unselected text labels inside the ribbon to be dark charcoal gray */
+[data-theme="light"] .matrix-chart-selector-ribbon button {
+    color: #475569 !important; /* Clear unselected label text visibility */
+    background: none !important;
+}
+
+/* 3. Handle the active/selected tab button styling in Light Mode */
+[data-theme="light"] .matrix-chart-selector-ribbon button[style*="background: rgb(30, 41, 59)"],
+[data-theme="light"] .matrix-chart-selector-ribbon button[style*="background:#1e293b"],
+[data-theme="light"] .matrix-chart-selector-ribbon button:active,
+[data-theme="light"] .matrix-chart-selector-ribbon button:focus {
+    background: #ffffff !important;         /* High-contrast crisp white active tab tile block */
+    color: #0284c7 !important;            /* Sharp corporate navy blue text matching layout headers */
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06) !important;
+    border-radius: 5px;
+}
+
+/* 4. Ensure your javascript highlight sweep logic honors light mode parameters */
+[data-theme="light"] .matrix-chart-selector-ribbon button.active-tab-highlight-override {
+    background: #ffffff !important;
+    color: #0284c7 !important;
+}
+/* ========================================================================= */
+/* ⚡ THEME-AWARE DETACHED POP-OUT PIN BUTTON TRAY MODULE                    */
+/* ========================================================================= */
+
+/* 1. Force the floating capsule container to turn light gray in Light Mode */
+[data-theme="light"] #inlineActionTrayWrapper,
+[data-theme="light"] .matrix-action-icon-tray {
+    background: rgba(241, 245, 249, 0.85) !important; /* Premium light slate tint backing */
+    border: 1px solid #cbd5e1 !important;             /* Soft gray tracking border line */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* 2. Force the vector square box icon vector lines to go sharp slate charcoal */
+[data-theme="light"] #inlineActionTrayWrapper button,
+[data-theme="light"] .matrix-action-icon-tray button {
+    color: #475569 !important; /* Clear unselected label text visibility */
+    transition: color 0.2s ease, transform 0.1s ease !important;
+}
+
+/* 3. Handle interactive hover states over the pop-out tile inside Light Mode */
+[data-theme="light"] #inlineActionTrayWrapper button:hover,
+[data-theme="light"] .matrix-action-icon-tray button:hover {
+    color: #0284c7 !important; /* Shifts icon vector paths to sharp corporate navy blue */
+}
+/* ========================================================================= */
+/* ⚡ ULTIMATE LIGHT-MODE FIXES FOR THE BOTTOM CONTROL PANELS                  */
+/* ========================================================================= */
+
+/* 1. Fixes Step Weight Header Contrast and text text metrics numbers visibility */
+[data-theme="light"] .full-width-control *,
+[data-theme="light"] #valRevenue,
+[data-theme="light"] .multiplier-box label,
+[data-theme="light"] .multiplier-box span {
+    color: #0f172a !important; /* Forces pitch black text strings */
+    opacity: 1 !important;
+}
+
+/* 2. Fixes Step Weight Dropdown Select Field in Light Mode */
+[data-theme="light"] select#revenueStepSelect {
+    background-color: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0284c7 !important; /* Sharp corporate blue selection text */
+}
+
+/* 3. Fixes Slider Stepper Minus/Plus Buttons (- and +) to turn light gray with blue accents */
+[data-theme="light"] .step-btn {
+    background-color: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0284c7 !important; /* High contrast sharp blue text vectors symbols */
+}
+[data-theme="light"] .step-btn:hover {
+    border-color: #0284c7 !important;
+    background-color: #f1f5f9 !important;
+}
+
+/* 4. Fixes Currency Display Base Control Panel buttons tray grid backgrounds */
+[data-theme="light"] #dualCurrencyControlGrid,
+[data-theme="light"] .currency-btn-group {
+    background-color: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+/* 5. Fixes the Unselected Scope toggle button labels text color inside the button group */
+[data-theme="light"] .currency-btn-group button.curr-btn:not(.active) {
+    color: #475569 !important; /* Legible dark charcoal color */
+    background: none !important;
+}
+
+/* 6. Fixes the Ledger Integration panel container box and button layout toggles */
+[data-theme="light"] button#btnToggleMode,
+[data-theme="light"] .toggle-mode-btn {
+    background-color: #f1f5f9 !important; /* Premium clean gray profile background */
+    border: 1px solid #cbd5e1 !important;   /* Light gray ring outline */
+    color: #0284c7 !important;            /* High visibility corporate blue text string labels */
+}
+[data-theme="light"] button#btnToggleMode:hover,
+[data-theme="light"] .toggle-mode-btn:hover {
+    background-color: #0284c7 !important; /* Shifts into corporate blue on cursor mouse hover */
+    color: #ffffff !important;            /* Changes typography text to white inside the hover pass */
+}
+/* ========================================================================= */
+/* ⚡ MASTER REPAIR: SYSTEM-WIDE RANGE SLIDER TRACK OVERRIDES FOR LIGHT THEME*/
+/* ========================================================================= */
+
+/* 1. Force the parent container elements to handle the light background color */
+[data-theme="light"] .slider,
+[data-theme="light"] .stepper-wrapper input[type="range"].slider {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    background: #cbd5e1 !important; /* Premium soft slate-grey track wire */
+}
+
+/* 2. Webkit Engines (Chrome, Safari, Edge, Opera) explicit visual track force */
+[data-theme="light"] input[type="range"].slider::-webkit-slider-runnable-track {
+    -webkit-appearance: none !important; /* ✔️ THE GOLDEN RESET: Wipes out the midnight black track artifact */
+    background: #cbd5e1 !important;       /* Re-injects the premium light grey wire tint */
+    height: 6px !important;
+    border-radius: 9999px !important;
+    border: none !important;
+}
+
+/* 3. Mozilla Engines (Firefox) explicit visual track force */
+[data-theme="light"] input[type="range"].slider::-moz-range-track {
+    background: #cbd5e1 !important;
+    height: 6px !important;
+    border-radius: 9999px !important;
+    border: none !important;
+}
+/* ========================================================================= */
+/* ⚡ ULTIMATE SLIDER THUMB DEAD-CENTER REALIGNMENT FOR LIGHT MODE           */
+/* ========================================================================= */
+
+/* Pulls the slider circular knobs up into perfect vertical center alignment */
+[data-theme="light"] input[type="range"].slider::-webkit-slider-thumb {
+    /* ✔️ THE ALIGNMENT CORRECTION: Adjusted from -6px to pull the knob up precisely onto the center track */
+    margin-top: -6px !important; 
+    transform: translateY(-0.5px) !important; /* Micro-adjustment to prevent browser rounding subpixel drops */
+}
+
+/* Ensure track heights remain identical across all layout definitions */
+[data-theme="light"] input[type="range"].slider::-webkit-slider-runnable-track {
+    height: 6px !important;
+    line-height: 1 !important;
+}
+/* ========================================================================= */
+/* ⚡ ULTIMATE SLIDER THUMB DEAD-CENTER REALIGNMENT FOR LIGHT MODE           */
+/* ========================================================================= */
+
+/* Pulls the slider circular knobs up into perfect vertical center alignment */
+[data-theme="light"] input[type="range"].slider::-webkit-slider-thumb {
+    margin-top: -6px !important; 
+    transform: translateY(-0.5px) !important; /* Micro-adjustment to prevent browser rounding subpixel drops */
+    
+    /* ✔️ THE ONLY TWEAK: Strips the neon blur and removes the thick borders safely */
+    box-shadow: none !important; 
+    border: none !important;      
+}
+
+/* Ensure track heights remain identical across all layout definitions */
+[data-theme="light"] input[type="range"].slider::-webkit-slider-runnable-track {
+    height: 6px !important;
+    line-height: 1 !important;
+}
+/* ========================================================================= */
+/* 🎨 UNIVERSAL MULTI-CHART SELECTED NAVIGATION TABS STYLES                  */
+/* ========================================================================= */
+
+/* 🌌 DARK CYBERMODE ACTIVE HIGHLIGHTS (Applied to all 4 tabs automatically) */
+:root:not([data-theme="light"]) .matrix-chart-selector-ribbon button.active-tab-highlight-override {
+    background: #1e293b !important; /* Premium dark navy tile block */
+    color: #38bdf8 !important;      /* Electric cyber cyan active text */
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.15) !important;
+}
+
+/* ☀️ PREMIUM LIGHTMODE ACTIVE HIGHLIGHTS (Applied to all 4 tabs automatically) */
+[data-theme="light"] .matrix-chart-selector-ribbon button.active-tab-highlight-override {
+    background: #ffffff !important; /* High-contrast crisp white active tab tile */
+    color: #0284c7 !important;    /* Sharp corporate navy blue text matching headers */
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06) !important;
+    border-radius: 5px;
 }

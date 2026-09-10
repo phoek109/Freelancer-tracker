@@ -208,23 +208,61 @@ function initializeMatrixCanvasResizeObserverEngine() {
 }
 
 // =========================================================================
-// 🚀 HIGH-DENSITY DPR RENDERING ENGINE (ELIMINATES BLURRY CANVAS TEXT)
+// 🚀 HIGH-DENSITY DPR RENDERING ENGINE (ULTRA-OPTIMIZED RETINA EDITION)
 // =========================================================================
+
+window.matrixCanvasResizeTimeoutId = null;
 
 function enforceDynamicViewportCanvasSizing() {
     const canvasElement = document.getElementById('flowChart');
     if (!canvasElement || !canvasElement.parentElement) return;
 
-    const parentContainerBoundingBox = canvasElement.parentElement.getBoundingClientRect();
+    // 🚀 PERFORMANCE GUARD: Debounce rapid consecutive window/drawer resize triggers
+    clearTimeout(window.matrixCanvasResizeTimeoutId);
     
-    // Fixed broken tracking parameter cuts:
-    canvasElement.width = parentContainerBoundingBox.width;
-    canvasElement.height = parentContainerBoundingBox.height;
+    window.matrixCanvasResizeTimeoutId = setTimeout(() => {
+        // Schedule redraw to sync smoothly with the mobile device's screen refresh rate
+        requestAnimationFrame(() => {
+            const ctx = canvasElement.getContext('2d');
+            const parentContainerBoundingBox = canvasElement.parentElement.getBoundingClientRect();
+            
+            // 1. Grab physical pixel density coefficient (Retina/High-DPI aware)
+            const devicePixelRatioScale = window.devicePixelRatio || 1;
+            
+            const targetWidth  = Math.floor(parentContainerBoundingBox.width);
+            const targetHeight = Math.floor(parentContainerBoundingBox.height);
 
-    if (typeof window.updateMatrixData === 'function') {
-        window.updateMatrixData();
-    }
+            // 🚀 MEMORY PROTECTION: Quit early if parent dimensions are zero or unchanged
+            if (targetWidth <= 0 || targetHeight <= 0) return;
+            if (canvasElement.width === targetWidth * devicePixelRatioScale && 
+                canvasElement.style.width === targetWidth + 'px') {
+                // If dimensions match perfectly, just re-hydrate data without clearing buffer arrays
+                if (typeof window.updateMatrixData === 'function') window.updateMatrixData();
+                return;
+            }
+            
+            // 2. Lock the internal canvas hardware high-res dimensions
+            canvasElement.width  = targetWidth * devicePixelRatioScale;
+            canvasElement.height = targetHeight * devicePixelRatioScale;
+
+            // 3. Compress container layout presentation using standard CSS pixels
+            canvasElement.style.width  = targetWidth + 'px';
+            canvasElement.style.height = targetHeight + 'px';
+
+            // 4. Wrap rendering coordinate systems inside an isolated state frame block
+            ctx.save();
+            ctx.scale(devicePixelRatioScale, devicePixelRatioScale);
+
+            // 5. Force custom presentation layers to draw shapes instantly
+            if (typeof window.updateMatrixData === 'function') {
+                window.updateMatrixData();
+            }
+            
+            ctx.restore(); // Reverts coordinate metrics back safely
+        });
+    }, 40); // 40ms safety buffer eliminates micro-stuttering on smartphone viewports
 }
+
 
 // Ensure event listener anchors are cleanly attached during boot sequence phases
 document.addEventListener('DOMContentLoaded', () => {
@@ -267,6 +305,7 @@ function drawBackgroundGrid(ctx, w, h) {
 // =========================================================================
 window.activeMatrixChartStyle = "sankey"; // Baseline configuration startup state fallback
 
+// 🔄 REPLACE your existing drawFlowLines function with this theme-aware version:
 function drawFlowLines(gross, expensesValue, taxValue, takeHomeValue) {
     const canvas = document.getElementById('flowChart');
     if (!canvas) return;
@@ -274,13 +313,19 @@ function drawFlowLines(gross, expensesValue, taxValue, takeHomeValue) {
     const w = canvas.width; 
     const h = canvas.height;
 
-    ctx.clearRect(0, 0, w, h);
+    // 🛡️ THE THEME INTERCEPT: Extract the real-time background color from your system property tokens
+    const canvasMainBgColor = (typeof getComputedCanvasColorStyleValue === 'function')
+        ? getComputedCanvasColorStyleValue('--bg-main', '#0b0f19')
+        : '#0b0f19';
 
-    // 🚀 UPDATED ARCHITECTURAL ROUTER: Now supports four unique chart type options
+    // ✔️ FIXED CANVAS CLEAR: Wipes the hardware drawing canvas surface cleanly matching your light mode choice!
+    ctx.fillStyle = canvasMainBgColor;
+    ctx.fillRect(0, 0, w, h);
+
+    // 🚀 UPDATED ARCHITECTURAL ROUTER: Continues drawing your four unique chart choices...
     if (window.activeMatrixChartStyle === "bars") {
         executeStackedColumnRenderingEngine(ctx, w, h, gross, expensesValue, taxValue, takeHomeValue);
     } 
-    // 🎯 NEW DESIGNATED FILTER INTERCEPT SWITCH ROUTE:
     else if (window.activeMatrixChartStyle === "hhoriz") {
         executeHorizontalBarChartRenderingEngine(ctx, w, h, gross, expensesValue, taxValue, takeHomeValue);
     } 
@@ -330,7 +375,6 @@ function executeOriginalSankeyCurvesEngine(ctx, canvas, w, h, gross, expensesVal
         
         ctx.shadowBlur = 3; ctx.shadowColor = color; ctx.stroke(); ctx.shadowBlur = 0;
 
-        // 🚀 CLUTTER REDUCTION GATE: Strip raw dollar amounts entirely if rendering on phone screens
         let labelText;
         if (isMobileViewport) {
             labelText = `${baseText}: ${percentValue}%`;
@@ -342,23 +386,44 @@ function executeOriginalSankeyCurvesEngine(ctx, canvas, w, h, gross, expensesVal
         ctx.font = isMobileViewport ? 'bold 9px "JetBrains Mono", monospace' : 'bold 11px "Plus Jakarta Sans", sans-serif';
         const pillW = ctx.measureText(labelText).width + (isMobileViewport ? 14 : 24);
         
-        // BOUNDARY GUARD INTERCEPTOR
         let targetXPosition = endX;
         if ((targetXPosition + pillW) > (w - 10)) {
             targetXPosition = w - pillW - 10;
         }
 
+        // 🛡️ 1. THE CONTRAST SHIELD GATE: Detect if the color profile is pure white
+        const isColorWhite = color.toLowerCase() === '#ffffff' || color.toLowerCase() === '#f5f5f5';
+        const isCurrentThemeLight = document.documentElement.getAttribute('data-theme') === 'light';
+
         ctx.beginPath(); ctx.roundRect(targetXPosition, endY - 11, pillW, 22, 11);
         ctx.fillStyle = color; ctx.fill();
         
-        // Premium contrast rule: dark text on light backgrounds looks much crisper on mobile screens
-        ctx.fillStyle = isMobileViewport ? '#070a13' : '#ffffff'; 
+        // 🌟 2. INJECT SAFETY OUTLINE RING IF WHITE BLENDS INTO LIGHT WORKSPACE
+        if (isColorWhite && isCurrentThemeLight) {
+            ctx.strokeStyle = '#0f172a'; // High-contrast deep navy border line track
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+        }
+        
+        // 🌟 3. ADJUST TEXT TYPOGRAPHY CONTRAST DIP
+        if (isCurrentThemeLight) {
+            // If the element background itself is white, force the text inside to print pitch-black
+            ctx.fillStyle = isColorWhite ? '#0f172a' : '#ffffff'; 
+        } else {
+            ctx.fillStyle = isMobileViewport ? '#070a13' : '#ffffff'; 
+        }
+        
         ctx.fillText(labelText, targetXPosition + (isMobileViewport ? 7 : 12), endY + 4);
     }
 
-    drawCurve(endY_Expenses, '#f87171', 'Expenses', expPercent, expensesValue);
-    drawCurve(endY_Tax, '#facc15', 'Tax Reserve', taxPercent, taxValue);
-    drawCurve(endY_TakeHome, '#4ade80', 'Take-Home', homePercent, takeHomeValue);
+    // 🔄 FIND & REPLACE at the bottom of executeOriginalSankeyCurvesEngine():
+    const chartColorExpenses = getComputedCanvasColorStyleValue('--color-expenses', '#f87171');
+    const chartColorTax      = getComputedCanvasColorStyleValue('--color-tax', '#facc15');
+    const chartColorTakeHome = getComputedCanvasColorStyleValue('--color-takehome', '#4ade80');
+
+    drawCurve(endY_Expenses, chartColorExpenses, 'Expenses', expPercent, expensesValue);
+    drawCurve(endY_Tax, chartColorTax, 'Tax Reserve', taxPercent, taxValue);
+    drawCurve(endY_TakeHome, chartColorTakeHome, 'Take-Home', homePercent, takeHomeValue);
 
     ctx.beginPath(); ctx.arc(startX, startY, isMobileViewport ? 9 : 13, 0, Math.PI * 2);
     ctx.fillStyle = '#3b82f6'; ctx.fill();
@@ -402,7 +467,7 @@ function executeStackedColumnRenderingEngine(ctx, w, h, gross, totalExpenses, ta
         ctx.lineWidth = 1;
         ctx.beginPath(); ctx.moveTo(paddingLeft, currentLineYPosition); ctx.lineTo(w - paddingRight, currentLineYPosition); ctx.stroke();
 
-        ctx.fillStyle = "#64748b";
+        ctx.fillStyle = getComputedCanvasColorStyleValue('--text-main', '#64748b');
         
         // 🚀 SMART TICK SHORTENING: Use elegant compact K abbreviations for y-axis values on mobile screen bounds
         let displayLabelStr;
@@ -418,11 +483,17 @@ function executeStackedColumnRenderingEngine(ctx, w, h, gross, totalExpenses, ta
 
     if (gross <= 0) return;
 
+    // 🔄 FIND & REPLACE inside executeStackedColumnRenderingEngine():
+    const chartColorExpenses = getComputedCanvasColorStyleValue('--color-expenses', '#f87171');
+    const chartColorTax      = getComputedCanvasColorStyleValue('--color-tax', '#facc15');
+    const chartColorTakeHome = getComputedCanvasColorStyleValue('--color-takehome', '#4ade80');
+
     const barsDataPool = [
-        { value: totalExpenses, color: "#f87171", title: isMobileViewport ? "EXP" : "EXPENSES", ratio: totalExpenses / gross },
-        { value: taxReserve,    color: "#facc15", title: isMobileViewport ? "TAX" : "TAX VAULT", ratio: taxReserve / gross },
-        { value: takeHome,      color: "#4ade80", title: isMobileViewport ? "HOME" : "TAKE-HOME", ratio: takeHome / gross }
+        { value: totalExpenses, color: chartColorExpenses, title: isMobileViewport ? "EXP" : "EXPENSES", ratio: totalExpenses / gross },
+        { value: taxReserve,    color: chartColorTax,      title: isMobileViewport ? "TAX" : "TAX VAULT", ratio: taxReserve / gross },
+        { value: takeHome,      color: chartColorTakeHome, title: isMobileViewport ? "HOME" : "TAKE-HOME", ratio: takeHome / gross }
     ];
+
 
     const totalColumnsCount = barsDataPool.length;
     const absoluteColumnWidth = (graphWidth / totalColumnsCount) * (isMobileViewport ? 0.65 : 0.55); 
@@ -467,31 +538,30 @@ function executeStackedColumnRenderingEngine(ctx, w, h, gross, totalExpenses, ta
 
     ctx.strokeStyle = "#1e293b"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(paddingLeft, baselineY); ctx.lineTo(w - paddingRight, baselineY); ctx.stroke();
 }
-// =========================================================================
-// 📈 PRESENTATION LAYER 3: COMPACT CHUNKY DONUT PIE BREAKDOWN MATRIX
-// =========================================================================
+
 function executeProportionPieRenderingEngine(ctx, w, h, gross, expensesValue, taxValue, takeHomeValue) {
     if (typeof drawBackgroundGrid === 'function') drawBackgroundGrid(ctx, w, h);
     const activeSymbol = window.currentCurrency || '$ ';
     const isMobileViewport = w < 500;
     
-    // 🚀 THE FIX: Shifts the wheel completely over to the right-hand side where you circled
     const centerX = isMobileViewport ? w * 0.68 : w * 0.38;
-    
-    // 🚀 HEIGHT TUNER: Drops it to 0.44 to align with the middle of your left legend keys
     const centerY = isMobileViewport ? h * 0.44 : h * 0.50; 
-    
-    // Proportional radius frames optimized for 375px viewport dimensions
     const donutCenterRadiusTrack = isMobileViewport ? Math.min(w, h) * 0.17 : Math.min(w, h) * 0.27; 
     const donutRibbonThickness   = isMobileViewport ? 34 : 54; 
 
     if (gross <= 0) return;
 
+    // 📥 1. EXTRACT THE COLOR CODES DYNAMICALLY FROM THE PALETTE ENGINE
+    const chartColorExpenses = getComputedCanvasColorStyleValue('--color-expenses', '#f87171');
+    const chartColorTax      = getComputedCanvasColorStyleValue('--color-tax', '#facc15');
+    const chartColorTakeHome = getComputedCanvasColorStyleValue('--color-takehome', '#4ade80');
+    const themeBgMain        = getComputedCanvasColorStyleValue('--bg-main', '#0b0f19');
 
+    // Applied variables to the main wheel slices loop
     const slices = [
-        { value: expensesValue, color: "#f87171", label: "Expenses" },
-        { value: taxValue,      color: "#facc15", label: "Tax Vault" },
-        { value: takeHomeValue, color: "#4ade80", label: "Take-Home" }
+        { value: expensesValue, color: chartColorExpenses, label: "Expenses" },
+        { value: taxValue,      color: chartColorTax,      label: "Tax Vault" },
+        { value: takeHomeValue, color: chartColorTakeHome, label: "Take-Home" }
     ];
 
     slices.sort((a, b) => b.value - a.value);
@@ -514,32 +584,34 @@ function executeProportionPieRenderingEngine(ctx, w, h, gross, expensesValue, ta
         currentStartAngle += sliceAngleSize;
     });
 
+    // ✔️ 2. FIXED CENTER FINISH: Adapts cleanly to turn white or midnight-dark automatically
     ctx.save();
     ctx.beginPath();
     ctx.arc(centerX, centerY, donutCenterRadiusTrack - (donutRibbonThickness / 2) - 1, 0, 2 * Math.PI);
-    ctx.fillStyle = "#070a13"; 
+    ctx.fillStyle = themeBgMain; 
     ctx.fill();
     ctx.restore();
 
     // Text legend checklist layout parameters
+    // 📥 3. APPLIED PALETTES TO THE SIDE-LEGEND ARRAY HERE TOO
     const originalLegendOrder = [
-        { value: expensesValue, color: "#f87171", label: "Expenses" },
-        { value: taxValue,      color: "#facc15", label: "Tax Vault" },
-        { value: takeHomeValue, color: "#4ade80", label: "Take-Home" }
+        { value: expensesValue, color: chartColorExpenses, label: "Expenses" },
+        { value: taxValue,      color: chartColorTax,      label: "Tax Vault" },
+        { value: takeHomeValue, color: chartColorTakeHome, label: "Take-Home" }
     ];
 
     originalLegendOrder.forEach((slice, idx) => {
         const legendX = isMobileViewport ? 24 : w * 0.64;
-        
-        // 🎯 ADJUSTED LEGEND POSITION: Moved down from 0.70 to 0.78 to make room for the wheel
         const legendY = isMobileViewport ? (h * 0.78) + (idx * 18) : (h * 0.38) + (idx * 24);
+        
         ctx.fillStyle = slice.color;
         ctx.beginPath();
         ctx.arc(legendX, legendY - 4, isMobileViewport ? 4 : 5, 0, 2 * Math.PI);
         ctx.fill();
 
+        // ✔️ 4. THEME-AWARE CONTRAST TEXT SWITCH FOR THE LEGEND TITLES
         ctx.font = isMobileViewport ? "bold 9px 'JetBrains Mono', monospace" : "bold 11px 'Plus Jakarta Sans', sans-serif";
-        ctx.fillStyle = "#f8fafc";
+        ctx.fillStyle = getComputedCanvasColorStyleValue('--text-white', '#f8fafc');
         
         const percentageString = Math.round((slice.value / gross) * 100);
         
@@ -554,23 +626,25 @@ function executeProportionPieRenderingEngine(ctx, w, h, gross, expensesValue, ta
         ctx.fillText(labelTextString, legendX + 14, legendY);
     });
 
-    // Paint dynamic center gross cash totals labels text overlays (Synchronized to new coordinates)
+    // Paint dynamic center gross cash totals labels text overlays
     ctx.save();
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
     ctx.font = isMobileViewport ? "bold 7px 'JetBrains Mono', monospace" : "bold 8px 'JetBrains Mono', monospace";
-    ctx.fillStyle = "#64748b";
+    ctx.fillStyle = getComputedCanvasColorStyleValue('--text-main', '#64748b');
     ctx.fillText("GROSS INCOME", centerX, centerY - (isMobileViewport ? 5 : 8));
 
     ctx.font = isMobileViewport ? "bold 9px 'JetBrains Mono', monospace" : "bold 12px 'JetBrains Mono', monospace";
-    ctx.fillStyle = "#38bdf8"; 
+    ctx.fillStyle = getComputedCanvasColorStyleValue('--text-heading', '#38bdf8'); 
     
     const centerTotalString = `${activeSymbol}${gross.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
     ctx.fillText(centerTotalString, centerX, centerY + (isMobileViewport ? 5 : 6));
 
     ctx.restore();
 }
+
+
 // =========================================================================
 // 📈 PRESENTATION LAYER 4: STANDALONE HORIZONTAL BAR GRAPH FOR MATRIX PANEL
 // =========================================================================
@@ -607,7 +681,7 @@ function executeHorizontalBarChartRenderingEngine(ctx, w, h, gross, totalExpense
         ctx.lineWidth = 1;
         ctx.beginPath(); ctx.moveTo(currentLineXPosition, paddingTop); ctx.lineTo(currentLineXPosition, h - paddingBottom); ctx.stroke();
 
-        ctx.fillStyle = "#64748b";
+        ctx.fillStyle = getComputedCanvasColorStyleValue('--text-main', '#64748b');
         
         // Mobile compact axis numbering filters
         let displayXLabelStr;
@@ -623,10 +697,15 @@ function executeHorizontalBarChartRenderingEngine(ctx, w, h, gross, totalExpense
 
     if (gross <= 0) return;
 
+    // 🔄 FIND & REPLACE inside executeHorizontalBarChartRenderingEngine():
+    const chartColorExpenses = getComputedCanvasColorStyleValue('--color-expenses', '#f87171');
+    const chartColorTax      = getComputedCanvasColorStyleValue('--color-tax', '#facc15');
+    const chartColorTakeHome = getComputedCanvasColorStyleValue('--color-takehome', '#4ade80');
+
     const barsDataPool = [
-        { value: totalExpenses, color: "#f87171", title: isMobileViewport ? "EXP" : "EXPENSES", ratio: totalExpenses / gross },
-        { value: taxReserve,    color: "#facc15", title: isMobileViewport ? "TAX" : "TAX VAULT", ratio: taxReserve / gross },
-        { value: takeHome,      color: "#4ade80", title: isMobileViewport ? "HOME" : "TAKE-HOME", ratio: takeHome / gross }
+        { value: totalExpenses, color: chartColorExpenses, title: isMobileViewport ? "EXP" : "EXPENSES", ratio: totalExpenses / gross },
+        { value: taxReserve,    color: chartColorTax,      title: isMobileViewport ? "TAX" : "TAX VAULT", ratio: taxReserve / gross },
+        { value: takeHome,      color: chartColorTakeHome, title: isMobileViewport ? "HOME" : "TAKE-HOME", ratio: takeHome / gross }
     ];
 
     const totalBarsCount = barsDataPool.length;
@@ -666,15 +745,39 @@ function executeHorizontalBarChartRenderingEngine(ctx, w, h, gross, totalExpense
 function switchMatrixChartStylePresentationMode(targetStyleName) {
     window.activeMatrixChartStyle = targetStyleName;
     const tabs = ["sankey", "bars", "hhoriz", "pie"]; // Included 'hhoriz' in selection pool array list
+    
+    const isCurrentThemeLight = document.documentElement.getAttribute('data-theme') === 'light';
+
     tabs.forEach(style => {
-        const btn = document.getElementById(`tabChart${style.charAt(0).toUpperCase() + style.slice(1)}`);
+        // 🛡️ THE CASE-SENSITIVITY AUTOCORRECTOR: Try standard camelCase first
+        let buttonId = `tabChart${style.charAt(0).toUpperCase() + style.slice(1)}`;
+        let btn = document.getElementById(buttonId);
+        
+        // 🔍 FALLBACK TRAP: If it returns null, check for the double-capital spelling variation
+        if (!btn && style === "hhoriz") {
+            btn = document.getElementById("tabChartHHoriz");
+        }
+        // 🔍 SECONDARY FALLBACK: Check for total lowercase fallback variation
+        if (!btn && style === "hhoriz") {
+            btn = document.getElementById("tabCharthhoriz");
+        }
+        
+        // If the button element still isn't found anywhere in the HTML, skip to prevent crashing
         if (!btn) return;
+        
         if (style === targetStyleName) {
-            btn.style.background = "#1e293b";
-            btn.style.color = "#38bdf8";
+            // Switch color maps depending on Light vs Dark theme selection
+            if (isCurrentThemeLight) {
+                btn.style.background = "#ffffff"; // Crisp white active tab tile block
+                btn.style.color = "#0284c7";      // Sharp corporate navy blue text
+            } else {
+                btn.style.background = "#1e293b"; // Classic dark navy tile block
+                btn.style.color = "#38bdf8";      // Electric cyber cyan active text
+            }
         } else {
+            // Set readable unselected text variations across both themes
             btn.style.background = "none";
-            btn.style.color = "#64748b";
+            btn.style.color = isCurrentThemeLight ? "#475569" : "#64748b";
         }
     });
     if (typeof window.updateMatrixData === 'function') window.updateMatrixData();
@@ -811,74 +914,88 @@ function updateMatrixData() {
     // =========================================================================
     // ⚡ SCENARIO A: HISTORICAL DRILL-DOWN BLOCK (PERFECT SHEET ALIGNMENT)
     // =========================================================================
-    if (window.currentlyPinnedLogIndex !== null && window.cachedHistoricalLogs && window.cachedHistoricalLogs[window.currentlyPinnedLogIndex]) {
-        const logItem = window.cachedHistoricalLogs[window.currentlyPinnedLogIndex];
-        
-        // Freeze range inputs programmatically while reviewing closed transactions
-        const slidersToLock = ['inputRevenue', 'inputRatio', 'inputTaxRate', 'inputIncomeSplit', 'inputExpenseSplit', 'inputTaxSplit'];
-        slidersToLock.forEach(id => {
-            const sliderEl = document.getElementById(id);
-            if (sliderEl) {
-                sliderEl.disabled = true;
-                sliderEl.style.cursor = "not-allowed";
-                sliderEl.style.opacity = "0.5";
-            }
-        });
-
-        // 1. Pull verified values straight from your raw metadata attributes cache
-        const invoiceAmt        = parseFloat(logItem.amount) || 0;
-        const platformPctVal    = parseFloat(logItem.platformPct) || 0;
-        const fxRateVal         = parseFloat(logItem.fxRate) || 1;
-        const rawWithholdAmt    = parseFloat(logItem.withholdAmt) || 0;
-        const bizExpenseAmt     = parseFloat(logItem.bizExpense) || 0;
-        
-        // 🚀 ABSOLUTE SHEET TRUTH INGESTION: Grab formula values exactly as written in your columns
-        gross                   = parseFloat(logItem.homeIncome) || parseFloat(logItem.netHomeIncome) || 0;
-        const incomeTaxOwed     = parseFloat(logItem.finalTaxOwed) || 0;
-        const takeHome          = parseFloat(logItem.takeHomePay) || 0;
-
-        // Platform fee formulas matching sheet row column alignments exactly
-        const computedPlatformFeeHome = invoiceAmt * platformPctVal * fxRateVal;
-        const logTotalExpenses = bizExpenseAmt + computedPlatformFeeHome;
-        const computedNetProfit = gross - bizExpenseAmt; 
-
-        // Convert withholding tax from client currency into home currency using the transaction fxRate
-        const withholdingTaxHome = rawWithholdAmt * fxRateVal;
-
-        // 🚀 COMBINED VISUAL TAX RESERVE VALUE: Matches your metric card definitions cleanly
-        const taxReserve = incomeTaxOwed + withholdingTaxHome;
-
-        const activeSymbol = window.currentCurrency || '$ ';
-        // 2. Inject the final absolute figures directly onto the main visual panel cards
-        if (document.getElementById('grossDisplay')) document.getElementById('grossDisplay').innerText = `${activeSymbol}${gross.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
-        if (document.getElementById('expensesDisplay')) document.getElementById('expensesDisplay').innerText = `${activeSymbol}${logTotalExpenses.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
-        if (document.getElementById('taxDisplay')) document.getElementById('taxDisplay').innerText = `${activeSymbol}${taxReserve.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
-        if (document.getElementById('takeHomeDisplay')) document.getElementById('takeHomeDisplay').innerText = `${activeSymbol}${takeHome.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
-
-        // Hydrate bottom matrix legend breakdown panels dynamically using log data rows profiles
-        if (document.getElementById('incActive')) document.getElementById('incActive').innerText = `${activeSymbol}${gross.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-        if (document.getElementById('incOthers')) document.getElementById('incOthers').innerText = `${activeSymbol}0.00`;
-        if (document.getElementById('expBusinessExpenses')) document.getElementById('expBusinessExpenses').innerText = `${activeSymbol}${bizExpenseAmt.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-        if (document.getElementById('expPlatformFees')) document.getElementById('expPlatformFees').innerText = `${activeSymbol}${computedPlatformFeeHome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-        if (document.getElementById('taxIncome')) document.getElementById('taxIncome').innerText = `${activeSymbol}${incomeTaxOwed.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-        if (document.getElementById('taxWithholding')) document.getElementById('taxWithholding').innerText = `${activeSymbol}${withholdingTaxHome.toLocaleString(undefined, {maximumFractionDigits:0})}`;
-
-        // 3. Update horizontal progress bar split segment indicators widths matching your log truth
-        if (gross > 0) {
-            document.getElementById('barExpenses').style.width = `${(logTotalExpenses / gross) * 100}%`;
-            document.getElementById('barTax').style.width = `${(taxReserve / gross) * 100}%`;
-            document.getElementById('barTakeHome').style.width = `${(takeHome / gross) * 100}%`;
+// =========================================================================
+// 🚀 REPAIRED PINNED VIEW SCENARIO INSIDE updateMatrixData() IN matrix-engine.js
+// =========================================================================
+if (window.currentlyPinnedLogIndex !== null && window.cachedHistoricalLogs && window.cachedHistoricalLogs[window.currentlyPinnedLogIndex]) {
+    const logItem = window.cachedHistoricalLogs[window.currentlyPinnedLogIndex];
+    
+    // Freeze range inputs programmatically while reviewing archival states
+    const slidersToLock = ['inputRevenue', 'inputRatio', 'inputTaxRate', 'inputIncomeSplit', 'inputExpenseSplit', 'inputTaxSplit'];
+    slidersToLock.forEach(id => {
+        const sliderEl = document.getElementById(id);
+        if (sliderEl) {
+            sliderEl.disabled = true;
+            sliderEl.style.cursor = "not-allowed";
+            sliderEl.style.opacity = "0.5";
         }
+    });
 
-        // 4. Force curves to match the absolute data values passed directly from the data cells
-        if (typeof drawFlowLines === 'function') {
-            const expRatioLog = gross > 0 ? (logTotalExpenses / gross) : 0;
-            const taxRatioLog = gross > 0 ? (taxReserve / gross) : 0.05;
-            
-            drawFlowLines(expRatioLog, taxRatioLog, computedNetProfit, gross);
-        }
-        return; // Halt process cleanly right here to insulate historical rows maps parameters
+    // 1. Pull core layout values straight from our row cache
+    const invoiceAmt        = parseFloat(logItem.amount) || 0;
+    const platformPctVal    = parseFloat(logItem.platformPct) || 0;
+    const fxRateVal         = parseFloat(logItem.fxRate) || 1;
+    const bizExpenseAmt     = parseFloat(logItem.bizExpense) || 0;
+    
+    gross                   = parseFloat(logItem.homeIncome) || parseFloat(logItem.netHomeIncome) || 0;
+    const incomeTaxOwed     = parseFloat(logItem.finalTaxOwed) || 0;
+    const takeHome          = parseFloat(logItem.takeHomePay) || 0;
+
+    // ─── 🛡️ FRONTEND HYBRID WITHHOLDING DECODER TRACK ───
+    let withholdingTaxHome = 0;
+    const rawWithholdColumnValue = parseFloat(logItem.withholdAmt) || 0;
+
+    // If rowTaxRateSetting is undefined, null, or empty string, it's a legacy row entry
+    if (logItem.rowTaxRateSetting === undefined || logItem.rowTaxRateSetting === null || String(logItem.rowTaxRateSetting).trim() === "") {
+        withholdingTaxHome = rawWithholdColumnValue * fxRateVal; // Legacy absolute cash format
+    } else {
+        // Modern row entry: Column F is a percentage fraction, multiply by Invoice Amount
+        withholdingTaxHome = (invoiceAmt * rawWithholdColumnValue) * fxRateVal; // Percentage format
     }
+
+    const computedPlatformFeeHome = invoiceAmt * platformPctVal * fxRateVal;
+    const logTotalExpenses = bizExpenseAmt + computedPlatformFeeHome;
+    const computedNetProfit = gross - bizExpenseAmt; 
+
+    // Combined metric card value sum
+    const taxReserve = incomeTaxOwed + withholdingTaxHome;
+
+    const logCurrencyCode = logItem.rowCurrencySetting || logItem.currency || "USD";
+    const logSymbol = typeof getGlobalCurrencySymbolCharacter === 'function' 
+        ? getGlobalCurrencySymbolCharacter(logCurrencyCode) 
+        : '$ ';
+
+    window.currentCurrency = logSymbol;
+
+    // 2. Inject figures onto dashboard layout nodes with full decimal precision
+    if (document.getElementById('grossDisplay')) document.getElementById('grossDisplay').innerText = `${logSymbol}${gross.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+    if (document.getElementById('expensesDisplay')) document.getElementById('expensesDisplay').innerText = `${logSymbol}${logTotalExpenses.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+    if (document.getElementById('taxDisplay')) document.getElementById('taxDisplay').innerText = `${logSymbol}${taxReserve.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+    if (document.getElementById('takeHomeDisplay')) document.getElementById('takeHomeDisplay').innerText = `${logSymbol}${takeHome.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+    
+    if (document.getElementById('valRevenue')) document.getElementById('valRevenue').innerText = `${logSymbol}${gross.toLocaleString()}`;
+    
+    // Hydrate breakdown panels using the localized log symbol
+    if (document.getElementById('incActive')) document.getElementById('incActive').innerText = `${logSymbol}${gross.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+    if (document.getElementById('incOthers')) document.getElementById('incOthers').innerText = `${logSymbol}0.00`;
+    if (document.getElementById('expBusinessExpenses')) document.getElementById('expBusinessExpenses').innerText = `${logSymbol}${bizExpenseAmt.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+    if (document.getElementById('expPlatformFees')) document.getElementById('expPlatformFees').innerText = `${logSymbol}${computedPlatformFeeHome.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+    if (document.getElementById('taxIncome')) document.getElementById('taxIncome').innerText = `${logSymbol}${incomeTaxOwed.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+    if (document.getElementById('taxWithholding')) document.getElementById('taxWithholding').innerText = `${logSymbol}${withholdingTaxHome.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+
+    if (gross > 0) {
+        document.getElementById('barExpenses').style.width = `${(logTotalExpenses / gross) * 100}%`;
+        document.getElementById('barTax').style.width = `${(taxReserve / gross) * 100}%`;
+        document.getElementById('barTakeHome').style.width = `${(takeHome / gross) * 100}%`;
+    }
+
+    if (typeof drawFlowLines === 'function') {
+        drawFlowLines(gross, logTotalExpenses, taxReserve, takeHome);
+    }
+    
+    if (typeof synchronizeDualCurrencyActionButtons === 'function') synchronizeDualCurrencyActionButtons();
+    return; 
+}
 
     
     // =========================================================================
@@ -926,13 +1043,16 @@ function updateMatrixData() {
         if (document.getElementById('takeHomeDisplay')) {
             document.getElementById('takeHomeDisplay').innerText = `${activeSymbol}${takeHome.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
         }
-        // 🚀 FIXED SCENARIO B LEGEND: Enforce uniform double-decimal formatting across detailed breakdown matrices
+        
+        // 🚀 CRITICAL INCOME BREAKDOWN OVERHAUL: Maps gross sum completely to Active Invoice on boot tracking
         if (document.getElementById('incActive')) {
-            document.getElementById('incActive').innerText = `${activeSymbol}${(sheetMetrics.incActive || 0).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+            document.getElementById('incActive').innerText = `${activeSymbol}${gross.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
         }
         if (document.getElementById('incOthers')) {
-            document.getElementById('incOthers').innerText = `${activeSymbol}${(sheetMetrics.incOthers || 0).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+            document.getElementById('incOthers').innerText = `${activeSymbol}0.00`;
         }
+        
+        // 🚀 FIXED SCENARIO B LEGEND: Enforce uniform double-decimal formatting across detailed breakdown matrices
         if (document.getElementById('expBusinessExpenses')) {
             document.getElementById('expBusinessExpenses').innerText = `${activeSymbol}${(sheetMetrics.BusinessExpenses || 0).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
         }
@@ -956,7 +1076,9 @@ function updateMatrixData() {
             // ORDER: (gross, expensesValue, taxValue, takeHomeValue)
             drawFlowLines(gross, totalExpenses, taxReserve, takeHome);
         }
-    } else {
+    }
+ 
+    else {
         // --- 🚀 PREDICTIVE MODE: DRIVEN DIRECTLY BY USER SLIDER SUBTRACTIONS ---
         gross = parseFloat(inputRevenue ? inputRevenue.value : 0) || 0;
         expRatio = (parseFloat(inputRatio ? inputRatio.value : 0) || 0) / 100;
@@ -1134,41 +1256,35 @@ document.addEventListener('DOMContentLoaded', () => {
     let globalStepperIntervalLoop = null;
     let globalStepperDelayTimeout = null;
 
-        // Scan the user view for all active data-stepper buttons
-        document.querySelectorAll('.step-btn[data-slider-target]').forEach(button => {
-            const targetSliderId = button.getAttribute('data-slider-target');
-            const loopDirection  = parseFloat(button.getAttribute('data-direction')) || 1;
-            
-            // 🚀 CRITICAL FIX: Removed inputTaxRate from this check so it simulates independently!
-            let isGlobalMacroAction = (targetSliderId === 'inputRatio');
+    // 🔄 REPLACE your existing button search loop with this target-locked patch:
+    document.querySelectorAll('.step-btn[data-slider-target]').forEach(button => {
+        const targetSliderId = button.getAttribute('data-slider-target');
+        const loopDirection  = parseFloat(button.getAttribute('data-direction')) || 1;
+        
+        let isGlobalMacroAction = (targetSliderId === 'inputRatio');
+        let operationalStepWeight = 0.1;
+        if (targetSliderId === 'inputTaxRate') {
+            operationalStepWeight = 0.5; 
+        }
 
-            // Match the step increment size precisely to the Target Tax Rate ranges
-            let operationalStepWeight = 0.1;
-            if (targetSliderId === 'inputTaxRate') {
-                operationalStepWeight = 0.5; 
-            }
-
-        // Capture initial click drop triggers phase
         button.addEventListener('mousedown', (e) => {
+            // ✔️ FIXED: Do not intercept actions unless they specifically run the range adjustments
+            if (!targetSliderId) return; 
+            
             e.preventDefault();
             killActiveStepperTimers();
 
-            // Intercept trace: Check if this specific button runs your Annual Revenue pipeline
             if (targetSliderId === 'inputRevenue') {
                 if (typeof adjustRevenueViaMultiplier === 'function') adjustRevenueViaMultiplier(loopDirection);
-
                 globalStepperDelayTimeout = setTimeout(() => {
                     globalStepperIntervalLoop = setInterval(() => {
                         if (typeof adjustRevenueViaMultiplier === 'function') adjustRevenueViaMultiplier(loopDirection);
                     }, 40); 
                 }, 350);
-            } 
-            // Standard Sliders Branch Flow Channel
-            else {
+            } else {
                 if (typeof adjustSliderStep === 'function') {
                     adjustSliderStep(targetSliderId, loopDirection * operationalStepWeight, isGlobalMacroAction);
                 }
-
                 globalStepperDelayTimeout = setTimeout(() => {
                     globalStepperIntervalLoop = setInterval(() => {
                         if (typeof adjustSliderStep === 'function') {
@@ -1179,17 +1295,19 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Safe cleanup event listener targets: kill rapid counts when mouse lifts or leaves button area
         button.addEventListener('mouseup', killActiveStepperTimers);
         button.addEventListener('mouseleave', killActiveStepperTimers);
         
-        // Mobile layout capacitive touchscreen hardware alignment bindings
         button.addEventListener('touchstart', (e) => {
+            // ✔️ FIXED: Check class structure boundaries to avoid breaking standard form buttons
+            if (e.target.tagName === 'BUTTON' && !e.target.classList.contains('step-btn')) return;
             e.preventDefault();
             button.dispatchEvent(new Event('mousedown'));
         }, { passive: false });
+        
         button.addEventListener('touchend', killActiveStepperTimers);
     });
+
 
     function killActiveStepperTimers() {
         if (globalStepperDelayTimeout) clearTimeout(globalStepperDelayTimeout);
@@ -1463,6 +1581,95 @@ if (typeof originalDispatchTransactionBundle === 'function') {
     });
 })();
 
+/* ========================================================================= */
+/* 🎛️ STANDALONE LEFT-EDGE GESTURE ENGINE: CONTROLS GRID LINE VISIBILITY     */
+/* ========================================================================= */
+
+// Global tracker state initialized natively for grid lines visibility
+window.matrixChartGridLinesOpacity = 0.25; 
+
+(function initLeftPanelGridDragGestureEngine() {
+    const wrapper = document.getElementById('matrixFlowChartWrapper');
+    if (!wrapper) return;
+
+    let isDraggingGridLines = false;
+
+    // Boundary filter: Intercept actions occurring strictly in the LEFT 15% width zone
+    function checkIsWithinLeftSidePanelBounds(clientX, clientY) {
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const touchXPositionInsideWrapper = clientX - wrapperRect.left;
+        const touchYPositionInsideWrapper = clientY - wrapperRect.top;
+        
+        // 🚀 PROTECTION SHIELD GATE: Avoid reaching the top 60px chart selector ribbon area
+        if (touchYPositionInsideWrapper < 60) return false;
+
+        // Returns true ONLY if the user drags inside the far left 15% strip
+        return touchXPositionInsideWrapper < (wrapperRect.width * 0.15); 
+    }
+
+    function calculateGridOpacityFromVerticalPosition(clientY) {
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const touchYPositionInsideWrapper = clientY - wrapperRect.top;
+        
+        // Sliding scale map logic: sliding UP dims lines, sliding DOWN brightens them
+        // Hard clamps alpha visibility securely between 0.00 (invisible) and 0.80 (high contrast sharp grid)
+        let computedAlphaRatio = 1 - (touchYPositionInsideWrapper / wrapperRect.height);
+        window.matrixChartGridLinesOpacity = Math.max(0.00, Math.min(0.80, computedAlphaRatio));
+        
+        // Force an immediate live visual redraw pass across the canvas surface
+        if (typeof window.updateMatrixData === 'function') {
+            window.updateMatrixData();
+        }
+    }
+
+    // 🖱️ DESKTOP MOUSE INTERACTION HANDLERS
+    wrapper.addEventListener('mousedown', (e) => {
+        if (checkIsWithinLeftSidePanelBounds(e.clientX, e.clientY)) {
+            isDraggingGridLines = true;
+            wrapper.style.cursor = 'ns-resize'; 
+            calculateGridOpacityFromVerticalPosition(e.clientY);
+            e.preventDefault();
+        }
+    });
+
+    window.addEventListener('mousemove', (e) => {
+        if (!isDraggingGridLines) return;
+        calculateGridOpacityFromVerticalPosition(e.clientY);
+    });
+
+    window.addEventListener('mouseup', () => {
+        if (isDraggingGridLines) {
+            isDraggingGridLines = false;
+            wrapper.style.cursor = '';
+        }
+    });
+
+    // 📱 SMARTPHONE CAPACITIVE TOUCH GESTURE HANDLERS
+    wrapper.addEventListener('touchstart', (e) => {
+        if (!e.touches || e.touches.length === 0) return;
+        const mobileFirstTouchPoint = e.touches[0];
+        
+        if (checkIsWithinLeftSidePanelBounds(mobileFirstTouchPoint.clientX, mobileFirstTouchPoint.clientY)) {
+            isDraggingGridLines = true;
+            calculateGridOpacityFromVerticalPosition(mobileFirstTouchPoint.clientY);
+            e.preventDefault(); // Stop mobile viewport scrolling while adjusting lines opacity
+        }
+    }, { passive: false });
+
+    wrapper.addEventListener('touchmove', (e) => {
+        if (!isDraggingGridLines) return;
+        if (!e.touches || e.touches.length === 0) return;
+        const mobileFirstTouchPoint = e.touches[0];
+        
+        calculateGridOpacityFromVerticalPosition(mobileFirstTouchPoint.clientY);
+        e.preventDefault();
+    }, { passive: false });
+
+    wrapper.addEventListener('touchend', () => {
+        isDraggingGridLines = false;
+    });
+})();
+
 // =========================================================================
 // 🚀 THE ULTIMATE POP-OUT BINDER HOOK (FIXES DEAD CLICK TRAAPS)
 // =========================================================================
@@ -1498,3 +1705,54 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// Dynamic Runtime Variable Extraction Utility Hook
+function getComputedCanvasColorStyleValue(customPropertyName, defaultFallbackHex) {
+    const rawValue = getComputedStyle(document.documentElement).getPropertyValue(customPropertyName).trim();
+    return rawValue || defaultFallbackHex;
+}
+
+function drawBackgroundGrid(ctx, w, h) {
+    const isCurrentThemeLight = document.documentElement.getAttribute('data-theme') === 'light';
+    
+    // Choose base line colors dynamically depending on the current active theme setting selection
+    const r = isCurrentThemeLight ? 148 : 30;
+    const g = isCurrentThemeLight ? 163 : 41;
+    const b = isCurrentThemeLight ? 184 : 59;
+    
+    // ✔️ FIXED: Injects the real-time calculated left-edge gesture opacity ratio seamlessly!
+    const activeGridOpacityValue = (window.matrixChartGridLinesOpacity !== undefined) 
+        ? window.matrixChartGridLinesOpacity 
+        : 0.25;
+
+    ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${activeGridOpacityValue})`;
+    ctx.lineWidth = 1;
+    
+    // Draw vertical graph grid alignment markings lines
+    for (let x = 0; x < w; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+    }
+    // Draw horizontal graph grid metrics tracking grid lines
+    for (let y = 0; y < h; y += 40) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+    }
+}
+
+// 🔄 UPDATE: Inside executeProportionPieRenderingEngine()
+// Replace the hardcoded slice arrays definition with this variables extraction hook:
+const colorExpenses = getComputedCanvasColorStyleValue('--color-expenses', '#f87171');
+const colorTax      = getComputedCanvasColorStyleValue('--color-tax', '#facc15');
+const colorTakeHome = getComputedCanvasColorStyleValue('--color-takehome', '#4ade80');
+const colorBgMain   = getComputedCanvasColorStyleValue('--bg-main', '#0b0f19');
+
+const slices = [
+    { value: expensesValue, color: colorExpenses, label: "Expenses" },
+    { value: taxValue,      color: colorTax,      label: "Tax Vault" },
+    { value: takeHomeValue, color: colorTakeHome, label: "Take-Home" }
+];
+
+// ... Locate the center hollow fill path loop lower in the pie calculation engine:
+ctx.beginPath();
+ctx.arc(centerX, centerY, donutCenterRadiusTrack - (donutRibbonThickness / 2) - 1, 0, 2 * Math.PI);
+ctx.fillStyle = colorBgMain; // ✔️ FIXED: Fills center hole smoothly with theme matching backgrounds
+ctx.fill();

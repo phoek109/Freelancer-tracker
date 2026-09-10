@@ -191,11 +191,14 @@ async function dispatchLedgerTransactionBundle() {
     const client = document.getElementById('formClient').value.trim();
     const amtIncome = parseFloat(document.getElementById('formAmount').value) || 0;
     
+    // Safely capture your new input field value from your index.html element ID
+    const rawWithholdingRateInput = parseFloat(document.getElementById('formWithholdingRate')?.value) || 0;
+    const withholdingTaxPercentage = rawWithholdingRateInput / 100; // Converts "5" to 0.05 safely for our new schema
+
     const rawFeeVal = parseFloat(document.getElementById('formFees').value) || 0;
     const feePercentage = rawFeeVal / 100;
 
     const amtExpense = parseFloat(document.getElementById('formExpenses').value) || 0;
-    const amtTax = parseFloat(document.getElementById('formWithholdingAmt').value) || 0;
     const isWithholding = document.getElementById('formWithholdingToggle').value;
     const platformToggleEl = document.getElementById('formPlatformFeesToggle');
     const isPlatformFeesDeducted = platformToggleEl ? platformToggleEl.value : (feePercentage > 0 ? "YES" : "NO");
@@ -246,32 +249,33 @@ async function dispatchLedgerTransactionBundle() {
     // 🚀 LOCATED INSIDE dispatchLedgerTransactionBundle() IN sheets-sync.js
     // =========================================================================
     
-    // Extract real-time visual system snapshots active on the left sidebar configs right now
+    // Extract real-time visual system snapshots active on the left sidebar configs
     const selectedHomeBaseCurrencyCode = String(document.getElementById('baseCurrencyConfig')?.value || "USD").toUpperCase().trim();
     const selectedInstantSystemTaxRate = (parseFloat(document.getElementById('baseTaxRateConfig')?.value) || 0) / 100;
     const secureAuthPassword = document.getElementById('apiSecurityTokenInput')?.value.trim() || "";
 
     const payload = {
-        apiToken: secureAuthPassword, // 🚀 AUTOMATIC SERVER PASSKEY HANDSHAKE
+        apiToken: secureAuthPassword, 
         data: {
             "Date": date,
             "Client Name": client,
-            "Invoice Amount": parseFloat(amtIncome) || 0, // Force pure float number
+            "Invoice Amount": parseFloat(amtIncome) || 0, 
             "Currency Received": subIncome.toUpperCase().trim(),
             "Withholding Tax Deducted": String(isWithholding).toUpperCase().trim(),
-            "Withholding Amount": parseFloat(amtTax) || 0, // Force pure float number
+            "Withholding Percentage": parseFloat(withholdingTaxPercentage) || 0,             
             "Platform Fees Deducted": String(isPlatformFeesDeducted).toUpperCase().trim(),
-            "Platform Percentage": parseFloat(feePercentage) || 0, // Force pure float number
-            "Business Expenses": parseFloat(amtExpense) || 0, // Force pure float number
-            "Conversion Mode": String(convMode).trim().toLowerCase(),
+            "Platform Percentage": parseFloat(feePercentage) || 0, 
+            "Business Expenses": parseFloat(amtExpense) || 0, 
+            
+            // 🚀 CRITICAL BINDING: Ensures Option C state passes cleanly to backend channels
+            "Conversion Mode": String(convMode).trim().toLowerCase(), 
+            
             "Exact Cash Input": parseFloat(exactCashAmt) || 0,
             "Custom Rate Input": parseFloat(customRateVal) || 1,
-            
             "System Home Base Currency": selectedHomeBaseCurrencyCode,
-            "System Snapshot Tax Rate": parseFloat(selectedInstantSystemTaxRate) || 0 // Fix payload leakage
+            "System Snapshot Tax Rate": parseFloat(selectedInstantSystemTaxRate) || 0 
         }
     };
-
 
     const submitBtn = document.getElementById('btnSubmit');
     submitBtn.disabled = true;
@@ -294,10 +298,22 @@ async function dispatchLedgerTransactionBundle() {
             // SPINNER SUCCESS HOOK
             if (typeof updateSyncSpinnerState === 'function') updateSyncSpinnerState("success");
             
+            // 🕒 THE STAGGERED TRANSITION HOOK: Keeps text for 3 seconds, clears it, then fires the Undo container!
+            setTimeout(() => {
+                if (statusText.innerText.includes("successfully logged")) {
+                    statusText.innerText = "";
+                }
+                
+                // Mount and slide open the countdown tracking tray immediately
+                if (typeof triggerInteractiveUndoNotificationWindow === 'function') {
+                    triggerInteractiveUndoNotificationWindow();
+                }
+            }, 3000);
+
             document.getElementById('formAmount').value = '';
             document.getElementById('formFees').value = '0';
             document.getElementById('formExpenses').value = '0';
-            document.getElementById('formWithholdingAmt').value = '0';
+            if(document.getElementById('formWithholdingRate')) document.getElementById('formWithholdingRate').value = '0';            
             document.getElementById('formClient').value = '';
             
             // Core Re-hydration refresh triggers
@@ -308,6 +324,7 @@ async function dispatchLedgerTransactionBundle() {
                 if (typeof updateMatrixData === 'function') updateMatrixData();
                 if (typeof renderHistoricalSidebarLogs === 'function') renderHistoricalSidebarLogs();
             }
+
         } else {
             throw new Error(result.message);
         }
@@ -505,13 +522,38 @@ function synchronizeDualCurrencyActionButtons() {
     }
 }
 
-// Intercept dropdown mutations to trigger instant button updates automatically
+// =========================================================================
+// 🚀 REPAIRED TRACKER: MASTER AUTOMATED AUTO-TUNING EVENT LISTENERS
+// =========================================================================
 document.addEventListener('DOMContentLoaded', () => {
     const receivedEl = document.getElementById('formCurrency');
-    const homeEl = document.getElementById('baseCurrencyConfig');
+    const homeEl     = document.getElementById('baseCurrencyConfig');
+    const modeSelect = document.getElementById('formConversionMode');
 
-    if (receivedEl) receivedEl.addEventListener('change', () => { synchronizeDualCurrencyActionButtons(); window.updateMatrixData(); });
-    if (homeEl) homeEl.addEventListener('change', () => { synchronizeDualCurrencyActionButtons(); window.updateMatrixData(); });
+    // 🎯 1. THE MODE SWITCH DRIVER: Fires immediately when Option C is clicked
+    if (modeSelect) {
+        modeSelect.addEventListener('change', () => {
+            toggleConversionInputFields(); // Auto-hides inputs & force-tunes base currency instantly!
+        });
+    }
+
+    // 🎯 2. THE TOP DROPDOWN DRIVER: Handles currency changes while Option C is already active
+    if (receivedEl) {
+        receivedEl.addEventListener('change', () => { 
+            toggleConversionInputFields(); // Dynamic evaluation keep configurations tracking 1:1
+            if (typeof synchronizeDualCurrencyActionButtons === 'function') synchronizeDualCurrencyActionButtons(); 
+            if (typeof updateMatrixData === 'function') window.updateMatrixData(); 
+        });
+    }
+    
+    // 🎯 3. THE BASE DROPDOWN MUTRATION MONITOR
+    if (homeEl) {
+        homeEl.addEventListener('change', () => { 
+            toggleConversionInputFields(); 
+            if (typeof synchronizeDualCurrencyActionButtons === 'function') synchronizeDualCurrencyActionButtons(); 
+            if (typeof updateMatrixData === 'function') window.updateMatrixData(); 
+        });
+    }
 });
 
 // Upgraded matrix driver intercept loop inside matrix-engine.js to cleanly strip hardcoded behaviors
@@ -887,10 +929,27 @@ async function fetchAndHydrateLogCachesFromSheet() {
     const container = document.getElementById('sidebarLogContainer');
     const connectBtn = document.getElementById('btnConnectVault');
     
-    if (!endpoint || !endpoint.startsWith('https://google.com')) {
-        console.warn("⚠️ Logcat Engine Trace: Please paste a valid Google Web App URL.");
+    // ✔️ FIXED: Checks for ://google.com and catches blank states cleanly
+    const isUrlInvalid = !endpoint || (
+        !endpoint.toLowerCase().startsWith('https://://google.com') && 
+        !endpoint.toLowerCase().startsWith('https://script.google.com')
+    );
+
+    if (isUrlInvalid) {
+        console.warn("⚠️ Logcat Engine Trace: Please paste a valid Google Web App Deployment URL.");
         if (container) {
-            container.innerHTML = `<div class="empty-tray-text" style="color: #64748b;">Waiting for a valid Google Script Web App URL...</div>`;
+            container.innerHTML = `<div class="empty-tray-text" style="color: #f87171;">🛑 Invalid Endpoint URL. Must begin with https://://google.com</div>`;
+        }
+        // Visual alert flag to point out the empty field instantly
+        if (connectBtn) {
+            connectBtn.innerText = "URL MISSING / INVALID 🛑";
+            connectBtn.style.borderColor = "#f87171";
+            connectBtn.style.color = "#f87171";
+            setTimeout(() => {
+                connectBtn.innerText = "CONNECT & AUTHENTICATE";
+                connectBtn.style.borderColor = "#38bdf8";
+                connectBtn.style.color = "#38bdf8";
+            }, 3000);
         }
         return;
     }
@@ -899,7 +958,7 @@ async function fetchAndHydrateLogCachesFromSheet() {
         container.innerHTML = `<div class="empty-tray-text" style="color: #38bdf8;">LOADING SECURE LEDGER FROM CLOUD...</div>`;
     }
 
-    // 🚀 VISUAL FEEDBACK: Lock button and show active tracking state
+    // ✔️ FIXED: Smoothly transitions the interface states immediately on mouse-click
     if (connectBtn) {
         connectBtn.disabled = true;
         connectBtn.innerText = "AUTHENTICATING VAULT...";
@@ -914,6 +973,8 @@ async function fetchAndHydrateLogCachesFromSheet() {
     };
 
     if (typeof updateSyncSpinnerState === 'function') updateSyncSpinnerState("loading");
+
+    // ... Rest of your original fetch call, try/catch, and finally blocks remain identical
 
     try {
         const response = await fetch(endpoint, { 
@@ -988,7 +1049,9 @@ async function fetchAndHydrateLogCachesFromSheet() {
     }
 }
 
-// NEW VISIBILITY CONTROL HUB: Handles Option A vs Option B form block switching dynamically
+// =========================================================================
+// 🚀 UPGRADED VISIBILITY HUB: OPTION C DRIVES AUTOMATIC BASE CURRENCY SYNC
+// =========================================================================
 function toggleConversionInputFields() {
     const modeSelect = document.getElementById('formConversionMode');
     const groupExact = document.getElementById('groupExactCash');
@@ -998,22 +1061,42 @@ function toggleConversionInputFields() {
     
     const selectedMode = modeSelect.value;
     
+    // ─── 🚀 THE OPTION C FORCE-SYNC DRIVER INTERCEPT ───
+    if (selectedMode === "domestic_identity") {
+        // 1. Instantly hide all multi-currency sub-input boxes
+        groupExact.style.display = "none";
+        groupRate.style.display  = "none";
+        
+        // 2. Fetch what was selected at the top as "Currency Received"
+        const currencyReceivedVal = document.getElementById('formCurrency')?.value;
+        const baseCurrencySelectEl = document.getElementById('baseCurrencyConfig');
+        
+        if (currencyReceivedVal && baseCurrencySelectEl) {
+            // 3. Force-tune the System Home Currency Base field to match it perfectly!
+            baseCurrencySelectEl.value = currencyReceivedVal;
+            
+            // 4. Fire the necessary matrix updates to change the visual currency signs/symbols
+            if (typeof updateBaseCurrencyConfigSymbols === 'function') updateBaseCurrencyConfigSymbols();
+            if (typeof updateMatrixData === 'function') window.updateMatrixData();
+            if (typeof synchronizeDualCurrencyActionButtons === 'function') synchronizeDualCurrencyActionButtons();
+        }
+        return; // Halt process safely
+    }
+    
+    // Traditional Options A & B handle distinct multi-currency fields normally below
+    const invoiceAmt = parseFloat(document.getElementById('formAmount')?.value) || 0;
+    
     if (selectedMode === "exact_cash") {
-        groupExact.style.display = "flex";  // Open Cash Landed Input
-        groupRate.style.display  = "none";  // Wipe Custom Exchange Rate Input
-        
-        // Auto-fill behavior: If currencies match, fill down matching amounts instantly
-        const homeCode = String(document.getElementById('baseCurrencyConfig')?.value || "").toUpperCase().trim();
-        const recCode  = String(document.getElementById('formCurrency')?.value || "").toUpperCase().trim();
-        const invoiceAmt = parseFloat(document.getElementById('formAmount')?.value) || 0;
-        
-        if (homeCode === recCode && recCode !== "" && invoiceAmt > 0) {
+        groupExact.style.display = "flex";  
+        groupRate.style.display  = "none";  
+        if (invoiceAmt > 0) {
             const cashBox = document.getElementById('formExactCashAmt');
             if (cashBox) cashBox.value = invoiceAmt;
         }
-    } else if (selectedMode === "custom_rate") {
-        groupExact.style.display = "none";  // Wipe Cash Landed Input
-        groupRate.style.display  = "flex";  // Open Custom Exchange Rate Input
+    } 
+    else if (selectedMode === "custom_rate") {
+        groupExact.style.display = "none";  
+        groupRate.style.display  = "flex";  
     }
 }
 
@@ -1072,3 +1155,185 @@ function toggleMatrixChartFullscreenViewMode() {
     setTimeout(enforceDynamicViewportCanvasSizing, 20);
 }
 
+function applyGlobalThemeModeContext() {
+    const activeTheme = document.getElementById('themeModeSelector').value;
+    document.documentElement.setAttribute('data-theme', activeTheme);
+    localStorage.setItem('userInterfaceThemeModeState', activeTheme);
+    
+    // Force a complete matrix visualization repaint cycle
+    if (typeof window.updateMatrixData === 'function') window.updateMatrixData();
+}
+
+function applyGlobalColorPaletteContext() {
+    const selectedPalette = document.getElementById('colorPaletteSelector').value;
+    const root = document.documentElement;
+    
+    const paletteDefinitions = {
+        // --- 🚀 CORE SYSTEM & DEVELOPER THEMES (EXPANDED) ---
+        "cyber":           { expenses: "#ff007f", tax: "#7000ff", takehome: "#00f0ff" }, // Neon Pop
+        "mint":            { expenses: "#f59e0b", tax: "#6366f1", takehome: "#10b981" }, // Mint Indigo
+         "cyber_cyan":      { expenses: "#ff00aa", tax: "#0044ff", takehome: "#00f0ff" }, // Cyber Cyan Accent
+        "nordic_frost":    { expenses: "#bfdbfe", tax: "#60a5fa", takehome: "#38bdf8" }, // Ice Blue Matrix
+        "dracula":         { expenses: "#ff5555", tax: "#bd93f9", takehome: "#50fa7b" }, // Crimson / Purple / Lime
+        "midnight_slate":  { expenses: "#475569", tax: "#94a3b8", takehome: "#cbd5e1" }, // Obsidian Shades
+        "sunset_amber":    { expenses: "#ea580c", tax: "#f59e0b", takehome: "#eab308" }, // Amber Industrial Gold
+        "synthwave":       { expenses: "#ff0055", tax: "#b000ff", takehome: "#2be6ff" }, // Laser Violet / Hot Teal
+        "forest_moss":     { expenses: "#bc6c25", tax: "#dda15e", takehome: "#606c38" }, // Earth Walnut / Moss Green
+    
+        // --- LGBTQ+ Inclusion & Pride Rainbow Presets ---
+        "rainbow_pride":   { expenses: "#e40303", tax: "#ff8c00", takehome: "#008026" },
+        "rainbow_progress":{ expenses: "#ff007f", tax: "#74d4ec", takehome: "#7000ff" },
+        "rainbow_trans":   { expenses: "#5bc4f1", tax: "#ffffff", takehome: "#f5a9b8" },
+        "rainbow_bi":      { expenses: "#d60270", tax: "#9b4f96", takehome: "#0038a8" },
+        "rainbow_lesbian": { expenses: "#d52600", tax: "#f1af84", takehome: "#a50062" },
+        "rainbow_pan":     { expenses: "#ff1b8d", tax: "#ffd300", takehome: "#1bb2ff" },
+        "rainbow_nonbinary":{ expenses: "#fff430", tax: "#9c59d1", takehome: "#2c2c2c" },
+        "rainbow_genderqueer":{ expenses: "#b57edc", tax: "#ffffff", takehome: "#4a8123" },
+        "rainbow_asexual": { expenses: "#a3a3a3", tax: "#ffffff", takehome: "#800080" },
+        "rainbow_intersex":{ expenses: "#ffd700", tax: "#ffd700", takehome: "#7a0099" }
+    };
+
+    // 🔄 REPLACE the color assignment logic block at the bottom of applyGlobalColorPaletteContext():
+    if (paletteDefinitions[selectedPalette]) {
+        const colors = paletteDefinitions[selectedPalette];
+        root.style.setProperty('--color-expenses', colors.expenses);
+        root.style.setProperty('--color-tax', colors.tax);
+        root.style.setProperty('--color-takehome', colors.takehome);
+
+        // 🛡️ THE BULLETPROOF INTERCEPT: Check if tax is pure white or short-hand white
+        const cleanTaxColor = colors.tax.toLowerCase().trim();
+        if (cleanTaxColor === "#ffffff" || cleanTaxColor === "#fff") {
+            // Set a dedicated safe text color for Light Mode metrics
+            root.style.setProperty('--color-tax-text-lightmode-fallback', '#0f172a');
+        } else {
+            // For all other safe colors, let it match the palette color identically!
+            root.style.setProperty('--color-tax-text-lightmode-fallback', colors.tax);
+        }
+
+    } else {
+        // Fallback Default: Classic Flow Matrix configuration state rollback
+        root.style.setProperty('--color-expenses', '#f87171');
+        root.style.setProperty('--color-tax', '#facc15');
+        root.style.setProperty('--color-tax-text-lightmode-fallback', '#facc15');
+        root.style.setProperty('--color-takehome', '#4ade80');
+    }
+
+    localStorage.setItem('userInterfaceColorPaletteState', selectedPalette);
+    if (typeof window.updateMatrixData === 'function') window.updateMatrixData();
+}
+
+// Ensure visual styles populate smoothly right during initial application setup phases
+window.addEventListener('DOMContentLoaded', () => {
+    if (localStorage.getItem('userInterfaceThemeModeState')) {
+        const savedTheme = localStorage.getItem('userInterfaceThemeModeState');
+        document.getElementById('themeModeSelector').value = savedTheme;
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    }
+    if (localStorage.getItem('userInterfaceColorPaletteState')) {
+        const savedPalette = localStorage.getItem('userInterfaceColorPaletteState');
+        document.getElementById('colorPaletteSelector').value = savedPalette;
+        applyGlobalColorPaletteContext();
+    }
+});
+
+// =========================================================================
+// 🚀 TIMED DISMISSAL & TRANSACTION ROLLBACK ENGINE IN SHEETS-SYNC.JS
+// =========================================================================
+
+window.undoSessionCountdownTimerLoop = null;
+window.undoSessionTimeoutExpirationTrack = null;
+
+function triggerInteractiveUndoNotificationWindow() {
+    const tray = document.getElementById('undoNotificationTray');
+    const clock = document.getElementById('undoCountdownClock');
+    if (!tray || !clock) return;
+
+    // Clear any stuck loops from previous entries safely
+    clearInterval(window.undoSessionCountdownTimerLoop);
+    clearTimeout(window.undoSessionTimeoutExpirationTrack);
+
+    let remainingSecondsLeft = 28;
+    tray.style.display = "flex";
+    clock.innerHTML = `Undo available for: <strong style="color:#f87171;">${remainingSecondsLeft}s</strong>`;
+
+    // 🕒 Tick downward every second to update the user visually
+    window.undoSessionCountdownTimerLoop = setInterval(() => {
+        remainingSecondsLeft--;
+        if (remainingSecondsLeft <= 0) {
+            clearInterval(window.undoSessionCountdownTimerLoop);
+            tray.style.display = "none";
+        } else {
+            clock.innerHTML = `Undo available for: <strong style="color:#f87171;">${remainingSecondsLeft}s</strong>`;
+        }
+    }, 1000);
+
+    // Hard-stop execution and hide panel precisely at 28 seconds
+    window.undoSessionTimeoutExpirationTrack = setTimeout(() => {
+        tray.style.display = "none";
+    }, 28000);
+}
+
+async function requestServerLedgerTransactionRollback() {
+    const endpoint = apiInput.value.trim();
+    const btn = document.getElementById('btnExecuteUndoAction');
+    const statusText = document.getElementById('syncStatus');
+    const tray = document.getElementById('undoNotificationTray');
+    
+    if (!endpoint || !btn) return;
+
+    // Halt duplicate clicks immediately
+    btn.disabled = true;
+    btn.innerText = "ROLLING BACK...";
+    btn.style.borderColor = "#ea580c";
+    btn.style.color = "#ea580c";
+
+    const secureAuthPassword = document.getElementById('apiSecurityTokenInput')?.value.trim() || "";
+    
+    // 🛡️ Pass a clear deleteLastRow instruction parameter to backend intercept channels
+    const payload = {
+        apiToken: secureAuthPassword,
+        deleteLastRow: true
+    };
+
+    if (typeof updateSyncSpinnerState === 'function') updateSyncSpinnerState("loading");
+
+    try {
+        const response = await fetch(endpoint, { method: 'POST', body: JSON.stringify(payload) });
+        const result = await response.json();
+
+        if (result.status === "success") {
+            if (statusText) {
+                statusText.style.color = '#38bdf8';
+                statusText.innerText = "↩️ Last streamed entry successfully erased from cloud ledger.";
+                setTimeout(() => { statusText.innerText = ""; }, 4000);
+            }
+            if (typeof updateSyncSpinnerState === 'function') updateSyncSpinnerState("success");
+            
+            // Re-hydrate local workspace caches dynamically to reflect the deletion
+            if (result.summary) {
+                window.liveSheetMetrics = result.summary;
+                window.localHistoryTotals = result.summary.totals;
+                window.cachedHistoricalLogs = result.summary.logs || [];
+                if (typeof updateMatrixData === 'function') updateMatrixData();
+                if (typeof renderHistoricalSidebarLogs === 'function') renderHistoricalSidebarLogs();
+            }
+        } else {
+            throw new Error(result.message);
+        }
+    } catch (e) {
+        console.error("Undo transmission failure:", e);
+        if (statusText) {
+            statusText.style.color = '#f87171';
+            statusText.innerText = "🛑 Rollback failed: " + e.message;
+        }
+        if (typeof updateSyncSpinnerState === 'function') updateSyncSpinnerState("error");
+    } finally {
+        // Reset component configurations completely
+        clearInterval(window.undoSessionCountdownTimerLoop);
+        if (tray) tray.style.display = "none";
+        btn.disabled = false;
+        btn.innerText = "UNDO STREAM";
+        btn.style.borderColor = "";
+        btn.style.color = "";
+    }
+}
