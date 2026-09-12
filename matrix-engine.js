@@ -180,6 +180,9 @@ function toggleMatrixChartFloatingState() {
     }
 }
 
+// =========================================================================
+// 🚀 REPAIRED OBSERVER ENGINE: STANDARD ADAPTIVE MAPPING FOR ALL STATES
+// =========================================================================
 function initializeMatrixCanvasResizeObserverEngine() {
     const wrapper = document.getElementById('matrixFlowChartWrapper');
     const canvasElement = document.getElementById('flowChart');
@@ -191,16 +194,11 @@ function initializeMatrixCanvasResizeObserverEngine() {
 
     window.matrixResizeObserverInstance = new ResizeObserver(entries => {
         for (let entry of entries) {
-            if (!window.isMatrixChartDetachedFloating) return;
-            const dynamicWidth  = entry.contentRect.width;
-            const dynamicHeight = entry.contentRect.height - 34; 
-            
-            if (dynamicWidth > 0 && dynamicHeight > 0) {
-                canvasElement.width  = dynamicWidth;
-                canvasElement.height = dynamicHeight;
-                if (typeof window.updateMatrixData === 'function') {
-                    window.updateMatrixData();
-                }
+            // 🚀 THE FIX: Defer sizing directly to the high-density framework.
+            // This strips away all floating-state conditional jumps, ensuring
+            // the hardware buffer refreshes smoothly in both inline and pop-out modes.
+            if (typeof enforceDynamicViewportCanvasSizing === 'function') {
+                enforceDynamicViewportCanvasSizing();
             }
         }
     });
@@ -213,54 +211,55 @@ function initializeMatrixCanvasResizeObserverEngine() {
 
 window.matrixCanvasResizeTimeoutId = null;
 
+// =========================================================================
+// 🚀 HIGH-DENSITY DPR RENDERING ENGINE (ULTRA-RESPONSIVE MOBILE STABLE)
+// =========================================================================
 function enforceDynamicViewportCanvasSizing() {
     const canvasElement = document.getElementById('flowChart');
     if (!canvasElement || !canvasElement.parentElement) return;
 
-    // 🚀 PERFORMANCE GUARD: Debounce rapid consecutive window/drawer resize triggers
-    clearTimeout(window.matrixCanvasResizeTimeoutId);
+    // 🛡️ THE GUARD BYPASS VALVE:
+    // If the browser window space drops below limits, exit the script calculation loops early. 
+    // This stops the engine from attempting to render coordinates inside a squished canvas box.
+    const isScreenCriticallySmall = window.innerWidth <= 480 || window.innerHeight <= 260;
+    if (isScreenCriticallySmall && !window.isMatrixChartDetachedFloating) {
+        console.warn("⚠️ Viewport specs unsafe. Graphic calculations deferred to guard overlay.");
+        return; 
+    }
+
+    const ctx = canvasElement.getContext('2d');
+    const parentContainerBoundingBox = canvasElement.parentElement.getBoundingClientRect();
     
-    window.matrixCanvasResizeTimeoutId = setTimeout(() => {
-        // Schedule redraw to sync smoothly with the mobile device's screen refresh rate
-        requestAnimationFrame(() => {
-            const ctx = canvasElement.getContext('2d');
-            const parentContainerBoundingBox = canvasElement.parentElement.getBoundingClientRect();
-            
-            // 1. Grab physical pixel density coefficient (Retina/High-DPI aware)
-            const devicePixelRatioScale = window.devicePixelRatio || 1;
-            
-            const targetWidth  = Math.floor(parentContainerBoundingBox.width);
-            const targetHeight = Math.floor(parentContainerBoundingBox.height);
+    // 1. Grab physical pixel density coefficient (Retina/High-DPI aware)
+    const devicePixelRatioScale = window.devicePixelRatio || 1;
+    
+    // 2. Fall back to safe explicit layouts if the container is rendering text changes asynchronously
+    let targetWidth  = Math.floor(parentContainerBoundingBox.width);
+    let targetHeight = Math.floor(parentContainerBoundingBox.height);
 
-            // 🚀 MEMORY PROTECTION: Quit early if parent dimensions are zero or unchanged
-            if (targetWidth <= 0 || targetHeight <= 0) return;
-            if (canvasElement.width === targetWidth * devicePixelRatioScale && 
-                canvasElement.style.width === targetWidth + 'px') {
-                // If dimensions match perfectly, just re-hydrate data without clearing buffer arrays
-                if (typeof window.updateMatrixData === 'function') window.updateMatrixData();
-                return;
-            }
-            
-            // 2. Lock the internal canvas hardware high-res dimensions
-            canvasElement.width  = targetWidth * devicePixelRatioScale;
-            canvasElement.height = targetHeight * devicePixelRatioScale;
+    // 🔒 MOBILE TRANSITION DEFENSE: If heights shrink below boundaries during layout shifts,
+    // lock standard crisp structural minimums instead of crashing out to zero!
+    if (targetWidth <= 0) targetWidth = canvasElement.parentElement.clientWidth || 343;
+    if (targetHeight <= 0) targetHeight = 280; // Hard matches your mobile .flow-chart-wrapper height rule!
 
-            // 3. Compress container layout presentation using standard CSS pixels
-            canvasElement.style.width  = targetWidth + 'px';
-            canvasElement.style.height = targetHeight + 'px';
+    // 3. Clear hardware dimensions instantly to eliminate layout trail freezing
+    canvasElement.width  = targetWidth * devicePixelRatioScale;
+    canvasElement.height = targetHeight * devicePixelRatioScale;
 
-            // 4. Wrap rendering coordinate systems inside an isolated state frame block
-            ctx.save();
-            ctx.scale(devicePixelRatioScale, devicePixelRatioScale);
+    // 4. Shrink presentation space back down seamlessly using standard CSS pixels
+    canvasElement.style.width  = targetWidth + 'px';
+    canvasElement.style.height = targetHeight + 'px';
 
-            // 5. Force custom presentation layers to draw shapes instantly
-            if (typeof window.updateMatrixData === 'function') {
-                window.updateMatrixData();
-            }
-            
-            ctx.restore(); // Reverts coordinate metrics back safely
-        });
-    }, 40); // 40ms safety buffer eliminates micro-stuttering on smartphone viewports
+    // 5. Wrap rendering coordinate systems inside an isolated state frame block
+    ctx.save();
+    ctx.scale(devicePixelRatioScale, devicePixelRatioScale);
+
+    // 6. Force custom presentation layers to draw matrix lines instantly without timing lags
+    if (typeof window.updateMatrixData === 'function') {
+        window.updateMatrixData();
+    }
+    
+    ctx.restore(); 
 }
 
 
@@ -343,19 +342,26 @@ function drawFlowLines(gross, expensesValue, taxValue, takeHomeValue) {
 function executeOriginalSankeyCurvesEngine(ctx, canvas, w, h, gross, expensesValue, taxValue, takeHomeValue) {
     if (typeof drawBackgroundGrid === 'function') drawBackgroundGrid(ctx, w, h);
 
-    // 🚀 ADAPTIVE MOBILE CANVAS BOUNDS: Shrink padding defensively on narrow viewports
-    const isMobileViewport = w < 500;
+    const isMobileViewport = window.matchMedia("(max-width: 768px)").matches;
+    
+    // 🚀 THE TOP SAFETY BARRIER FOR SANKEY:
+    // If on a phone layout, we establish an explicit 76px boundary ceiling.
+    // This compresses the vertical field and centers the node connection lines below the pin button!
+    const customTopBoundaryClip = isMobileViewport ? 76 : 0;
+    const scalableDrawingHeight = h - customTopBoundaryClip;
+
     const startX = isMobileViewport ? 50 : 140; 
-    const startY = h / 2; 
+    const startY = customTopBoundaryClip + (scalableDrawingHeight / 2); // Drops center axis away from buttons
     const endX = isMobileViewport ? w - 90 : w - 180;
 
     const expRatio = gross > 0 ? (expensesValue / gross) : 0;
     const taxRatio = gross > 0 ? (taxValue / gross) : 0;
     const homeRatio = gross > 0 ? (takeHomeValue / gross) : 0;
 
-    const endY_Expenses = startY - (expRatio * (h * 0.35));
+    // Pull height multipliers from the compressed active height area
+    const endY_Expenses = startY - (expRatio * (scalableDrawingHeight * 0.32));
     const endY_Tax = startY;
-    const endY_TakeHome = startY + (homeRatio * (h * 0.35));
+    const endY_TakeHome = startY + (homeRatio * (scalableDrawingHeight * 0.32));
 
     const expPercent  = Math.round(expRatio * 100) || 0;
     const taxPercent  = Math.round(taxRatio * 100) || 0;
@@ -376,6 +382,8 @@ function executeOriginalSankeyCurvesEngine(ctx, canvas, w, h, gross, expensesVal
         ctx.shadowBlur = 3; ctx.shadowColor = color; ctx.stroke(); ctx.shadowBlur = 0;
 
         let labelText;
+        
+        // 🚀 THE STRIP-FIGURES CLUTTER FILTER TRACK:
         if (isMobileViewport) {
             labelText = `${baseText}: ${percentValue}%`;
         } else {
@@ -391,23 +399,19 @@ function executeOriginalSankeyCurvesEngine(ctx, canvas, w, h, gross, expensesVal
             targetXPosition = w - pillW - 10;
         }
 
-        // 🛡️ 1. THE CONTRAST SHIELD GATE: Detect if the color profile is pure white
         const isColorWhite = color.toLowerCase() === '#ffffff' || color.toLowerCase() === '#f5f5f5';
         const isCurrentThemeLight = document.documentElement.getAttribute('data-theme') === 'light';
 
         ctx.beginPath(); ctx.roundRect(targetXPosition, endY - 11, pillW, 22, 11);
         ctx.fillStyle = color; ctx.fill();
         
-        // 🌟 2. INJECT SAFETY OUTLINE RING IF WHITE BLENDS INTO LIGHT WORKSPACE
         if (isColorWhite && isCurrentThemeLight) {
-            ctx.strokeStyle = '#0f172a'; // High-contrast deep navy border line track
+            ctx.strokeStyle = '#0f172a'; 
             ctx.lineWidth = 1.5;
             ctx.stroke();
         }
         
-        // 🌟 3. ADJUST TEXT TYPOGRAPHY CONTRAST DIP
         if (isCurrentThemeLight) {
-            // If the element background itself is white, force the text inside to print pitch-black
             ctx.fillStyle = isColorWhite ? '#0f172a' : '#ffffff'; 
         } else {
             ctx.fillStyle = isMobileViewport ? '#070a13' : '#ffffff'; 
@@ -416,7 +420,6 @@ function executeOriginalSankeyCurvesEngine(ctx, canvas, w, h, gross, expensesVal
         ctx.fillText(labelText, targetXPosition + (isMobileViewport ? 7 : 12), endY + 4);
     }
 
-    // 🔄 FIND & REPLACE at the bottom of executeOriginalSankeyCurvesEngine():
     const chartColorExpenses = getComputedCanvasColorStyleValue('--color-expenses', '#f87171');
     const chartColorTax      = getComputedCanvasColorStyleValue('--color-tax', '#facc15');
     const chartColorTakeHome = getComputedCanvasColorStyleValue('--color-takehome', '#4ade80');
@@ -431,26 +434,28 @@ function executeOriginalSankeyCurvesEngine(ctx, canvas, w, h, gross, expensesVal
     ctx.fillText((window.currentCurrency || '$').trim(), startX, startY + 4); 
     ctx.textAlign = 'left';
 }
+
 // =========================================================================
-// 📈 PRESENTATION LAYER 2: PROFESSIONAL SIDE-BY-SIDE COLUMN CHART ENGINE
+// 📈 PRESENTATION LAYER 2: SIDE-BY-SIDE COLUMN CHART ENGINE (0% - 100% SCALE)
 // =========================================================================
 function executeStackedColumnRenderingEngine(ctx, w, h, gross, totalExpenses, taxReserve, takeHome) {
     if (typeof drawBackgroundGrid === 'function') drawBackgroundGrid(ctx, w, h);
-    const activeSymbol = window.currentCurrency || '$ ';
-    const isMobileViewport = w < 500;
+    const isMobileViewport = window.matchMedia("(max-width: 768px)").matches;
 
-    // 🚀 RESPONSIVE VIEWPORT BOUNDS: Contract vertical paddings dynamically on phone layouts
+    // 🚀 HARD-CLAMP CHART CEILING ON MOBILE:
+    // Increasing mobile paddingTop to 82px guarantees the tops of your 100% column bars 
+    // run completely clear of the absolute floating pin button capsule panel element track!
     const paddingLeft   = isMobileViewport ? 48 : 80;   
     const paddingRight  = isMobileViewport ? 15 : 40;
-    const paddingTop    = isMobileViewport ? 32 : 60;   
-    const paddingBottom = 40;   
+    const paddingTop    = isMobileViewport ? 110 : 60;   // Injected 82px insulation clearance buffer
+    const paddingBottom = isMobileViewport ? 24 : 40;   
 
     const graphWidth  = w - paddingLeft - paddingRight;
     const graphHeight = h - paddingTop - paddingBottom;
     const baselineY   = h - paddingBottom;
 
-    const highestDataValuePoint = Math.max(gross, totalExpenses, taxReserve, takeHome);
-    const yAxisCeilingValue = highestDataValuePoint > 0 ? highestDataValuePoint * 1.15 : 10000; 
+    // 🚀 THE PERCENTAGE FRAMEWORK AXIS: Force axis ceilings directly to 100%
+    const yAxisCeilingValue = 100; 
 
     ctx.save();
     ctx.font = isMobileViewport ? "8px 'JetBrains Mono', monospace" : "9px 'JetBrains Mono', monospace";
@@ -461,7 +466,9 @@ function executeStackedColumnRenderingEngine(ctx, w, h, gross, totalExpenses, ta
     for (let i = 0; i <= totalGridLinesCount; i++) {
         const lineRatio = i / totalGridLinesCount;
         const currentLineYPosition = baselineY - (graphHeight * lineRatio);
-        const currentGridValueMarking = yAxisCeilingValue * lineRatio;
+        
+        // Calculate dynamic ticks as standard percentage markings (0%, 25%, 50%, 75%, 100%)
+        const currentGridValueMarking = Math.round(yAxisCeilingValue * lineRatio);
 
         ctx.strokeStyle = "rgba(30, 41, 59, 0.35)";
         ctx.lineWidth = 1;
@@ -469,23 +476,13 @@ function executeStackedColumnRenderingEngine(ctx, w, h, gross, totalExpenses, ta
 
         ctx.fillStyle = getComputedCanvasColorStyleValue('--text-main', '#64748b');
         
-        // 🚀 SMART TICK SHORTENING: Handle Millions (M) and Billions compactly on high ranges
-        let displayLabelStr;
-        if (currentGridValueMarking >= 1000000) {
-            displayLabelStr = `${activeSymbol}${(currentGridValueMarking / 1000000).toFixed(0)}M`;
-        } else if (currentGridValueMarking >= 1000) {
-            displayLabelStr = `${activeSymbol}${(currentGridValueMarking / 1000).toFixed(0)}K`;
-        } else {
-            displayLabelStr = `${activeSymbol}${currentGridValueMarking.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
-        }
-            
-        ctx.fillText(displayLabelStr, paddingLeft - 8, currentLineYPosition);
+        // 🚀 AXIS LABEL RE-BINDING: Injects the standard percentage suffix
+        ctx.fillText(`${currentGridValueMarking}%`, paddingLeft - 8, currentLineYPosition);
     }
     ctx.restore();
 
     if (gross <= 0) return;
 
-    // 🔄 FIND & REPLACE inside executeStackedColumnRenderingEngine():
     const chartColorExpenses = getComputedCanvasColorStyleValue('--color-expenses', '#f87171');
     const chartColorTax      = getComputedCanvasColorStyleValue('--color-tax', '#facc15');
     const chartColorTakeHome = getComputedCanvasColorStyleValue('--color-takehome', '#4ade80');
@@ -496,70 +493,68 @@ function executeStackedColumnRenderingEngine(ctx, w, h, gross, totalExpenses, ta
         { value: takeHome,      color: chartColorTakeHome, title: isMobileViewport ? "HOME" : "TAKE-HOME", ratio: takeHome / gross }
     ];
 
-
     const totalColumnsCount = barsDataPool.length;
     const absoluteColumnWidth = (graphWidth / totalColumnsCount) * (isMobileViewport ? 0.65 : 0.55); 
     const gapBetweenColumns  = (graphWidth - (absoluteColumnWidth * totalColumnsCount)) / (totalColumnsCount + 1);
 
     barsDataPool.forEach((barItem, idx) => {
         const columnStartX = paddingLeft + gapBetweenColumns + (idx * (absoluteColumnWidth + gapBetweenColumns));
-        const computedColumnPixelHeight = (barItem.value / yAxisCeilingValue) * graphHeight;
+        
+        // 🚀 HEIGHT CALCULATION FIX: Maps column pixel size straight to its percentage ratio
+        const computedColumnPixelHeight = barItem.ratio * graphHeight;
         const columnStartY = baselineY - computedColumnPixelHeight;
 
         ctx.save();
-
         ctx.fillStyle = barItem.color;
         ctx.beginPath();
-        ctx.roundRect(columnStartX, columnStartY, absoluteColumnWidth, computedColumnPixelHeight > 0 ? computedColumnPixelHeight : 2, [6, 6, 0, 0]);
+        ctx.roundRect(columnStartX, columnStartY, absoluteColumnWidth, computedColumnPixelHeight > 0 ? computedColumnPixelHeight : 2);
         ctx.fill();
 
         ctx.font = isMobileViewport ? "bold 9px 'JetBrains Mono', monospace" : "bold 10px 'JetBrains Mono', monospace";
         ctx.fillStyle = barItem.color;
         ctx.textAlign = "center";
         
-        // 🚀 OVERLAY CLUTTER REDUCTION GATE: Strip currency values completely to output percentages alone on mobile
-        if (isMobileViewport) {
-            const percentageLabelString = `${Math.round(barItem.ratio * 100)}%`;
-            ctx.fillText(percentageLabelString, columnStartX + (absoluteColumnWidth / 2), columnStartY - 10);
-        } else {
-            const valueLabelString = `${activeSymbol}${barItem.value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
-            const percentageLabelString = `(${Math.round(barItem.ratio * 100)}%)`;
-            
-            ctx.fillText(valueLabelString, columnStartX + (absoluteColumnWidth / 2), columnStartY - 16);
-            ctx.font = "9px 'JetBrains Mono', monospace";
-            ctx.fillStyle = "#64748b";
-            ctx.fillText(percentageLabelString, columnStartX + (absoluteColumnWidth / 2), columnStartY - 4);
-        }
+        // Renders clean percentage metrics text strings inside or above columns
+        const percentageLabelString = `${Math.round(barItem.ratio * 100)}%`;
+        ctx.fillText(percentageLabelString, columnStartX + (absoluteColumnWidth / 2), columnStartY - 10);
 
         ctx.font = "bold 9px 'JetBrains Mono', monospace";
         ctx.fillStyle = "#f8fafc";
-        ctx.fillText(barItem.title, columnStartX + (absoluteColumnWidth / 2), baselineY + 16);
-
+        ctx.fillText(barItem.title, columnStartX + (absoluteColumnWidth / 2), baselineY + (isMobileViewport ? 12 : 16));
         ctx.restore();
     });
 
     ctx.strokeStyle = "#1e293b"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(paddingLeft, baselineY); ctx.lineTo(w - paddingRight, baselineY); ctx.stroke();
 }
 
+// =========================================================================
+// 📈 PRESENTATION LAYER 3: RESPONSIVE SOLID PROPORTION PIE ENGINE
+// =========================================================================
 function executeProportionPieRenderingEngine(ctx, w, h, gross, expensesValue, taxValue, takeHomeValue) {
+    const isMobileViewport = window.matchMedia("(max-width: 768px)").matches;
+    const themeBgMain = getComputedCanvasColorStyleValue('--bg-main', '#0b0f19');
+
+    // 🚀 Force an absolute hardware clearing pass to prevent artifact layering.
+    ctx.fillStyle = themeBgMain;
+    ctx.fillRect(0, 0, w, h);
+
     if (typeof drawBackgroundGrid === 'function') drawBackgroundGrid(ctx, w, h);
     const activeSymbol = window.currentCurrency || '$ ';
-    const isMobileViewport = w < 500;
     
-    const centerX = isMobileViewport ? w * 0.68 : w * 0.38;
-    const centerY = isMobileViewport ? h * 0.44 : h * 0.50; 
-    const donutCenterRadiusTrack = isMobileViewport ? Math.min(w, h) * 0.17 : Math.min(w, h) * 0.27; 
-    const donutRibbonThickness   = isMobileViewport ? 34 : 54; 
+    // 🎯 PERFECT SYMMETRICAL CENTRAL ANCHORING:
+    const centerX = isMobileViewport ? (w / 2) : w * 0.38;
+    const centerY = isMobileViewport ? (h * 0.44) : h * 0.50; // Centered beautifully for mobile views
+    
+    // 🎯 RE-CALCULATED RADIUS BOUNDARY FOR SOLID WEDGES:
+    // This defines the exact outer circumference limit since the slices fill completely inward.
+    const pieRadius = isMobileViewport ? 120 : Math.min(w, h) * 0.27; 
 
     if (gross <= 0) return;
 
-    // 📥 1. EXTRACT THE COLOR CODES DYNAMICALLY FROM THE PALETTE ENGINE
     const chartColorExpenses = getComputedCanvasColorStyleValue('--color-expenses', '#f87171');
     const chartColorTax      = getComputedCanvasColorStyleValue('--color-tax', '#facc15');
     const chartColorTakeHome = getComputedCanvasColorStyleValue('--color-takehome', '#4ade80');
-    const themeBgMain        = getComputedCanvasColorStyleValue('--bg-main', '#0b0f19');
 
-    // Applied variables to the main wheel slices loop
     const slices = [
         { value: expensesValue, color: chartColorExpenses, label: "Expenses" },
         { value: taxValue,      color: chartColorTax,      label: "Tax Vault" },
@@ -569,104 +564,117 @@ function executeProportionPieRenderingEngine(ctx, w, h, gross, expensesValue, ta
     slices.sort((a, b) => b.value - a.value);
     let currentStartAngle = -Math.PI / 2; 
 
+    // 🚀 THE SOLID PIE WEDGES CONVERGENCE LOOP:
+    // This completely completely throws out your old donut ribbon thickness strokes. 
+    // It creates true solid geometric wedges that meet cleanly in the middle!
     slices.forEach((slice) => {
         const sliceAngleSize = (slice.value / gross) * (2 * Math.PI);
         if (sliceAngleSize <= 0) return;
 
         ctx.save();
         ctx.beginPath();
-        ctx.arc(centerX, centerY, donutCenterRadiusTrack, currentStartAngle, currentStartAngle + sliceAngleSize);
         
-        ctx.strokeStyle = slice.color;
-        ctx.lineWidth = donutRibbonThickness;
-        ctx.lineCap = "butt"; 
-        ctx.stroke();
+        // 1. Move the drawing vector point right to the center vertex coordinate node
+        ctx.moveTo(centerX, centerY);
+        
+        // 2. Sweep out to draw the outer circle line track circumference
+        ctx.arc(centerX, centerY, pieRadius, currentStartAngle, currentStartAngle + sliceAngleSize);
+        
+        // 3. Connect back to the center origin automatically to finalize the slice shape
+        ctx.closePath();
+        
+        ctx.fillStyle = slice.color;
+        ctx.fill();
         ctx.restore();
 
         currentStartAngle += sliceAngleSize;
     });
 
-    // ✔️ 2. FIXED CENTER FINISH: Adapts cleanly to turn white or midnight-dark automatically
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, donutCenterRadiusTrack - (donutRibbonThickness / 2) - 1, 0, 2 * Math.PI);
-    ctx.fillStyle = themeBgMain; 
-    ctx.fill();
-    ctx.restore();
+    // 🎯 THE HOLE REMOVAL REMEDY:
+    // Deleted the old inner white cutout path (`ctx.arc` + `ctx.fill()`) along with the 
+    // centered "GROSS INCOME" text metrics from here entirely. Slices now converge symmetrically.
 
-    // Text legend checklist layout parameters
-    // 📥 3. APPLIED PALETTES TO THE SIDE-LEGEND ARRAY HERE TOO
+    // =========================================================================
+    // 🚀 TARGET ANCHOR: LOWER CORNER LEGENDS COMPENSATION
+    // =========================================================================
     const originalLegendOrder = [
         { value: expensesValue, color: chartColorExpenses, label: "Expenses" },
         { value: taxValue,      color: chartColorTax,      label: "Tax Vault" },
         { value: takeHomeValue, color: chartColorTakeHome, label: "Take-Home" }
     ];
 
-    originalLegendOrder.forEach((slice, idx) => {
-        const legendX = isMobileViewport ? 24 : w * 0.64;
-        const legendY = isMobileViewport ? (h * 0.78) + (idx * 18) : (h * 0.38) + (idx * 24);
-        
-        ctx.fillStyle = slice.color;
-        ctx.beginPath();
-        ctx.arc(legendX, legendY - 4, isMobileViewport ? 4 : 5, 0, 2 * Math.PI);
-        ctx.fill();
+    const expPercent  = Math.round((expensesValue / gross) * 100) || 0;
+    const taxPercent  = Math.round((taxValue / gross) * 100) || 0;
+    const homePercent = Math.round((takeHomeValue / gross) * 100) || 0;
 
-        // ✔️ 4. THEME-AWARE CONTRAST TEXT SWITCH FOR THE LEGEND TITLES
-        ctx.font = isMobileViewport ? "bold 9px 'JetBrains Mono', monospace" : "bold 11px 'Plus Jakarta Sans', sans-serif";
-        ctx.fillStyle = getComputedCanvasColorStyleValue('--text-white', '#f8fafc');
-        
-        const percentageString = Math.round((slice.value / gross) * 100);
-        
-        let labelTextString;
-        if (isMobileViewport) {
-            labelTextString = `${slice.label.toUpperCase()}: ${percentageString}%`;
-        } else {
-            const numericString = slice.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            labelTextString = `${slice.label.toUpperCase()}: ${activeSymbol}${numericString} (${percentageString}%)`;
+    if (document.getElementById('lblMobileExp')) document.getElementById('lblMobileExp').innerText = `EXP: ${expPercent}%`;
+    if (document.getElementById('lblMobileTax')) document.getElementById('lblMobileTax').innerText = `TAX: ${taxPercent}%`;
+    if (document.getElementById('lblMobileHome')) document.getElementById('lblMobileHome').innerText = `HOME: ${homePercent}%`;
+
+    if (isMobileViewport) {
+        const nativeHTMLDeckElement = document.getElementById('mobileNativeLegendDeck');
+        if (!nativeHTMLDeckElement || nativeHTMLDeckElement.style.display === 'none') {
+            originalLegendOrder.forEach((slice, idx) => {
+                const legendX = w * 0.58;
+                const legendY = (h * 0.62) + (idx * 20); 
+                
+                ctx.fillStyle = slice.color;
+                ctx.beginPath();
+                ctx.arc(legendX, legendY - 3, 4, 0, 2 * Math.PI);
+                ctx.fill();
+
+                ctx.font = "bold 9px 'JetBrains Mono', monospace";
+                ctx.fillStyle = getComputedCanvasColorStyleValue('--text-white', '#f8fafc');
+                
+                const percentageString = Math.round((slice.value / gross) * 100);
+                ctx.fillText(`${slice.label.toUpperCase()}: ${percentageString}%`, legendX + 10, legendY);
+            });
         }
-        
-        ctx.fillText(labelTextString, legendX + 14, legendY);
-    });
+    } else {
+        originalLegendOrder.forEach((slice, idx) => {
+            const legendX = w * 0.64;
+            const legendY = (h * 0.38) + (idx * 24);
+            
+            ctx.fillStyle = slice.color;
+            ctx.beginPath();
+            ctx.arc(legendX, legendY - 3, 5, 0, 2 * Math.PI);
+            ctx.fill();
 
-    // Paint dynamic center gross cash totals labels text overlays
-    ctx.save();
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
+            ctx.font = "bold 11px 'Plus Jakarta Sans', sans-serif";
+            ctx.fillStyle = getComputedCanvasColorStyleValue('--text-white', '#f8fafc');
+            
+            const numericString = slice.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            const percentageString = Math.round((slice.value / gross) * 100);
+            const labelTextString = `${slice.label.toUpperCase()}: ${activeSymbol}${numericString} (${percentageString}%)`;
+            
+            ctx.fillText(labelTextString, legendX + 10, legendY);
+        });
+    }
 
-    ctx.font = isMobileViewport ? "bold 7px 'JetBrains Mono', monospace" : "bold 8px 'JetBrains Mono', monospace";
-    ctx.fillStyle = getComputedCanvasColorStyleValue('--text-main', '#64748b');
-    ctx.fillText("GROSS INCOME", centerX, centerY - (isMobileViewport ? 5 : 8));
-
-    ctx.font = isMobileViewport ? "bold 9px 'JetBrains Mono', monospace" : "bold 12px 'JetBrains Mono', monospace";
-    ctx.fillStyle = getComputedCanvasColorStyleValue('--text-heading', '#38bdf8'); 
-    
-    const centerTotalString = `${activeSymbol}${gross.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
-    ctx.fillText(centerTotalString, centerX, centerY + (isMobileViewport ? 5 : 6));
-
-    ctx.restore();
 }
 
 
 // =========================================================================
-// 📈 PRESENTATION LAYER 4: STANDALONE HORIZONTAL BAR GRAPH FOR MATRIX PANEL
+// 📈 PRESENTATION LAYER 4: STANDALONE HORIZONTAL BAR GRAPH (0% - 100% SCALE)
 // =========================================================================
 function executeHorizontalBarChartRenderingEngine(ctx, w, h, gross, totalExpenses, taxReserve, takeHome) {
     if (typeof drawBackgroundGrid === 'function') drawBackgroundGrid(ctx, w, h);
-    const activeSymbol = window.currentCurrency || '$ ';
-    const isMobileViewport = w < 500;
+    const isMobileViewport = window.matchMedia("(max-width: 768px)").matches;
 
-    // 🚀 RESPONSIVE WIDTH ADAPTERS: Shrink margins to prevent text trailing off-canvas on mobile
+    // 🚀 HARD-CLAMP HORIZONTAL TRACKS ON MOBILE:
+    // Setting paddingTop to 80px compresses the vertical stack, dropping your top bar (Expenses) 
+    // out of the button overlay zone permanently.
     const paddingLeft   = isMobileViewport ? 60 : 100;  
     const paddingRight  = isMobileViewport ? 48 : 130;  
-    const paddingTop    = 40;
-    const paddingBottom = 40;
+    const paddingTop    = isMobileViewport ? 110 : 40;   // Injected 80px insulation clearance buffer
+    const paddingBottom = isMobileViewport ? 24 : 40;
 
     const graphWidth  = w - paddingLeft - paddingRight;
     const graphHeight = h - paddingTop - paddingBottom;
     const baselineX   = paddingLeft;
 
-    const highestDataValuePoint = Math.max(gross, totalExpenses, taxReserve, takeHome);
-    const xAxisCeilingValue = highestDataValuePoint > 0 ? highestDataValuePoint * 1.15 : 10000;
+    // 🚀 THE PERCENTAGE FRAMEWORK AXIS: Force axis ceilings directly to 100%
+    const xAxisCeilingValue = 100;
 
     ctx.save();
     ctx.font = isMobileViewport ? "8px 'JetBrains Mono', monospace" : "9px 'JetBrains Mono', monospace";
@@ -677,7 +685,9 @@ function executeHorizontalBarChartRenderingEngine(ctx, w, h, gross, totalExpense
     for (let i = 0; i <= totalGridLinesCount; i++) {
         const lineRatio = i / totalGridLinesCount;
         const currentLineXPosition = baselineX + (graphWidth * lineRatio);
-        const currentGridValueMarking = xAxisCeilingValue * lineRatio;
+        
+        // Calculate dynamic ticks as standard percentage markings (0%, 25%, 50%, 75%, 100%)
+        const currentGridValueMarking = Math.round(xAxisCeilingValue * lineRatio);
 
         ctx.strokeStyle = "rgba(30, 41, 59, 0.35)";
         ctx.lineWidth = 1;
@@ -685,23 +695,13 @@ function executeHorizontalBarChartRenderingEngine(ctx, w, h, gross, totalExpense
 
         ctx.fillStyle = getComputedCanvasColorStyleValue('--text-main', '#64748b');
         
-        // 🚀 SMART TICK SHORTENING: Handle Millions (M) and Billions compactly on horizontal bounds
-        let displayXLabelStr;
-        if (currentGridValueMarking >= 1000000) {
-            displayXLabelStr = `${activeSymbol}${(currentGridValueMarking / 1000000).toFixed(0)}M`;
-        } else if (currentGridValueMarking >= 1000) {
-            displayXLabelStr = `${activeSymbol}${(currentGridValueMarking / 1000).toFixed(0)}K`;
-        } else {
-            displayXLabelStr = `${activeSymbol}${currentGridValueMarking.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
-        }
-        
-        ctx.fillText(displayXLabelStr, currentLineXPosition, h - paddingBottom + 8);
+        // 🚀 AXIS LABEL RE-BINDING: Injects the standard percentage suffix
+        ctx.fillText(`${currentGridValueMarking}%`, currentLineXPosition, h - paddingBottom + 8);
     }
     ctx.restore();
 
     if (gross <= 0) return;
 
-    // 🔄 FIND & REPLACE inside executeHorizontalBarChartRenderingEngine():
     const chartColorExpenses = getComputedCanvasColorStyleValue('--color-expenses', '#f87171');
     const chartColorTax      = getComputedCanvasColorStyleValue('--color-tax', '#facc15');
     const chartColorTakeHome = getComputedCanvasColorStyleValue('--color-takehome', '#4ade80');
@@ -718,7 +718,9 @@ function executeHorizontalBarChartRenderingEngine(ctx, w, h, gross, totalExpense
 
     barsDataPool.forEach((barItem, idx) => {
         const barStartY = paddingTop + gapBetweenBars + (idx * (absoluteBarHeight + gapBetweenBars));
-        const computedBarPixelWidth = (barItem.value / xAxisCeilingValue) * graphWidth;
+        
+        // 🚀 WIDTH CALCULATION FIX: Maps horizontal bar pixel size straight to its percentage ratio
+        const computedBarPixelWidth = barItem.ratio * graphWidth;
 
         ctx.save();
         ctx.fillStyle = barItem.color;
@@ -732,58 +734,66 @@ function executeHorizontalBarChartRenderingEngine(ctx, w, h, gross, totalExpense
         ctx.textAlign = "left"; ctx.font = "bold 9px 'JetBrains Mono', monospace"; ctx.fillStyle = barItem.color;
         const percentageLabelString = `${Math.round(barItem.ratio * 100)}%`;
         
-        // 🚀 OVERLAY CLUTTER REDUCTION GATE: Suppress large dollar strings on smartphone screen boundaries
-        if (isMobileViewport) {
-            ctx.fillText(percentageLabelString, baselineX + computedBarPixelWidth + 8, barStartY + (absoluteBarHeight / 2));
-        } else {
-            const valueLabelString = `${activeSymbol}${barItem.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-            ctx.fillText(`${valueLabelString} (${percentageLabelString})`, baselineX + computedBarPixelWidth + 12, barStartY + (absoluteBarHeight / 2));
-        }
+        // Renders clean percentage metrics tokens directly flush right of the bars
+        ctx.fillText(percentageLabelString, baselineX + computedBarPixelWidth + 8, barStartY + (absoluteBarHeight / 2));
         ctx.restore();
     });
 
-    ctx.strokeStyle = "#1e293b"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(baselineX, paddingTop); ctx.lineTo(baselineX, h - paddingBottom); stroke();
+    ctx.strokeStyle = "#1e293b"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(baselineX, paddingTop); ctx.lineTo(baselineX, h - paddingBottom); ctx.stroke();
 }
 
-// 🚀 REPAIRED NAVIGATION CONTROLLER: Include 'hhoriz' into your tabs list highlight sweep loop
+// =========================================================================
+// 🚀 MASTER SWITCHER: CLASS-BASED FAILSAFE VISIBILITY HUB (FORCE SYNC)
+// =========================================================================
 function switchMatrixChartStylePresentationMode(targetStyleName) {
     window.activeMatrixChartStyle = targetStyleName;
-    const tabs = ["sankey", "bars", "hhoriz", "pie"]; // Included 'hhoriz' in selection pool array list
+    const tabs = ["sankey", "bars", "hhoriz", "pie"]; 
     
     const isCurrentThemeLight = document.documentElement.getAttribute('data-theme') === 'light';
 
     tabs.forEach(style => {
-        // 🛡️ THE CASE-SENSITIVITY AUTOCORRECTOR: Try standard camelCase first
         let buttonId = `tabChart${style.charAt(0).toUpperCase() + style.slice(1)}`;
         let btn = document.getElementById(buttonId);
         
-        // 🔍 FALLBACK TRAP: If it returns null, check for the double-capital spelling variation
-        if (!btn && style === "hhoriz") {
-            btn = document.getElementById("tabChartHHoriz");
-        }
-        // 🔍 SECONDARY FALLBACK: Check for total lowercase fallback variation
-        if (!btn && style === "hhoriz") {
-            btn = document.getElementById("tabCharthhoriz");
-        }
+        if (!btn && style === "hhoriz") btn = document.getElementById("tabChartHHoriz");
+        if (!btn && style === "hhoriz") btn = document.getElementById("tabCharthhoriz");
         
-        // If the button element still isn't found anywhere in the HTML, skip to prevent crashing
         if (!btn) return;
         
         if (style === targetStyleName) {
-            // Switch color maps depending on Light vs Dark theme selection
             if (isCurrentThemeLight) {
-                btn.style.background = "#ffffff"; // Crisp white active tab tile block
-                btn.style.color = "#0284c7";      // Sharp corporate navy blue text
+                btn.style.background = "#ffffff"; 
+                btn.style.color = "#0284c7";      
             } else {
-                btn.style.background = "#1e293b"; // Classic dark navy tile block
-                btn.style.color = "#38bdf8";      // Electric cyber cyan active text
+                btn.style.background = "#1e293b"; 
+                btn.style.color = "#38bdf8";      
             }
         } else {
-            // Set readable unselected text variations across both themes
             btn.style.background = "none";
             btn.style.color = isCurrentThemeLight ? "#475569" : "#64748b";
         }
     });
+
+    // 🚀 THE BULLETPROOF FAILSAFE LOOP:
+    // Instead of relying on a single ID name match which fails if there is a typo, 
+    // query the DOM for your exact CSS layout class name (.mobile-only-html-legend).
+    // This hunts down and force-toggles every matching box element instantly!
+    const activeLegendBoxesPool = document.querySelectorAll('.mobile-only-html-legend');
+    
+    if (activeLegendBoxesPool && activeLegendBoxesPool.length > 0) {
+        const isDeviceWidthMobile = window.innerWidth <= 768;
+        
+        activeLegendBoxesPool.forEach(boxElement => {
+            if (isDeviceWidthMobile && targetStyleName === "pie") {
+                // Force display onto the mobile screen *only* on the Pie tab
+                boxElement.style.setProperty('display', 'flex', 'important');
+            } else {
+                // Force it to turn invisible on all other views instantly
+                boxElement.style.setProperty('display', 'none', 'important');
+            }
+        });
+    }
+
     if (typeof window.updateMatrixData === 'function') window.updateMatrixData();
 }
 

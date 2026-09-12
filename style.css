@@ -398,7 +398,8 @@ body:has(.sidebar-collapsed-hidden-state) .matrix-container {
     border-radius: 9999px;
     overflow: hidden;
     margin-bottom: 28px;
-    background: #1e293b;
+    background: var(--border-primary, #1e293b) !important;
+    transition: background 0.25s ease !important;
 }
 
 .progress-segment { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -481,17 +482,6 @@ body:has(.sidebar-collapsed-hidden-state) .matrix-container {
     font-size: clamp(16px, 1.8vw, 21px); /* Slightly more compact sub-headline scale */
 }
 
-/* 📱 Smartphone Viewport Optimization Override */
-@media (max-width: 540px) {
-    .metric-row {
-        grid-template-columns: 1fr; /* Drop cleanly down to a vertical scroll layout stack on small bounds */
-        gap: 12px;
-    }
-    .metric-item.priority-card {
-        padding: 14px 18px;
-    }
-}
-
 .text-white { color: #f8fafc; }
 .text-red { color: #f87171; }
 .text-yellow { color: #facc15; }
@@ -562,16 +552,6 @@ body:has(.sidebar-collapsed-hidden-state) .matrix-container {
 .settings-grid .control-block.full-row-span {
     grid-column: span 2 !important;
     width: 100%;
-}
-
-/* 📱 Mobile Safety: Drop grid to vertical layout blocks cleanly on phone screens */
-@media (max-width: 640px) {
-    .settings-grid {
-        grid-template-columns: 1fr !important;
-    }
-    .settings-grid .control-block.full-row-span {
-        grid-column: span 1 !important;
-    }
 }
 
 .control-block {
@@ -1227,10 +1207,47 @@ body:has(.sidebar-collapsed-hidden-state) .matrix-container {
     }
 
     .flow-chart-wrapper {
-        height: 280px !important; 
+        position: relative !important;
         width: 100% !important;
+        height: 380px !important; /* Forces the container to open up visually and hold the drawing canvas */
+        background: #070a13 !important;
+        border: 1px solid #1e293b !important;
+        border-radius: 12px !important;
+        overflow: hidden !important;
+        display: block !important;
+        overflow: hidden;
+    }
+
+
+    /* 🚀 STEP 3: CREATES A BRAND NEW FLEXBOX DECK AT THE VERY BOTTOM OF THE CHART TRAY */
+    .dashboard-breakdowns {
+        display: flex !important;
+        flex-direction: row !important; /* Forces side-by-side row display */
+        justify-content: space-between !important;
+        align-items: center !important;
+        gap: 8px !important;
+        width: 100% !important;
+        padding: 12px 14px !important;
+        margin-top: 12px !important;
+        background: rgba(30, 41, 59, 0.15) !important;
+        border: 1px solid var(--border-primary) !important;
+        border-radius: 12px !important;
         box-sizing: border-box !important;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    /* 🚀 STEP 4: CLEAN, WRAP-SAFE TEXT LABELS FOR SMARTPHONES */
+    .breakdown-box {
+        flex: 1 !important;
+        font-size: 10px !important; /* Crisp, readable downscaled micro-typography */
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 4px !important;
+        white-space: nowrap !important;
+    }
+
+    .breakdown-title {
+        display: none !important; /* Strips structural clutter string headers to save space */
     }
 
     /* 🚀 THE ABSOLUTE FLOATING OVERLAY ENGINE OVERHAUL */
@@ -1239,7 +1256,7 @@ body:has(.sidebar-collapsed-hidden-state) .matrix-container {
         top: 0 !important;            /* Snaps cleanly over native status bar layouts */
         left: 0 !important;
         width: 100vw !important;      /* Forces edge-to-edge container expansion width */
-        height: 280px !important;     /* Locks layout proportions to ensure structural grid text remains crisp */
+        height: 380px !important;     /* Locks layout proportions to ensure structural grid text remains crisp */
         
         /* Promotes visual canvas stack layer order index above metric grid boxes, but beneath sidebar input drawers */
         z-index: 999999 !important;   
@@ -1252,22 +1269,56 @@ body:has(.sidebar-collapsed-hidden-state) .matrix-container {
         margin: 0 !important;
     }
 
+    /* 1. Dissolve the 2-column split grid to stack cards sequentially */
     .metric-row {
-        grid-template-columns: repeat(2, 1fr) !important;
-        padding: 16px 0 !important;
-        gap: 12px !important;
+        display: flex !important;
+        flex-direction: column !important; /* Stacks cards vertically into full-width lanes */
+        gap: 10px !important;              /* Tight, professional gap tracking spacing */
+        width: 100% !important;
+        padding: 0 !important;
+        margin-bottom: 16px !important;
+        box-sizing: border-box !important;
     }
 
+    /* 2. Insulate and format each priority card module wrapper */
     .metric-item {
-        align-items: flex-start !important;
-        border-left: 2px solid #1e293b;
-        padding-left: 10px;
+        width: 100% !important;
+        display: flex !important;
+        flex-direction: row !important;      /* Align label left and number right inline */
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding: 12px 16px !important;      /* Compact interior safety padding profile */
+        box-sizing: border-box !important;
+        border-radius: 10px !important;
     }
 
+    /* 3. Re-align the card subtitles */
+    .metric-item .label {
+        font-size: 9px !important;
+        margin-bottom: 0 !important;        /* Clear bottom margins to center vertically with values */
+        font-weight: 800 !important;
+        white-space: nowrap !important;
+    }
 
-   /* Inside style.css -> inside your mobile media query block near the very bottom: */
-
-    .metric-item .value { font-size: 18px !important; }
+    /* 4. TRUE TEXT CLARITY PROTECTION VALVE: COMPACT TYPOGRAPHY */
+    /* By shifting from desktop vw metrics down to a hard clamped micro-scale, large multi-million 
+       figure strings remain completely visible with zero truncation or text trails clipping! */
+    .metric-item .value,
+    .priority-card .value,
+    .overhead-card .value,
+    #grossDisplay,
+    #takeHomeDisplay,
+    #expensesDisplay,
+    #taxDisplay {
+        font-size: 15px !important;         /* Sharp, readable downscaled numeric layout profile */
+        font-family: 'JetBrains Mono', monospace !important;
+        font-weight: 800 !important;
+        text-align: right !important;
+        width: auto !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+        white-space: nowrap !important;
+    }
     .settings-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
 
     /* ========================================================================= */
@@ -1278,33 +1329,286 @@ body:has(.sidebar-collapsed-hidden-state) .matrix-container {
         display: none !important; 
     }
 
-    #inlineActionTrayWrapper {
-        display: flex !important; 
+
+    /* 🚀 STEP A: CREATE THE HORIZONTAL SCROLL RAIL CONTAINER */
+    .matrix-top-header-scroll-row {
         position: absolute !important;
-        
-        /* 🚀 THE FIXED COORDS: Drops it horizontally level with tabs, snaps it right against the grid wall */
-        top: 40px !important;
-        right: 1px !important; 
-        left: auto !important; 
-        
-        z-index: 100002 !important; 
-        background: rgba(7, 10, 19, 0.85) !important;
-        border: 1px solid #1e293b !important;
-        padding: 2px 4px !important;
-        border-radius: 6px !important;
+        top: 12px !important;
+        left: 12px !important;
+        right: 12px !important;
+        width: calc(100% - 24px) !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 12px !important;
+        z-index: 100000 !important;
+        pointer-events: auto !important;
+
+        /* 🎯 THE HORIZONTAL SCROLL ENGINE: 
+           If the phone layout shrinks below bounds, this unlocks a smooth touch swipe 
+           track across the entire top header row while hiding messy scrollbar tracks! */
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        white-space: nowrap !important;
+        -webkit-overflow-scrolling: touch !important; /* Smooth momentum inertia scroll on iOS */
+        scrollbar-width: none !important; /* Hides Firefox scrollbar rails */
     }
+
+    /* Hide Chrome/Safari/Edge scrollbar rails */
+    .matrix-top-header-scroll-row::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+    }
+
+    /* 🚀 STEP B: PREVENT TABS AND WRAPPERS FROM CRUSHING */
+    .matrix-chart-selector-ribbon,
+    .matrix-action-icon-tray {
+        flex-shrink: 0 !important; /* Hard blocks browser from flattening elements */
+        display: inline-flex !important;
+    }
+
+    /* 🚀 STEP C: THE MOUNT FIX: STRIP ABSOLUTE POSITIONING ON MOBILE */
+    #inlineActionTrayWrapper {
+        position: relative !important; /* 🎯 Detaches it from absolute layout layer grid lines */
+        top: auto !important;
+        right: auto !important;
+        left: auto !important;
+        bottom: auto !important;
+        
+        background: rgba(7, 10, 19, 0.85) !important;
+        border: 1px solid var(--border-primary, #1e293b) !important;
+        padding: 4px 6px !important;
+        border-radius: 8px !important;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    }
+
 
     .matrix-action-icon-tray .action-icon-wrapper {
         display: inline-flex !important;
-        width: 22px !important;
-        height: 22px !important;
+        width: 28px !important; /* Slightly increased click targets footprint for thumbs */
+        height: 28px !important;
         align-items: center !important;
         justify-content: center !important;
     }
-
     .matrix-action-icon-tray .action-icon-wrapper svg {
         width: 14px !important;
         height: 14px !important;
+    }
+
+        /* 🚀 REPAIRED THEME-AWARE MOBILE LEGEND CONTAINER ANCHOR */
+    .mobile-only-html-legend {
+        display: flex; 
+        flex-direction: column !important;
+        gap: 6px;
+        position: absolute !important;
+        
+        /* Coordinates lock seamlessly into the lower right corner workspace */
+        bottom: 12px !important;
+        right: 12px !important;
+        left: auto !important;
+        top: auto !important;
+        
+        /* 🎯 THE THEME ENGINE LINK: Wipes out the hardcoded dark colors and plugs into your system variables */
+        background: var(--bg-sidebar) !important; 
+        border: 1px solid var(--border-primary) !important;
+        border-radius: 8px;
+        padding: 8px 12px;
+        
+        /* Modern light drop shadow effect when running in light mode frameworks */
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.05);
+        
+        z-index: 100003 !important; 
+        pointer-events: auto !important;
+        transition: background 0.25s ease, border-color 0.25s ease !important;
+    }
+
+    .legend-chip-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 9px;
+        font-weight: 800;
+        
+        /* 🎯 THE DYNAMIC TYPOGRAPHY BINDER: Automatically changes between glowing white and deep charcoal navy text */
+        color: var(--text-white) !important; 
+        transition: color 0.25s ease !important;
+    }
+
+    /* Color dots matching your active system palette tracking models frameworks */
+    .legend-color-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    }
+    .legend-color-dot.expenses-dot { background-color: var(--color-expenses, #f87171) !important; }
+    .legend-color-dot.tax-dot { background-color: var(--color-tax, #facc15) !important; }
+    .legend-color-dot.takehome-dot { background-color: var(--color-takehome, #4ade80) !important; }
+
+#adminVaultConfigDrawerOverlay {
+        /* Ensure the drawer uses smooth hardware-accelerated transitions */
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease !important;
+        
+        /* 📱 Gives mobile thumbs a subtle visual hint that the panel can be gripped and slid */
+        touch-action: pan-y !important; 
+    }
+/* ========================================================================= */
+    /* 🚀 TRACK A: THE CONTROL PANEL UNIFICATION OVERHAUL                        */
+    /* ========================================================================= */
+    
+    /* 1. Organize the main dashboard configurations grid safely */
+    .settings-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 16px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* 2. Turn every slider row panel into an insulated corporate layout box card */
+    .full-width-control,
+    .control-block {
+        display: flex !important;
+        flex-direction: column !important;
+        background: var(--bg-control, rgba(30, 41, 59, 0.15)) !important;
+        border: 1px solid var(--border-primary, #1e293b) !important;
+        border-radius: 14px !important;
+        padding: 16px 20px !important;
+        margin: 0 0 4px 0 !important;
+        box-sizing: border-box !important;
+        width: 100% !important;
+    }
+
+    /* 3. Re-balance text label fields to stop string overlaps */
+    .control-header {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        font-family: 'JetBrains Mono', monospace !important;
+        font-size: 10px !important;
+        font-weight: 700 !important;
+        color: var(--text-white, #f8fafc) !important;
+        margin-bottom: 12px !important;
+        width: 100% !important;
+    }
+
+    /* 4. TRUE HORIZONTAL GESTURE ALIGNMENT FOR THE ADJUSTMENT TRACKS */
+    .stepper-wrapper {
+        display: flex !important;
+        flex-direction: row !important; /* Forces side-by-side uniform layout */
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 14px !important; /* Injects healthy finger buffer clearance spacing */
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* 5. Force the range slider wires to open up and stretch in the center spaces */
+    .stepper-wrapper input[type="range"].slider {
+        flex: 1 !important;
+        width: 100% !important;
+        margin: 0 !important;
+        height: 6px !important;
+    }
+
+    /* 6. CLEAN MULTI-THEME SMARTPHONE TOUCH STENDER STEPPER BUTTONS (- and +) */
+    .step-btn {
+        width: 32px !important;  /* Enlarged hit footprint boundaries for mobile screens */
+        height: 32px !important;
+        border-radius: 50% !important; /* Flawless circular tracking profiles */
+        background-color: var(--bg-main, #070a13) !important;
+        border: 1px solid var(--border-primary, #1e293b) !important;
+        color: #38bdf8 !important; /* Electric cyan indicators paths text symbols */
+        font-size: 14px !important;
+        font-weight: 800 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        cursor: pointer !important;
+        flex-shrink: 0 !important; /* Blocks buttons from squishing on thin screen limits */
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+        transition: all 0.2s ease !important;
+    }
+
+    .step-btn:active {
+        transform: scale(0.92) !important; /* Interactive tactile haptic feedback response */
+        background-color: var(--border-primary, #1e293b) !important;
+    }
+
+    /* 7. Special alignment compensation layout for the Macro Annual Revenue area */
+    .full-width-control .multiplier-box {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+    }
+
+
+    /* ========================================================================= */
+    /* 🚀 TRACK B: THE MASTER BREAKDOWN DECK VERTICAL ROW STACKING REPAIR       */
+    /* ========================================================================= */
+    
+    /* Transforms the crushed horizontal panel into clean, isolated vertical blocks */
+    .dashboard-breakdowns {
+        display: flex !important;
+        flex-direction: column !important; /* 🎯 Force stack into clean vertical rows */
+        gap: 16px !important;              /* Spatial line cushion spacing */
+        padding: 20px !important;
+        background: var(--bg-control, rgba(30, 41, 59, 0.15)) !important;
+        border: 1px solid var(--border-primary, #1e293b) !important;
+        border-radius: 16px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Stacks data rows vertically inside each categorical box layout section */
+    .breakdown-box {
+        display: flex !important;
+        flex-direction: column !important; /* 🎯 Stack metrics vertically within sections */
+        align-items: flex-start !important;
+        gap: 8px !important;
+        width: 100% !important;
+        padding-bottom: 14px !important;
+        border-bottom: 1px dashed var(--border-primary, rgba(30, 41, 59, 0.3)) !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Strips the dashed divider rule clear from the absolute last container card */
+    .breakdown-box:last-child {
+        border-bottom: none !important;
+        padding-bottom: 0 !important;
+    }
+
+    /* Centers bold structural section title labels on their own line blocks */
+    .breakdown-title {
+        font-family: 'JetBrains Mono', monospace !important;
+        font-size: 11px !important;
+        font-weight: 800 !important;
+        color: var(--text-white, #f8fafc) !important;
+        letter-spacing: 0.75px !important;
+        text-transform: uppercase !important;
+        margin-bottom: 4px !important;
+        display: block !important;
+        width: 100% !important;
+    }
+
+    /* Formats the inline data strings values for crisp readability */
+    .breakdown-box span,
+    .breakdown-box strong {
+        font-size: 11px !important;
+        font-family: 'JetBrains Mono', monospace !important;
+    }
+
+    /* Legend indicator color dots vertical centering alignments */
+    .dot {
+        width: 7px !important;
+        height: 7px !important;
+        margin-right: 6px !important;
+        display: inline-block !important;
+        vertical-align: middle !important;
     }
 
 }
@@ -2241,4 +2545,124 @@ body:has(.sidebar-collapsed-hidden-state) .matrix-container {
     background: rgba(2, 132, 199, 0.06) !important;
     border-color: #0284c7 !important;
     box-shadow: 0 4px 10px rgba(2, 132, 199, 0.1);
+}
+/* Base State: Hide native element on desktop viewports */
+.mobile-only-html-legend {
+    display: none;
+}
+
+/* ========================================================================= */
+/* 🛡️ RESPONSIVE VIEWPORT SPACE GUARD OVERLAY DESIGNS                        */
+/* ========================================================================= */
+.viewport-space-guard-overlay {
+    display: none; /* Inactive by default on standard screens */
+}
+
+/* 📱 Trigger Threshold Gate: Engages when screen space matches tight smartphone viewports */
+@media screen and (max-width: 480px), screen and (max-height: 260px) {
+    .viewport-space-guard-overlay {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        
+        /* Premium frosted glass blur effect over underlying chart lines */
+        background: rgba(11, 15, 25, 0.88) !important;
+        backdrop-filter: blur(8px) !important;
+        -webkit-backdrop-filter: blur(8px) !important;
+        
+        border-radius: 12px;
+        padding: 24px;
+        box-sizing: border-box;
+        text-align: center;
+        z-index: 2147483647 !important; /* Floats securely on top of all drawing elements */
+    }
+
+    .guard-message-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        animation: cyberFadeInGlow 0.4s ease-out;
+    }
+
+    .guard-icon-vector {
+        color: var(--text-heading, #38bdf8);
+        animation: deviceRotateLoop 2.5s infinite ease-in-out;
+    }
+
+    .guard-headline-text {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+        color: #f87171; /* Warning red */
+        text-shadow: 0 0 10px rgba(248, 113, 113, 0.2);
+    }
+
+    .guard-subtitle-text {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 11px;
+        line-height: 1.5;
+        color: var(--text-main, #94a3b8);
+        margin: 0;
+        max-width: 260px;
+    }
+}
+
+/* Sleek rotation loop animation keyframes */
+@keyframes deviceRotateLoop {
+    0% { transform: rotate(0deg); }
+    30% { transform: rotate(-90deg); }
+    70% { transform: rotate(-90deg); }
+    100% { transform: rotate(0deg); }
+}
+
+@keyframes cyberFadeInGlow {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ========================================================================= */
+/* 🚀 PREMIUM THEME-AWARE EXCEL EXPORT BUTTON STYLES                         */
+/* ========================================================================= */
+.neon-btn-excel {
+    background: rgba(16, 185, 129, 0.08) !important; /* Elegant 8% transparent Emerald Green accent */
+    border: 1px solid #10b981 !important;            /* Classic Excel Green border wire */
+    color: #10b981 !important;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.05);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.neon-btn-excel:hover {
+    background: #10b981 !important; /* Fills completely on mouse hover actions */
+    color: #ffffff !important;
+    box-shadow: 0 0 14px rgba(16, 185, 129, 0.35);
+}
+
+.neon-btn-excel:active {
+    transform: scale(0.96); /* Tactical touch response compression feedback */
+}
+
+/* ☀️ Light Theme Optimization Overrides */
+[data-theme="light"] .neon-btn-excel {
+    background: rgba(16, 185, 129, 0.05) !important;
+    color: #047857 !important; /* Deeper high-contrast emerald green for legible reading */
+    border-color: #047857 !important;
+}
+[data-theme="light"] .neon-btn-excel:hover {
+    background: #047857 !important;
+    color: #ffffff !important;
 }

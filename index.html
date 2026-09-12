@@ -310,6 +310,21 @@
                         </div>
                         <button id="btnBulkSelectClear" onclick="clearAllHistoricalCardSelections()" style="display: none; background: rgba(248, 113, 113, 0.15); border: 1px solid #f87171; color: #f87171; padding: 4px 10px; border-radius: 4px; font-size: 9px; font-weight: 700; cursor: pointer; transition: background 0.2s; white-space: nowrap;">RESET SELECTION</button>
                     </div>
+                    <!-- 🚀 EXCEL LEDGER EXPORT ACTION TRIGGER -->
+                    <div class="sidebar-action-container" style="margin-top: 14px; width: 100%;">
+                        <button id="btnExportToExcel" onclick="exportCachedLogsToExcelFile()" class="neon-btn-excel" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <!-- Excel Sheet Table Vector Icon -->
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                            EXPORT DATA TO EXCEL
+                        </button>
+                    </div>
+
                 </div> <!-- Close log-controls -->
 
                 <div id="sidebarLogContainer" class="sidebar-records-scroll-tray">
@@ -341,18 +356,20 @@
                 <!-- 🚀 UPGRADED VIEWPORT: Multi-Chart Switching Architecture -->
                 <div id="matrixFlowChartWrapper" class="flow-chart-wrapper" style="position: relative; background: #070a13; border: 1px solid #1e293b; border-radius: 12px; margin-bottom: 20px;">
                     
-                    <!-- DUAL ACTION PANEL OVERLAY (Floats flush over background grid tracks) -->
-                    <div style="position: absolute; top: 16px; left: 16px; right: 16px; display: flex; align-items: center; justify-content: space-between; z-index: 100000; pointer-events: none;">
+                    <!-- DUAL ACTION PANEL OVERLAY (🔄 UPDATED: Unified Flexbox Scroll Container Row for Mobile) -->
+                    <div class="matrix-top-header-scroll-row" style="position: absolute; top: 16px; left: 16px; right: 16px; display: flex; align-items: center; justify-content: space-between; z-index: 100000; gap: 12px;">
                         
                         <!-- 🚀 UPGRADED: Added a dedicated selectable tab option for Horizontal Bar charts -->
-                        <div class="matrix-chart-selector-ribbon" style="pointer-events: auto; display: flex; align-items: center; padding: 3px 6px; border-radius: 8px; border: 1px solid #1e293b; gap: 4px;">                            <button id="tabChartSankey" onclick="switchMatrixChartStylePresentationMode('sankey')" style="background: #1e293b; border: none; color: #38bdf8; font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 800; padding: 4px 10px; border-radius: 5px; cursor: pointer; transition: all 0.2s;">FLOW MATRIX</button>
+                        <div class="matrix-chart-selector-ribbon" style="display: flex; align-items: center; padding: 3px 6px; border-radius: 8px; border: 1px solid #1e293b; gap: 4px; flex-shrink: 0;">
+                            <button id="tabChartSankey" onclick="switchMatrixChartStylePresentationMode('sankey')" style="background: #1e293b; border: none; color: #38bdf8; font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 800; padding: 4px 10px; border-radius: 5px; cursor: pointer; transition: all 0.2s;">FLOW MATRIX</button>
                             <button id="tabChartBars" onclick="switchMatrixChartStylePresentationMode('bars')" style="background: none; border: none; color: #64748b; font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 800; padding: 4px 10px; border-radius: 5px; cursor: pointer; transition: all 0.2s;">STACKED COLUMN</button>
                             <!-- 🎯 NEW SEPARATE CHOICE LAYER TRIGGER TAB: -->
                             <button id="tabChartHHoriz" onclick="switchMatrixChartStylePresentationMode('hhoriz')" style="background: none; border: none; color: #64748b; font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 800; padding: 4px 10px; border-radius: 5px; cursor: pointer; transition: all 0.2s;">HORIZONTAL BAR</button>
                             <button id="tabChartPie" onclick="switchMatrixChartStylePresentationMode('pie')" style="background: none; border: none; color: #64748b; font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 800; padding: 4px 10px; border-radius: 5px; cursor: pointer; transition: all 0.2s;">PROPORTION PIE</button>
                         </div>
-                        <!-- 🚀 UPGRADED: DETACHED POP-OUT TRIGGER IN INDEX.HTML -->
-                        <div id="inlineActionTrayWrapper" class="matrix-action-icon-tray" style="pointer-events: auto; background: rgba(7, 10, 19, 0.85); padding: 4px 8px; border-radius: 8px; border: 1px solid #1e293b; display: flex; align-items: center; justify-content: center;">
+
+                        <!-- 🚀 UPGRADED: DETACHED POP-OUT TRIGGER IN INDEX.HTML (Now an inline relative flex item on mobile) -->
+                        <div id="inlineActionTrayWrapper" class="matrix-action-icon-tray" style="background: rgba(7, 10, 19, 0.85); padding: 4px 8px; border-radius: 8px; border: 1px solid #1e293b; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                             <div class="action-icon-wrapper" style="display: inline-flex; width: 28px; height: 28px; align-items: center; justify-content: center;">
                                 <button id="btnPinChartFloat" onclick="toggleMatrixChartFloatingState()" title="Pin Detached Matrix View" style="background: none; border: none; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #64748b; cursor: pointer; padding: 0; margin: 0; outline: none;">
                                     
@@ -371,7 +388,25 @@
 
                     <!-- Central Hardware Surface Drawing Canvas -->
                     <canvas id="flowChart" style="display: block; width: 100%; height: 100%;"></canvas>
-                    
+
+                    <!-- 🚀 THE PERMANENT SOLUTION: NATIVE MOBILE LEGEND OVERLAY BOX -->
+                    <div id="mobileNativeLegendDeck" class="mobile-only-html-legend">
+                        <div class="legend-chip-item"><span class="legend-color-dot expenses-dot"></span><span id="lblMobileExp">EXP: 0%</span></div>
+                        <div class="legend-chip-item"><span class="legend-color-dot tax-dot"></span><span id="lblMobileTax">TAX: 0%</span></div>
+                        <div class="legend-chip-item"><span class="legend-color-dot takehome-dot"></span><span id="lblMobileHome">HOME: 0%</span></div>
+                    </div>
+
+                    <!-- 🛡️ RESPONSIVE VIEWPORT MINIMUM SPECIFICATION SHIELD -->
+                    <div class="viewport-space-guard-overlay">
+                        <div class="guard-message-content">
+                            <svg class="guard-icon-vector" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                                <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                            </svg>
+                            <span class="guard-headline-text">SCREEN RESOLUTION CRITICAL</span>
+                            <p class="guard-subtitle-text">Canvas workspace compressed. Please rotate device to landscape or maximize view for high-fidelity vector tracking data.</p>
+                        </div>
+                    </div>
 
                 </div>
 
@@ -432,7 +467,7 @@
                 <!-- Annual Revenue Control Block -->
                 <div class="full-width-control">
                     <div class="control-header">
-                        <span>ANNUAL REVENUE CONFIGURATION (UP TO 1 BILLION)</span>
+                        <span>ANNUAL REVENUE CONFIGURATION </span>
                         <div class="multiplier-box" style="display: flex; align-items: center; gap: 8px;">
                             <label for="revenueStepSelect">STEP WEIGHT:</label>
                             <select id="revenueStepSelect" class="cyber-mini-select upgraded-macro-select" onchange="window.updateMatrixData()">

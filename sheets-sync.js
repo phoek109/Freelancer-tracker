@@ -1557,3 +1557,162 @@ function applyThemeViaIconToggle(targetThemeName) {
         window.updateMatrixData();
     }
 }
+
+// =========================================================================
+// 🚀 METADATA ENGINE: INSTANT CSV/EXCEL COMPILER ENGINE
+// =========================================================================
+function exportCachedLogsToExcelFile() {
+    const statusTextElement = document.getElementById('syncStatus');
+    
+    // 🛡️ Protection Guard: Terminate process safely if no archival caches exist in system memory
+    if (!window.cachedHistoricalLogs || window.cachedHistoricalLogs.length === 0) {
+        console.warn("⚠️ Export Denied: Cash ledger array pool is currently empty.");
+        if (statusTextElement) {
+            statusTextElement.style.color = '#f87171';
+            statusTextElement.innerText = "🛑 Export Blocked: No record logs found to download!";
+            setTimeout(() => { statusTextElement.innerText = ""; }, 4000);
+        }
+        return;
+    }
+
+    // 1. Build out the structured table layout column headers matrix row string
+    const headersList = [
+        "Date", "Client Name", "Invoice Amount", "Currency Received", 
+        "Withholding Toggle", "Withholding Amount (Home)", "Platform Toggle", "Platform Percentage", 
+        "Net Foreign Amount", "Exchange Rate", "Net Home Income", "Business Expenses", 
+        "Taxable Net Profit", "Final Tax Owed", "Take-Home Pay", "System Base Currency", "Snapshot Tax Rate"
+    ];
+
+    let compiledCsvStringRows = [];
+    compiledCsvStringRows.push(headersList.join(",")); // Push header line entry track
+
+    // 2. Map through live data cells array snapshots to build Excel matching fields rows
+    window.cachedHistoricalLogs.forEach(logItem => {
+        const spreadsheetExcelRowCells = [
+            `"${logItem.date || ''}"`,
+            `"${(logItem.client || 'Ledger Entry').replace(/"/g, '""')}"`, // Clean text quotes inside client tags
+            logItem.amount || 0,
+            `"${logItem.currency || 'USD'}"`,
+            `"${logItem.withholdingToggle || 'NO'}"`,
+            logItem.withholdAmt || 0,
+            `"${logItem.platformToggle || 'NO'}"`,
+            logItem.platformPct || 0,
+            logItem.netForeignAmt || 0,
+            logItem.fxRate || 1,
+            logItem.homeIncome || 0,
+            logItem.bizExpense || 0,
+            logItem.taxableNetProfit || 0,
+            logItem.finalTaxOwed || 0,
+            logItem.takeHomePay || 0,
+            `"${logItem.rowCurrencySetting || 'USD'}"`,
+            logItem.rowTaxRateSetting || 0
+        ];
+        
+        compiledCsvStringRows.push(spreadsheetExcelRowCells.join(","));
+    });
+
+    // 3. Assemble full document data block array layout track
+    const fullCsvContentPayloadString = compiledCsvStringRows.join("\n");
+
+    try {
+        // 🚀 THE MICROSOFT EXCEL SAFEKEEPING SHIELD: 
+        // We prepend the literal hex sequence \uFEFF (Byte Order Mark) right before the data array.
+        // This explicitly tells MS Excel's import engine that the document is encoded in clean UTF-8,
+        // forcing Excel to parse numerical decimals, dividers, and currencies cleanly without layout distortion!
+        const excelUniversalBomSignatureData = new Uint8Array([0xEF, 0xBB, 0xBF]);
+        const dataTextBlobBlob = new Blob([excelUniversalBomSignatureData, fullCsvContentPayloadString], { type: 'text/csv;charset=utf-8;' });
+        
+        // Create an invisible virtual anchor handle link node to stream file download passing handles
+        const hiddenVirtualAnchorLinkEl = document.createElement("a");
+        const downloadUrlPointerEndpoint = URL.createObjectURL(dataTextBlobBlob);
+        
+        // Format document title dynamically string utilizing system date markers stamps properties
+        const fileGenerationTimeStampStamp = new Date().toISOString().split('T')[0];
+        const canonicalExcelFileNameString = `Financial_Matrix_Ledger_Export_${fileGenerationTimeStampStamp}.csv`;
+        
+        hiddenVirtualAnchorLinkEl.setAttribute("href", downloadUrlPointerEndpoint);
+        hiddenVirtualAnchorLinkEl.setAttribute("download", canonicalExcelFileNameString);
+        hiddenVirtualAnchorLinkEl.style.visibility = "hidden";
+        
+        document.body.appendChild(hiddenVirtualAnchorLinkEl);
+        hiddenVirtualAnchorLinkEl.click(); // Trigger instantaneous auto-download stream pass
+        document.body.removeChild(hiddenVirtualAnchorLinkEl); // Clean up trace elements from DOM loops
+        
+        console.log(`✔ Excel-Stream Pass Complete: Successfully compiled ${window.cachedHistoricalLogs.length} ledger rows.`);
+        if (statusTextElement) {
+            statusTextElement.style.color = '#4ade80';
+            statusTextElement.innerText = "✔ Data logs compiled successfully for Microsoft Excel!";
+            setTimeout(() => { statusTextElement.innerText = ""; }, 4000);
+        }
+
+    } catch (exportCrashLog) {
+        console.error("🚨 Excel File Compiler Exception: ", exportCrashLog);
+        if (statusTextElement) {
+            statusTextElement.style.color = '#f87171';
+            statusTextElement.innerText = "🛑 Export failed. Check system console logs.";
+        }
+    }
+}
+
+// =========================================================================
+// 📱 CONSOLE UTILITIES TACTILE SWIPE DISMISSAL CONTROLLER
+// =========================================================================
+(function initAdminDrawerSwipeDismissEngine() {
+    const drawerOverlay = document.getElementById('adminVaultConfigDrawerOverlay');
+    if (!drawerOverlay) return;
+
+    // Tracking markers for spatial drag calculations
+    let capacitiveTouchStartX = 0;
+    let capacitiveTouchStartY = 0;
+    let capacitiveTouchCurrentX = 0;
+    let capacitiveTouchCurrentY = 0;
+
+    // Capture initial hardware touch coordinates
+    drawerOverlay.addEventListener('touchstart', (e) => {
+        if (!e.touches || e.touches.length === 0) return;
+        capacitiveTouchStartX = e.touches[0].clientX;
+        capacitiveTouchStartY = e.touches[0].clientY;
+        
+        // Reset dynamic track indicators
+        capacitiveTouchCurrentX = capacitiveTouchStartX;
+        capacitiveTouchCurrentY = capacitiveTouchStartY;
+    }, { passive: true });
+
+    // Monitor live horizontal and vertical movement vectors
+    drawerOverlay.addEventListener('touchmove', (e) => {
+        if (!e.touches || e.touches.length === 0) return;
+        capacitiveTouchCurrentX = e.touches[0].clientX;
+        capacitiveTouchCurrentY = e.touches[0].clientY;
+    }, { passive: true });
+
+    // Calculate drag velocity parameters upon completion
+    drawerOverlay.addEventListener('touchend', () => {
+        const absoluteDeltaHorizontalDistance = capacitiveTouchStartX - capacitiveTouchCurrentX;
+        const absoluteDeltaVerticalDistance = Math.abs(capacitiveTouchStartY - capacitiveTouchCurrentY);
+
+        // 🚀 THE THEME ISOLATION PROTECTION CHECK:
+        // We only trigger swipe close if the user swipes LEFT (startX is greater than currentX),
+        // dragging at least 65 physical layout pixels, AND the swipe is clean and horizontal 
+        // (meaning they aren't accidentally dragging vertically down the scrolling configurations list!)
+        const isSwipeLeftIntentClean = absoluteDeltaHorizontalDistance > 65;
+        const isHorizontalMovementDominant = absoluteDeltaHorizontalDistance > (absoluteDeltaVerticalDistance * 1.5);
+
+        if (isSwipeLeftIntentClean && isHorizontalMovementDominant) {
+            // Check if drawer state tracker flag is currently open to prevent looping anomalies
+            if (window.isSettingsFloatingOverlayDrawerOpen === true) {
+                console.log("📱 Tactile Motion: Left-edge swipe detected. Dismissing configuration drawer.");
+                
+                // Fire your existing operational drawer close handler seamlessly!
+                if (typeof toggleSettingsDrawerPanelState === 'function') {
+                    toggleSettingsDrawerPanelState();
+                }
+            }
+        }
+        
+        // Clear coordinate registers for subsequent actions
+        capacitiveTouchStartX = 0;
+        capacitiveTouchStartY = 0;
+        capacitiveTouchCurrentX = 0;
+        capacitiveTouchCurrentY = 0;
+    }, { passive: true });
+})();
