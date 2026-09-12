@@ -1770,66 +1770,59 @@ function downloadHighResolutionChartSnapshot() {
         }
     }
 }
-// =========================================================================
-// 🚀 METADATA ENGINE: FULL REPORT HTML/CANVAS MERGED SNAPSHOT CAPTURE Pass
+ // =========================================================================
+// 🚀 FAILS-SAFE MASTER REPORT IMAGE EXPORT ENGINE (CLONE-INSULATED)
 // =========================================================================
 function downloadMasterDashboardReportSnapshot() {
-    // Target the outermost layout wrapper block containing the charts, metric rows, and text tables
     const targetMasterContainer = document.querySelector('.matrix-container');
     const statusTextElement = document.getElementById('syncStatus');
     const submitButtonEl = document.getElementById('btnExportFullReport');
 
     if (!targetMasterContainer) {
-        console.warn("🛑 Report Snapshot Aborted: Master wrapper panel container missing.");
+        console.warn("🛑 Image Capture Aborted: Master wrapper panel container missing.");
         return;
     }
 
-    // Toggle button UI to processing state
     if (submitButtonEl) submitButtonEl.disabled = true;
     if (statusTextElement) {
         statusTextElement.style.color = '#eab308';
         statusTextElement.innerText = "⚡ Compiling master report image, please wait...";
     }
 
-    // 🚀 THE ULTRA-CLEAR RESOLUTION ENFORCER MATRIX:
-    // We tell html2canvas to forcefully multiply the processing scale by 2.
-    // This injects double pixel density onto DOM fonts, borders, and blocks,
-    // ensuring the resulting PNG download looks incredibly sharp on 4K screens!
+    // 🎯 THE STYLING FAILSAFE INTERCEPT:
+    // Instead of letting the library guess the colors and crash on shorthand background paths,
+    // we query the true runtime computed background color of your application container!
+    const activeAppBackgroundHex = window.getComputedStyle(targetMasterContainer).backgroundColor || '#070a13';
+
     const html2canvasConfigurationOptions = {
-        scale: 2,
-        useCORS: true,                     // Allows dynamic cross-origin imagery textures to pass safely
-        allowTaint: true,
-        backgroundColor: null,             // Preserves your theme-specific css background configurations
-        logging: false,
+        scale: 2,                          // High-fidelity Retina scaling multiplier
+        useCORS: true,                     
+        backgroundColor: activeAppBackgroundHex, // 🚀 FORCES fallback color to protect library runtime structures
         scrollX: 0,
-        scrollY: -window.scrollY          // Offsets browser viewport scrolling positions to prevent top-clipping
+        scrollY: -window.scrollY          
     };
 
     html2canvas(targetMasterContainer, html2canvasConfigurationOptions).then(compiledCanvasReportSurface => {
         try {
-            // Convert the fully rasterized DOM memory map into a high-fidelity image data string
             const fullReportImageDataString = compiledCanvasReportSurface.toDataURL("image/png", 1.0);
-
-            // Create a virtual anchor handle node to download the file background-style
             const temporaryVirtualAnchorLink = document.createElement('a');
             
             const activeViewModeName = (window.activeMatrixChartStyle || 'matrix').toUpperCase();
             const fileTimestampStr = new Date().toISOString().split('T')[0];
-            const outputReportFileName = `Master_Financial_Flow_Report_${activeViewModeName}_${fileTimestampStr}.png`;
+            const outputReportFileName = `Financial_Report_${activeViewModeName}_${fileTimestampStr}.png`;
 
             temporaryVirtualAnchorLink.href = fullReportImageDataString;
             temporaryVirtualAnchorLink.download = outputReportFileName;
             temporaryVirtualAnchorLink.style.visibility = 'hidden';
 
             document.body.appendChild(temporaryVirtualAnchorLink);
-            temporaryVirtualAnchorLink.click(); // Trigger programmatic background download
-            document.body.removeChild(temporaryVirtualAnchorLink); // Wipe trace pointers from DOM tree
+            temporaryVirtualAnchorLink.click(); 
+            document.body.removeChild(temporaryVirtualAnchorLink); 
 
-            console.log("✔ Full Report Snapshot Pass Complete: Rendered charts, metrics, and text breakdowns combined.");
-            
+            console.log("✔ Master Image Export complete.");
             if (statusTextElement) {
                 statusTextElement.style.color = '#4ade80';
-                statusTextElement.innerText = "✔ Complete financial report snapshot compiled successfully!";
+                statusTextElement.innerText = "✔ Complete report image downloaded successfully!";
                 setTimeout(() => { statusTextElement.innerText = ""; }, 4000);
             }
 
@@ -1837,23 +1830,21 @@ function downloadMasterDashboardReportSnapshot() {
             console.error("🚨 Full Report Capture Exception: ", compilationError);
             if (statusTextElement) {
                 statusTextElement.style.color = '#f87171';
-                statusTextElement.innerText = "🛑 Report compilation failed due to rendering constraints.";
+                statusTextElement.innerText = "🛑 Image capture failed due to stylesheet parsing limits.";
             }
         } finally {
             if (submitButtonEl) submitButtonEl.disabled = false;
         }
     }).catch(libraryError => {
         console.error("🚨 html2canvas Engine Crash Log: ", libraryError);
-        if (statusTextElement) {
-            statusTextElement.style.color = '#f87171';
-            statusTextElement.innerText = "🛑 Compiler engine offline. Check script dependencies link path.";
-        }
+        // Fallback protection handler: if html2canvas crashes, extract the canvas directly!
+        executeEmergencyCanvasOnlyFallbackDownload();
         if (submitButtonEl) submitButtonEl.disabled = false;
     });
 }
 
 // =========================================================================
-// 🚀 REPAIRED ENGINE: UN-TAINTED MASTER PDF COMPILER HUB (FILE:/// SAFE)
+// 🚀 FAILS-SAFE MASTER PDF DOCUMENT COMPILER ENGINE (CLONE-INSULATED)
 // =========================================================================
 function downloadMasterDashboardPdfSnapshot() {
     const targetMasterContainer = document.querySelector('.matrix-container');
@@ -1871,28 +1862,25 @@ function downloadMasterDashboardPdfSnapshot() {
         statusTextElement.innerText = "⚡ Compiling clean PDF document stream, please wait...";
     }
 
-    // 🎯 LOCAL FILE PROTECTION STRATEGY:
-    // Wiped out 'allowTaint: true' which triggers security blocks on local disks, 
-    // and explicitly disabled 'logging' to speed up compilation cycles.
+    // Fetch the active runtime calculated background color context
+    const activeAppBackgroundHex = window.getComputedStyle(targetMasterContainer).backgroundColor || '#070a13';
+
     const html2canvasConfigurationOptions = {
-        scale: 2,                          // Crisp 2x pixel optimization scale
-        useCORS: true,                     // Safely loads cloud font tracks cross-origin
-        backgroundColor: null,             // Automatically captures active theme colors
+        scale: 2,                          
+        useCORS: true,                     
+        backgroundColor: activeAppBackgroundHex, // 🚀 FORCES fallback color to shield the layout loop
         scrollX: 0,
         scrollY: -window.scrollY          
     };
 
     html2canvas(targetMasterContainer, html2canvasConfigurationOptions).then(compiledCanvasReportSurface => {
         try {
-            // Compress the rendered DOM data map into an uncompressed layout texture string
             const reportImageRawBufferString = compiledCanvasReportSurface.toDataURL("image/png", 1.0);
-
             const { jsPDF } = window.jspdf;
             
             const elementWidthPx = targetMasterContainer.offsetWidth;
             const elementHeightPx = targetMasterContainer.offsetHeight;
 
-            // Convert logical pixel sizes into clean layout paper width metrics points (pt)
             const pdfPageWidthPt = elementWidthPx * 0.75;
             const pdfPageHeightPt = elementHeightPx * 0.75;
 
@@ -1902,29 +1890,18 @@ function downloadMasterDashboardPdfSnapshot() {
                 format: [pdfPageWidthPt, pdfPageHeightPt]
             });
 
-            // Embed text and canvas pixels into the document frame
-            pdfDocumentInstance.addImage(
-                reportImageRawBufferString, 
-                "PNG", 
-                0, 
-                0, 
-                pdfPageWidthPt, 
-                pdfPageHeightPt, 
-                undefined, 
-                "FAST" 
-            );
+            pdfDocumentInstance.addImage(reportImageRawBufferString, "PNG", 0, 0, pdfPageWidthPt, pdfPageHeightPt, undefined, "FAST");
 
             const activeViewModeName = (window.activeMatrixChartStyle || 'matrix').toUpperCase();
             const fileTimestampStr = new Date().toISOString().split('T')[0];
             const outputReportFileName = `Financial_Report_${activeViewModeName}_${fileTimestampStr}.pdf`;
 
-            // Trigger instant programmatic file download stream
             pdfDocumentInstance.save(outputReportFileName);
 
-            console.log("✔ PDF Export Pass Complete via untainted matrix framework.");
+            console.log("✔ Master PDF Document download complete.");
             if (statusTextElement) {
                 statusTextElement.style.color = '#4ade80';
-                statusTextElement.innerText = "✔ Vector PDF report snapshot downloaded successfully!";
+                statusTextElement.innerText = "✔ Complete report PDF downloaded successfully!";
                 setTimeout(() => { statusTextElement.innerText = ""; }, 4000);
             }
 
@@ -1932,17 +1909,45 @@ function downloadMasterDashboardPdfSnapshot() {
             console.error("🚨 PDF Generation Exception: ", compilationError);
             if (statusTextElement) {
                 statusTextElement.style.color = '#f87171';
-                statusTextElement.innerText = "🛑 Security sandbox restriction. Run app via server context.";
+                statusTextElement.innerText = "🛑 PDF compilation failed due to document scaling constraints.";
             }
         } finally {
             if (submitButtonEl) submitButtonEl.disabled = false;
         }
     }).catch(libraryError => {
         console.error("🚨 html2canvas Engine Crash Log: ", libraryError);
-        if (statusTextElement) {
-            statusTextElement.style.color = '#f87171';
-            statusTextElement.innerText = "🛑 Compiler engine failed to initiate layout render.";
-        }
+        // Fallback protection handler: if html2canvas crashes, extract the canvas directly!
+        executeEmergencyCanvasOnlyFallbackDownload();
         if (submitButtonEl) submitButtonEl.disabled = false;
     });
+}
+
+// ─── 🛡️ THE EMERGENCY HARDWARE BACKUP RECOVERY MODULE ───
+// If html2canvas throws an unresolvable stylesheet layout crash, this fallback kicks in 
+// instantly and safely downloads the raw high-resolution chart drawing layout anyway, 
+// guaranteeing the buttons always return an active file to the user!
+function executeEmergencyCanvasOnlyFallbackDownload() {
+    const canvasElement = document.getElementById('flowChart');
+    const statusTextElement = document.getElementById('syncStatus');
+    if (!canvasElement) return;
+    
+    try {
+        const fallbackDataString = canvasElement.toDataURL("image/png", 1.0);
+        const tempLink = document.createElement('a');
+        const activeName = (window.activeMatrixChartStyle || 'chart').toUpperCase();
+        
+        tempLink.href = fallbackDataString;
+        tempLink.download = `Emergency_Backup_Snapshot_${activeName}.png`;
+        document.body.appendChild(tempLink);
+        tempLink.click();
+        document.body.removeChild(tempLink);
+        
+        if (statusTextElement) {
+            statusTextElement.style.color = '#eab308';
+            statusTextElement.innerText = "⚠ Style Crash Diverted: Chart captured via direct hardware buffer fallback.";
+            setTimeout(() => { statusTextElement.innerText = ""; }, 4000);
+        }
+    } catch(err) {
+        console.error("Emergency extraction crashed:", err);
+    }
 }
