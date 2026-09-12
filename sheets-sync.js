@@ -1770,184 +1770,275 @@ function downloadHighResolutionChartSnapshot() {
         }
     }
 }
- // =========================================================================
-// 🚀 FAILS-SAFE MASTER REPORT IMAGE EXPORT ENGINE (CLONE-INSULATED)
-// =========================================================================
-function downloadMasterDashboardReportSnapshot() {
-    const targetMasterContainer = document.querySelector('.matrix-container');
-    const statusTextElement = document.getElementById('syncStatus');
-    const submitButtonEl = document.getElementById('btnExportFullReport');
-
-    if (!targetMasterContainer) {
-        console.warn("🛑 Image Capture Aborted: Master wrapper panel container missing.");
-        return;
-    }
-
-    if (submitButtonEl) submitButtonEl.disabled = true;
-    if (statusTextElement) {
-        statusTextElement.style.color = '#eab308';
-        statusTextElement.innerText = "⚡ Compiling master report image, please wait...";
-    }
-
-    // 🎯 THE STYLING FAILSAFE INTERCEPT:
-    // Instead of letting the library guess the colors and crash on shorthand background paths,
-    // we query the true runtime computed background color of your application container!
-    const activeAppBackgroundHex = window.getComputedStyle(targetMasterContainer).backgroundColor || '#070a13';
-
-    const html2canvasConfigurationOptions = {
-        scale: 2,                          // High-fidelity Retina scaling multiplier
-        useCORS: true,                     
-        backgroundColor: activeAppBackgroundHex, // 🚀 FORCES fallback color to protect library runtime structures
-        scrollX: 0,
-        scrollY: -window.scrollY          
-    };
-
-    html2canvas(targetMasterContainer, html2canvasConfigurationOptions).then(compiledCanvasReportSurface => {
-        try {
-            const fullReportImageDataString = compiledCanvasReportSurface.toDataURL("image/png", 1.0);
-            const temporaryVirtualAnchorLink = document.createElement('a');
-            
-            const activeViewModeName = (window.activeMatrixChartStyle || 'matrix').toUpperCase();
-            const fileTimestampStr = new Date().toISOString().split('T')[0];
-            const outputReportFileName = `Financial_Report_${activeViewModeName}_${fileTimestampStr}.png`;
-
-            temporaryVirtualAnchorLink.href = fullReportImageDataString;
-            temporaryVirtualAnchorLink.download = outputReportFileName;
-            temporaryVirtualAnchorLink.style.visibility = 'hidden';
-
-            document.body.appendChild(temporaryVirtualAnchorLink);
-            temporaryVirtualAnchorLink.click(); 
-            document.body.removeChild(temporaryVirtualAnchorLink); 
-
-            console.log("✔ Master Image Export complete.");
-            if (statusTextElement) {
-                statusTextElement.style.color = '#4ade80';
-                statusTextElement.innerText = "✔ Complete report image downloaded successfully!";
-                setTimeout(() => { statusTextElement.innerText = ""; }, 4000);
-            }
-
-        } catch (compilationError) {
-            console.error("🚨 Full Report Capture Exception: ", compilationError);
-            if (statusTextElement) {
-                statusTextElement.style.color = '#f87171';
-                statusTextElement.innerText = "🛑 Image capture failed due to stylesheet parsing limits.";
-            }
-        } finally {
-            if (submitButtonEl) submitButtonEl.disabled = false;
-        }
-    }).catch(libraryError => {
-        console.error("🚨 html2canvas Engine Crash Log: ", libraryError);
-        // Fallback protection handler: if html2canvas crashes, extract the canvas directly!
-        executeEmergencyCanvasOnlyFallbackDownload();
-        if (submitButtonEl) submitButtonEl.disabled = false;
-    });
-}
 
 // =========================================================================
-// 🚀 FAILS-SAFE MASTER PDF DOCUMENT COMPILER ENGINE (CLONE-INSULATED)
+// 🚀 THE ULTIMATE WYSIWYG PDF COMPILER: PART 1 (THEME ACCENT SAMPLER)
 // =========================================================================
 function downloadMasterDashboardPdfSnapshot() {
-    const targetMasterContainer = document.querySelector('.matrix-container');
+    console.log("🚀 Initializing complete theme-synchronized print pass...");
     const statusTextElement = document.getElementById('syncStatus');
-    const submitButtonEl = document.getElementById('btnExportFullPdfReport');
 
-    if (!targetMasterContainer) {
-        console.warn("🛑 PDF Export Aborted: Master panel container missing.");
+    // Query our exact live target elements
+    const liveCanvasElement = document.getElementById('flowChart');
+    const breakdownsElement = document.querySelector('.dashboard-breakdowns');
+    const mainMatrixWrapper = document.querySelector('.matrix-container');
+
+    // Surgical extraction for raw numeric strings (wipes out the mobile warning overlays completely)
+    const textGrossIncome    = document.getElementById('grossDisplay')?.innerText || '$ 0.00';
+    const textTakeHomePay    = document.getElementById('takeHomeDisplay')?.innerText || '$ 0.00';
+    const textTotalExpenses  = document.getElementById('expensesDisplay')?.innerText || '$ 0.00';
+    const textTaxReserve     = document.getElementById('taxDisplay')?.innerText || '$ 0.00';
+
+    if (!liveCanvasElement || !breakdownsElement || !mainMatrixWrapper) {
+        console.warn("🛑 Print Aborted: Core reporting data blocks are missing from the page layout.");
         return;
     }
 
-    if (submitButtonEl) submitButtonEl.disabled = true;
     if (statusTextElement) {
         statusTextElement.style.color = '#eab308';
-        statusTextElement.innerText = "⚡ Compiling clean PDF document stream, please wait...";
+        statusTextElement.innerText = "⚡ Exporting high-fidelity vector snapshots and active palettes...";
     }
 
-    // Fetch the active runtime calculated background color context
-    const activeAppBackgroundHex = window.getComputedStyle(targetMasterContainer).backgroundColor || '#070a13';
+    try {
+        // Capture the live active hardware graphics memory map
+        const canvasSnapshotDataUrl = liveCanvasElement.toDataURL("image/png", 1.0);
 
-    const html2canvasConfigurationOptions = {
-        scale: 2,                          
-        useCORS: true,                     
-        backgroundColor: activeAppBackgroundHex, // 🚀 FORCES fallback color to shield the layout loop
-        scrollX: 0,
-        scrollY: -window.scrollY          
-    };
+        // Fetch user's active theme custom color variables
+        const computedStyles   = window.getComputedStyle(document.documentElement);
+        
+        const currentThemeBg   = computedStyles.getPropertyValue('--bg-main').trim() || '#070a13';
+        const currentCardBg    = computedStyles.getPropertyValue('--bg-sidebar').trim() || 'rgba(30, 41, 59, 0.4)';
+        const currentBorder    = computedStyles.getPropertyValue('--border-primary').trim() || '#1e293b';
+        const currentTextHead  = computedStyles.getPropertyValue('--text-heading').trim() || '#38bdf8';
+        const currentTextBody  = computedStyles.getPropertyValue('--text-white').trim() || '#f8fafc';
+        
+        // Harvest selected palette choice tokens (Pride, Classic, Custom, etc.)
+        const colorExpenses    = computedStyles.getPropertyValue('--color-expenses').trim() || '#f87171';
+        const colorTax         = computedStyles.getPropertyValue('--color-tax').trim() || '#facc15';
+        const colorTakeHome    = computedStyles.getPropertyValue('--color-takehome').trim() || '#4ade80';
 
-    html2canvas(targetMasterContainer, html2canvasConfigurationOptions).then(compiledCanvasReportSurface => {
-        try {
-            const reportImageRawBufferString = compiledCanvasReportSurface.toDataURL("image/png", 1.0);
-            const { jsPDF } = window.jspdf;
+        const hiddenPrintIframe = document.createElement('iframe');
+        hiddenPrintIframe.style.position = 'absolute';
+        hiddenPrintIframe.style.width = '1100px'; 
+        hiddenPrintIframe.style.height = '0px';
+        hiddenPrintIframe.style.left = '-9999px';
+        hiddenPrintIframe.style.top = '-9999px';
+        document.body.appendChild(hiddenPrintIframe);
+
+        const iframeDocument = hiddenPrintIframe.contentWindow.document;
+        iframeDocument.open();
+        // WRITE SYSTEM LAYOUT WRAPPER STYLES FOR THE PRISTINE PORTRAIT PAGE
+        iframeDocument.write(`
+            <html>
+            <head>
+                <title>Financial Flow Matrix Statement</title>
+                <style>
+                    @page { size: portrait; margin: 20mm 15mm 20mm 15mm; }
+                    
+                    body { 
+                        background: ${currentThemeBg} !important; 
+                        color: ${currentTextBody} !important; 
+                        font-family: 'Times New Roman', Times, serif !important;
+                        padding: 0;
+                        margin: 0;
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
+                    
+                    .report-wrapper {
+                        width: 100% !important;
+                        display: flex !important;
+                        flex-direction: column !important;
+                        gap: 22px !important;
+                        box-sizing: border-box;
+                    }
+                    
+                    .report-title-header {
+                        font-family: 'Times New Roman', Times, serif !important;
+                        font-size: 18px !important; /* Boosted for executive presence */
+                        font-weight: 800;
+                        color: ${currentTextHead} !important;
+                        letter-spacing: 1px;
+                        border-bottom: 2px solid ${currentBorder};
+                        padding-bottom: 10px;
+                        margin-bottom: 6px;
+                        text-transform: uppercase;
+                    }
+                    
+                    .rasterized-chart-frame {
+                        background: ${currentThemeBg} !important;
+                        border: 1px solid ${currentBorder} !important;
+                        border-radius: 12px;
+                        height: auto !important;
+                        width: 100% !important;
+                        display: block !important;
+                        page-break-inside: avoid !important;
+                    }
+                    
+                    .rasterized-chart-frame img {
+                        width: 100% !important;
+                        height: auto !important;
+                        display: block !important;
+                        border-radius: 12px;
+                    }
+                    
+                    .matrix-top-header-scroll-row, button, .mobile-only-html-legend { 
+                        display: none !important; 
+                        opacity: 0 !important;
+                        visibility: hidden !important;
+                    }
+                    
+                    .metric-row {
+                        display: grid !important;
+                        grid-template-columns: repeat(2, 1fr) !important;
+                        gap: 18px !important;
+                        width: 100% !important;
+                        page-break-inside: avoid !important;
+                    }
+                    
+                    .metric-item {
+                        background: ${currentCardBg} !important;
+                        border: 1px solid ${currentBorder} !important;
+                        padding: 18px 20px !important; /* Increased padding cushion */
+                        border-radius: 10px !important;
+                        display: flex !important;
+                        flex-direction: column !important;
+                        align-items: flex-start !important;
+                        justify-content: center !important;
+                        gap: 8px !important;
+                    }
+                    
+                    .metric-item .label {
+                        font-size: 12px !important; /* Scaled up from 9px */
+                        color: #8492a6 !important;
+                        text-transform: uppercase;
+                        font-weight: 700;
+                        margin: 0 !important;
+                        letter-spacing: 0.5px;
+                    }
+                    
+                    .metric-item .value {
+                        font-size: 22px !important; /* Boosted from 16px for premium readability */
+                        font-weight: bold !important;
+                        margin: 0 !important;
+                    }
+                    
+                    /* HARNEST DYNAMIC PALETTE VALUES FOR METRIC CARDS TEXT */
+                    .metric-item.gross-item .value { color: ${currentTextBody} !important; }
+                    .metric-item.takehome-item .value { color: ${colorTakeHome} !important; }
+                    .metric-item.expenses-item .value { color: ${colorExpenses} !important; }
+                    .metric-item.tax-item .value { color: ${colorTax} !important; }
+                    
+                    .dashboard-breakdowns {
+                        display: grid !important;
+                        grid-template-columns: repeat(3, 1fr) !important;
+                        gap: 24px !important;
+                        background: ${currentCardBg} !important;
+                        border: 1px solid ${currentBorder} !important;
+                        border-radius: 12px !important;
+                        padding: 24px !important;
+                        width: 100% !important;
+                        box-sizing: border-box;
+                        page-break-inside: avoid !important;
+                    }
+                    
+                    .breakdown-box {
+                        display: flex !important;
+                        flex-direction: column !important;
+                        gap: 10px !important;
+                        border-bottom: none !important;
+                        padding-bottom: 0 !important;
+                    }
+                    
+                    .breakdown-title { 
+                        font-family: 'Times New Roman', Times, serif !important;
+                        color: ${currentTextHead} !important; 
+                        font-weight: bold; 
+                        text-transform: uppercase;
+                        font-size: 14px !important; /* Scaled up from 11px */
+                        border-bottom: 1px solid ${currentBorder};
+                        padding-bottom: 8px;
+                        margin-bottom: 8px;
+                        display: block !important;
+                        letter-spacing: 0.5px;
+                    }
+                    
+                    .breakdown-box span,
+                    .breakdown-box strong,
+                    .breakdown-box text {
+                        font-size: 14px !important; /* Scaled up to keep balances perfectly visible */
+                        line-height: 1.6 !important;
+                    }
+
+                    .dot {
+                        width: 8px !important;
+                        height: 8px !important;
+                        margin-right: 8px !important;
+                        display: inline-block !important;
+                        border-radius: 50% !important;
+                        vertical-align: middle !important;
+                    }
+                    
+                    /* Force browser to preserve style token backgrounds */
+                    .dot[style*="var(--color-expenses)"], .expenses-dot { background-color: ${colorExpenses} !important; }
+                    .dot[style*="var(--color-tax)"], .tax-dot { background-color: ${colorTax} !important; }
+                    .dot[style*="var(--color-takehome)"], .takehome-dot { background-color: ${colorTakeHome} !important; }
+                </style>
+            </head>
+            <body>
+                <div class="report-wrapper">
+                    <div class="report-title-header">FINANCIAL PERFORMANCE MATRIX STATEMENT</div>
+                    
+                    <!-- Inject the rasterized hardware vector chart map image -->
+                    <div class="rasterized-chart-frame">
+                        <img src="${canvasSnapshotDataUrl}" />
+                    </div>
+                    
+                    <!-- Hydrate the summary value panels securely -->
+                    <div class="metric-row">
+                        <div class="metric-item gross-item">
+                            <span class="label">Gross Income</span>
+                            <span class="value">${textGrossIncome}</span>
+                        </div>
+                        <div class="metric-item takehome-item">
+                            <span class="label">Take-Home Pay</span>
+                            <span class="value">${textTakeHomePay}</span>
+                        </div>
+                        <div class="metric-item expenses-item">
+                            <span class="label">Total Expenses</span>
+                            <span class="value">${textTotalExpenses}</span>
+                        </div>
+                        <div class="metric-item tax-item">
+                            <span class="label">Tax Reserve</span>
+                            <span class="value">${textTaxReserve}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Append the categorized itemized breakdown summaries lists -->
+                    <div class="dashboard-breakdowns">${breakdownsElement.innerHTML}</div>
+                </div>
+            </body>
+            </html>
+        `);
+        iframeDocument.close();
+
+        // Launch print prompt configuration options layout sequence
+        setTimeout(() => {
+            hiddenPrintIframe.contentWindow.focus();
+            hiddenPrintIframe.contentWindow.print();
             
-            const elementWidthPx = targetMasterContainer.offsetWidth;
-            const elementHeightPx = targetMasterContainer.offsetHeight;
+            // Clean up print tracking reference iframe element nodes from active workspace DOM loops
+            setTimeout(() => { document.body.removeChild(hiddenPrintIframe); }, 1000);
 
-            const pdfPageWidthPt = elementWidthPx * 0.75;
-            const pdfPageHeightPt = elementHeightPx * 0.75;
-
-            const pdfDocumentInstance = new jsPDF({
-                orientation: pdfPageWidthPt > pdfPageHeightPt ? "landscape" : "portrait",
-                unit: "pt",
-                format: [pdfPageWidthPt, pdfPageHeightPt]
-            });
-
-            pdfDocumentInstance.addImage(reportImageRawBufferString, "PNG", 0, 0, pdfPageWidthPt, pdfPageHeightPt, undefined, "FAST");
-
-            const activeViewModeName = (window.activeMatrixChartStyle || 'matrix').toUpperCase();
-            const fileTimestampStr = new Date().toISOString().split('T')[0];
-            const outputReportFileName = `Financial_Report_${activeViewModeName}_${fileTimestampStr}.pdf`;
-
-            pdfDocumentInstance.save(outputReportFileName);
-
-            console.log("✔ Master PDF Document download complete.");
             if (statusTextElement) {
                 statusTextElement.style.color = '#4ade80';
-                statusTextElement.innerText = "✔ Complete report PDF downloaded successfully!";
+                statusTextElement.innerText = "✔ Complete desktop matrix layout compiled successfully!";
                 setTimeout(() => { statusTextElement.innerText = ""; }, 4000);
             }
+        }, 450);
 
-        } catch (compilationError) {
-            console.error("🚨 PDF Generation Exception: ", compilationError);
-            if (statusTextElement) {
-                statusTextElement.style.color = '#f87171';
-                statusTextElement.innerText = "🛑 PDF compilation failed due to document scaling constraints.";
-            }
-        } finally {
-            if (submitButtonEl) submitButtonEl.disabled = false;
-        }
-    }).catch(libraryError => {
-        console.error("🚨 html2canvas Engine Crash Log: ", libraryError);
-        // Fallback protection handler: if html2canvas crashes, extract the canvas directly!
-        executeEmergencyCanvasOnlyFallbackDownload();
-        if (submitButtonEl) submitButtonEl.disabled = false;
-    });
-}
-
-// ─── 🛡️ THE EMERGENCY HARDWARE BACKUP RECOVERY MODULE ───
-// If html2canvas throws an unresolvable stylesheet layout crash, this fallback kicks in 
-// instantly and safely downloads the raw high-resolution chart drawing layout anyway, 
-// guaranteeing the buttons always return an active file to the user!
-function executeEmergencyCanvasOnlyFallbackDownload() {
-    const canvasElement = document.getElementById('flowChart');
-    const statusTextElement = document.getElementById('syncStatus');
-    if (!canvasElement) return;
-    
-    try {
-        const fallbackDataString = canvasElement.toDataURL("image/png", 1.0);
-        const tempLink = document.createElement('a');
-        const activeName = (window.activeMatrixChartStyle || 'chart').toUpperCase();
-        
-        tempLink.href = fallbackDataString;
-        tempLink.download = `Emergency_Backup_Snapshot_${activeName}.png`;
-        document.body.appendChild(tempLink);
-        tempLink.click();
-        document.body.removeChild(tempLink);
-        
-        if (statusTextElement) {
-            statusTextElement.style.color = '#eab308';
-            statusTextElement.innerText = "⚠ Style Crash Diverted: Chart captured via direct hardware buffer fallback.";
-            setTimeout(() => { statusTextElement.innerText = ""; }, 4000);
-        }
-    } catch(err) {
-        console.error("Emergency extraction crashed:", err);
+    } catch (printError) {
+        console.error("🚨 WYSIWYG theme print operation failed, falling back:", printError);
+        window.print(); 
     }
 }

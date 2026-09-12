@@ -2696,3 +2696,56 @@ body:has(.sidebar-collapsed-hidden-state) .matrix-container {
 #btnExportFullReport:active {
     transform: scale(0.92);
 }
+/* ========================================================================= */
+/* 🛡️ PRISTINE HIGH-FIDELITY PRINT WORKSPACE CLEANUP CONSTRAINTS             */
+/* ========================================================================= */
+@media print {
+    /* Hide layout panels, config controls, grids, and action buttons to save paper */
+    .sidebar, 
+    #appInputSidebarPanel, 
+    .sidebar-action-toolbar, 
+    .matrix-top-header-scroll-row,
+    .color-palette-swatch-grid,
+    .mobile-only-html-legend {
+        display: none !important;
+    }
+
+    /* Force the main chart panel track and metric cards to expand to clean full-width */
+    body, .app-layout, .main-content, .matrix-container {
+        background: #ffffff !important;
+        color: #000000 !important;
+        width: 100% !important;
+        height: auto !important;
+        position: static !important;
+        margin: 0 !important;
+        padding: 10px !important;
+    }
+
+    /* Force underlying grid canvas containers to balance neatly across white sheets */
+    .flow-chart-wrapper {
+        border: 1px solid #cbd5e1 !important;
+        background: #ffffff !important;
+        page-break-inside: avoid !important;
+    }
+}
+/* ☀️ LIGHT THEME PDF HIGH-CONTRAST EXTRACTOR ACCENTS                         */
+/* ========================================================================= */
+@media print {
+    [data-theme="light"],
+    [data-theme="light"] body,
+    [data-theme="light"] .matrix-container {
+        background: #ffffff !important;
+        color: #0f172a !important;
+    }
+    
+    [data-theme="light"] .metric-item {
+        background: #f1f5f9 !important;
+        border-color: #cbd5e1 !important;
+    }
+    
+    [data-theme="light"] .flow-chart-wrapper,
+    [data-theme="light"] .dashboard-breakdowns {
+        background: #ffffff !important;
+        border-color: #cbd5e1 !important;
+    }
+}
