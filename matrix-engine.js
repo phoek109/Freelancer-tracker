@@ -855,7 +855,7 @@ function updateMatrixData() {
     const endFilterDate = document.getElementById('filterEndDate')?.value || '';
     const isDateRangeFilterActive = (startFilterDate !== '' || endFilterDate !== '');
 
-    // 🚀 NEW HIGH-PRIORITY MULTI-SELECT & DATE INTERCEPTOR NODE
+    // 🚀 NEW HIGH-PRIORITY MULTI-SELECT & DATE INTERCEPTOR NODE (REPAIRED)
     if ((window.selectedHistoricalLogIndices && window.selectedHistoricalLogIndices.length > 0) || isDateRangeFilterActive) {
         let targetLogPool = [];
 
@@ -882,18 +882,32 @@ function updateMatrixData() {
             const fxRateVal      = parseFloat(logItem.fxRate) || 1;
             const rawWithholdAmt = parseFloat(logItem.withholdAmt) || 0;
             
-            grossValueCalculated += (parseFloat(logItem.homeIncome) || parseFloat(logItem.netHomeIncome) || 0);
-            calculatedBizExpenses += (parseFloat(logItem.bizExpense) || 0);
-            calculatedIncomeTaxReserve += (parseFloat(logItem.finalTaxOwed) || 0);
-            takeHomeValueCalculated += (parseFloat(logItem.takeHomePay) || 0);
+            // Explicitly force text segments to numeric parsing values
+            const parsedHomeIncome = parseFloat(logItem.homeIncome) || parseFloat(logItem.netHomeIncome) || 0;
+            const parsedBizExpense = parseFloat(logItem.bizExpense) || 0;
+            const parsedFinalTax   = parseFloat(logItem.finalTaxOwed) || 0;
+            const parsedTakeHome   = parseFloat(logItem.takeHomePay) || 0;
+
+            grossValueCalculated += parsedHomeIncome;
+            calculatedBizExpenses += parsedBizExpense;
+            calculatedIncomeTaxReserve += parsedFinalTax;
+            takeHomeValueCalculated += parsedTakeHome;
 
             const isPlat = (logItem.platformToggle === "YES" || platformPctVal > 0);
             
-            // 📍 TRAP THE NaN LEAK BY UPDATING THIS SPECIFIC LINE LIKE THIS:
+            // Trap the platform NaN calculation leak securely
             const computedPlatformFeeHome = invoiceAmt * platformPctVal * fxRateVal;
             calculatedPlatformFees += isNaN(computedPlatformFeeHome) ? 0 : computedPlatformFeeHome;
+            
+            // ─── 🛡️ HYBRID DECODER INTEGRATION FOR BATCH VIEWS ───
             if (logItem.withholdingToggle === "YES" || rawWithholdAmt > 0) {
-                calculatedWithholdingTaxHome += (rawWithholdAmt * fxRateVal);
+                // Check if row features a snapshot rate to determine percentage status
+                if (logItem.rowTaxRateSetting !== undefined && logItem.rowTaxRateSetting !== null && String(logItem.rowTaxRateSetting).trim() !== "") {
+                    // Modern row: backend already converted percentage fraction to flat foreign cash amount inside logs data array
+                    calculatedWithholdingTaxHome += (rawWithholdAmt * fxRateVal);
+                } else {
+                    calculatedWithholdingTaxHome += (rawWithholdAmt * fxRateVal); // Legacy flat cash amount multiplier
+                }
             }
         });
 
@@ -901,22 +915,21 @@ function updateMatrixData() {
         taxReserveValueCalculated = calculatedIncomeTaxReserve + calculatedWithholdingTaxHome;
         if (targetLogPool.length === 0) takeHomeValueCalculated = 0;
 
-        // Inside updateMatrixData() -> Find your metric card text innerText injections:
-        const activeSymbol = window.currentCurrency || '$ ';
-
+        // 🚀 THE CRITICAL FIX: Pass the parsed calculated sums to the formatter instead of empty placeholders!
         if (document.getElementById('grossDisplay')) {
-            document.getElementById('grossDisplay').innerText = formatHighDensityDashboardMetric(gross, activeSymbol);
+            document.getElementById('grossDisplay').innerText = formatHighDensityDashboardMetric(grossValueCalculated, activeSymbol);
         }
         if (document.getElementById('expensesDisplay')) {
-            document.getElementById('expensesDisplay').innerText = formatHighDensityDashboardMetric(totalExpenses, activeSymbol);
+            document.getElementById('expensesDisplay').innerText = formatHighDensityDashboardMetric(totalExpensesValueCalculated, activeSymbol);
         }
         if (document.getElementById('taxDisplay')) {
-            document.getElementById('taxDisplay').innerText = formatHighDensityDashboardMetric(taxReserve, activeSymbol);
+            document.getElementById('taxDisplay').innerText = formatHighDensityDashboardMetric(taxReserveValueCalculated, activeSymbol);
         }
         if (document.getElementById('takeHomeDisplay')) {
-            document.getElementById('takeHomeDisplay').innerText = formatHighDensityDashboardMetric(takeHome, activeSymbol);
+            document.getElementById('takeHomeDisplay').innerText = formatHighDensityDashboardMetric(takeHomeValueCalculated, activeSymbol);
         }
 
+        // Detailed Breakdown Matrix Injections
         if (document.getElementById('incActive')) document.getElementById('incActive').innerText = `${activeSymbol}${grossValueCalculated.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
         if (document.getElementById('incOthers')) document.getElementById('incOthers').innerText = `${activeSymbol}0.00`;
         if (document.getElementById('expBusinessExpenses')) document.getElementById('expBusinessExpenses').innerText = `${activeSymbol}${calculatedBizExpenses.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
@@ -936,9 +949,9 @@ function updateMatrixData() {
         return; 
     }
 
-    // =========================================================================
-    // ⚡ SCENARIO A: HISTORICAL DRILL-DOWN BLOCK (PERFECT SHEET ALIGNMENT)
-    // =========================================================================
+
+// =========================================================================
+// ⚡ SCENARIO A: HISTORICAL DRILL-DOWN BLOCK (PERFECT SHEET ALIGNMENT)
 // =========================================================================
 // 🚀 REPAIRED PINNED VIEW SCENARIO INSIDE updateMatrixData() IN matrix-engine.js
 // =========================================================================
@@ -957,33 +970,42 @@ if (window.currentlyPinnedLogIndex !== null && window.cachedHistoricalLogs && wi
     });
 
     // 1. Pull core layout values straight from our row cache
-    const invoiceAmt        = parseFloat(logItem.amount) || 0;
+    const invoiceAmt        = parseFloat(logItem.amount) || parseFloat(logItem.invoiceAmt) || 0;
     const platformPctVal    = parseFloat(logItem.platformPct) || 0;
     const fxRateVal         = parseFloat(logItem.fxRate) || 1;
-    const bizExpenseAmt     = parseFloat(logItem.bizExpense) || 0;
+    const bizExpenseAmt     = parseFloat(logItem.bizExpense) || parseFloat(logItem.businessExpenses) || 0;
     
-    gross                   = parseFloat(logItem.homeIncome) || parseFloat(logItem.netHomeIncome) || 0;
-    const incomeTaxOwed     = parseFloat(logItem.finalTaxOwed) || 0;
-    const takeHome          = parseFloat(logItem.takeHomePay) || 0;
+    // Set gross directly from your Google Sheet Net Home Income (Column K)
+    gross = parseFloat(logItem.homeIncome) || parseFloat(logItem.netHomeIncome) || parseFloat(logItem.netHome) || parseFloat(logItem.grossIncome) || 0;
+    
+    const incomeTaxOwed     = parseFloat(logItem.finalTaxOwed) || parseFloat(logItem.taxReserve) || 0;
 
-    // ─── 🛡️ FRONTEND HYBRID WITHHOLDING DECODER TRACK ───
+    // ─── 🛡️ ZERO-CALCULATION WITHHOLDING DATA PASS TRACK ───
     let withholdingTaxHome = 0;
     const rawWithholdColumnValue = parseFloat(logItem.withholdAmt) || 0;
 
-    // If rowTaxRateSetting is undefined, null, or empty string, it's a legacy row entry
+    // Pull values directly from Column F cells depending on historical row generation settings
     if (logItem.rowTaxRateSetting === undefined || logItem.rowTaxRateSetting === null || String(logItem.rowTaxRateSetting).trim() === "") {
-        withholdingTaxHome = rawWithholdColumnValue * fxRateVal; // Legacy absolute cash format
+        // Legacy Row flat cash value passthrough
+        withholdingTaxHome = rawWithholdColumnValue * fxRateVal; 
     } else {
-        // Modern row entry: Column F is a percentage fraction, multiply by Invoice Amount
-        withholdingTaxHome = (invoiceAmt * rawWithholdColumnValue) * fxRateVal; // Percentage format
+        // Modern Row: Calculate cash value by mapping the whole whole percentage number directly
+        withholdingTaxHome = invoiceAmt * (rawWithholdColumnValue / 100) * fxRateVal;
     }
 
+    // Platform fees in Home Currency = Invoice * Percentage * FX Rate
     const computedPlatformFeeHome = invoiceAmt * platformPctVal * fxRateVal;
+    
+    // Total expenses card sum = Business Expenses + Platform Fees
     const logTotalExpenses = bizExpenseAmt + computedPlatformFeeHome;
-    const computedNetProfit = gross - bizExpenseAmt; 
-
-    // Combined metric card value sum
+    
+    // Tax reserve card sum = Sheet Income Tax Reserve + Sheet Withholding Tax
     const taxReserve = incomeTaxOwed + withholdingTaxHome;
+    
+    // Take-home pay card sum read straight from row cell data fallbacks
+    const takeHome = parseFloat(logItem.takeHomePay) || parseFloat(logItem.takeHome) || (gross - logTotalExpenses - taxReserve);
+    
+    const computedNetProfit = gross - bizExpenseAmt; 
 
     const logCurrencyCode = logItem.rowCurrencySetting || logItem.currency || "USD";
     const logSymbol = typeof getGlobalCurrencySymbolCharacter === 'function' 
@@ -992,8 +1014,73 @@ if (window.currentlyPinnedLogIndex !== null && window.cachedHistoricalLogs && wi
 
     window.currentCurrency = logSymbol;
 
+    // =========================================================================
+    // 🛠️ TARGET MATCHING LOCK: HYDRATE THE TRUE SIDEBAR INPUTS
+    // =========================================================================
+    // 🎯 Date, Client Name, and Invoice Amount fields repopulation
+    if (document.getElementById('formDate'))     document.getElementById('formDate').value = logItem.date || '';
+    if (document.getElementById('formClient'))   document.getElementById('formClient').value = logItem.client || '';
+    if (document.getElementById('formAmount'))   document.getElementById('formAmount').value = invoiceAmt;
+    if (document.getElementById('formCurrency')) document.getElementById('formCurrency').value = logCurrencyCode;
+
+    // 🎯 Business Expenses Field Map Fix
+    if (document.getElementById('formExpenses')) document.getElementById('formExpenses').value = bizExpenseAmt;
+
+    // 🎯 Base Configuration Panel Options Map Fix
+    if (document.getElementById('baseCurrencyConfig')) document.getElementById('baseCurrencyConfig').value = logCurrencyCode;
+    
+    if (document.getElementById('baseTaxRateConfig')) {
+        // Form expects un-scaled values for viewing (e.g. 15 for 15%)
+        const rawTaxRateSettingVal = parseFloat(logItem.rowTaxRateSetting);
+        document.getElementById('baseTaxRateConfig').value = !isNaN(rawTaxRateSettingVal) ? (rawTaxRateSettingVal * 100).toFixed(1) : '15.0';
+    }
+
+    // 🎯 Platform & Withholding Toggle Setup Fixes
+    if (document.getElementById('formPlatformFeesToggle')) {
+        document.getElementById('formPlatformFeesToggle').value = (logItem.platformToggle === "YES" || platformPctVal > 0) ? "Yes" : "No";
+    }
+    if (document.getElementById('formFees')) {
+        document.getElementById('formFees').value = (platformPctVal * 100).toFixed(2);
+    }
+    if (document.getElementById('formWithholdingToggle')) {
+        document.getElementById('formWithholdingToggle').value = (logItem.withholdingToggle === "YES" || rawWithholdColumnValue > 0) ? "Yes" : "No";
+    }
+    if (document.getElementById('formWithholdingRate')) {
+        if (logItem.rowTaxRateSetting !== undefined && logItem.rowTaxRateSetting !== null && String(logItem.rowTaxRateSetting).trim() !== "") {
+            document.getElementById('formWithholdingRate').value = (rawWithholdColumnValue * 100).toFixed(1);
+        } else {
+            const calculatedLegacyPercentage = invoiceAmt > 0 ? ((rawWithholdColumnValue / invoiceAmt) * 100) : 0;
+            document.getElementById('formWithholdingRate').value = isNaN(calculatedLegacyPercentage) ? "0" : calculatedLegacyPercentage.toFixed(1);
+        }
+    }
+
+    // 🎯 FX Conversion Portal Mode Selection Switch Alignment Fix
+    if (document.getElementById('formConversionMode')) {
+        if (logItem.conversionMode === "domestic_identity" || fxRateVal === 1) {
+            document.getElementById('formConversionMode').value = "domestic_identity";
+        } else if (logItem.conversionMode === "custom_rate") {
+            document.getElementById('formConversionMode').value = "custom_rate";
+            if (document.getElementById('formCustomRateVal')) document.getElementById('formCustomRateVal').value = fxRateVal.toFixed(4);
+        } else {
+            document.getElementById('formConversionMode').value = "exact_cash";
+            if (document.getElementById('formExactCashAmt')) document.getElementById('formExactCashAmt').value = gross.toFixed(2);
+        }
+    }
+
+    // Fire utility visibility updates to ensure matched input fields adjust layout dynamically
+    if (typeof toggleConversionInputFields === 'function') toggleConversionInputFields();
+
+    // =========================================================================
     // 2. Inject figures onto dashboard layout nodes with full decimal precision
-    if (document.getElementById('grossDisplay')) document.getElementById('grossDisplay').innerText = `${logSymbol}${gross.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+    // =========================================================================
+    if (document.getElementById('grossDisplay')) {
+        document.getElementById('grossDisplay').innerText = `${logSymbol}${gross.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+    }
+    const secondaryGrossDisplay = document.querySelector('.gross-income-value') || document.getElementById('grossIncomeDisplay');
+    if (secondaryGrossDisplay) {
+        secondaryGrossDisplay.innerText = `${logSymbol}${gross.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+    }
+
     if (document.getElementById('expensesDisplay')) document.getElementById('expensesDisplay').innerText = `${logSymbol}${logTotalExpenses.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
     if (document.getElementById('taxDisplay')) document.getElementById('taxDisplay').innerText = `${logSymbol}${taxReserve.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
     if (document.getElementById('takeHomeDisplay')) document.getElementById('takeHomeDisplay').innerText = `${logSymbol}${takeHome.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
@@ -1009,10 +1096,11 @@ if (window.currentlyPinnedLogIndex !== null && window.cachedHistoricalLogs && wi
     if (document.getElementById('taxWithholding')) document.getElementById('taxWithholding').innerText = `${logSymbol}${withholdingTaxHome.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
 
     if (gross > 0) {
-        document.getElementById('barExpenses').style.width = `${(logTotalExpenses / gross) * 100}%`;
-        document.getElementById('barTax').style.width = `${(taxReserve / gross) * 100}%`;
-        document.getElementById('barTakeHome').style.width = `${(takeHome / gross) * 100}%`;
+        if (document.getElementById('barExpenses')) document.getElementById('barExpenses').style.width = `${(logTotalExpenses / gross) * 100}%`;
+        if (document.getElementById('barTax')) document.getElementById('barTax').style.width = `${(taxReserve / gross) * 100}%`;
+        if (document.getElementById('barTakeHome')) document.getElementById('barTakeHome').style.width = `${(takeHome / gross) * 100}%`;
     }
+
 
     if (typeof drawFlowLines === 'function') {
         drawFlowLines(gross, logTotalExpenses, taxReserve, takeHome);

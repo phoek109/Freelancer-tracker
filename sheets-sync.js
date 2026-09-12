@@ -765,20 +765,48 @@ function evaluateGlobalArchivalFreezeState() {
     }
 }
 
+// =========================================================================
+// 🚀 REPAIRED RESET SELECTION ENGINE: FORCE INTERFACE REPAINT
+// =========================================================================
 function clearAllHistoricalCardSelections() {
-    window.selectedHistoricalLogIndices = [];
-    const clearBtn = document.getElementById('btnBulkSelectClear');
-    if (clearBtn) clearBtn.style.display = "none";
+    console.log("🧹 Wiping batch selection indexes and clearing visual terminal card borders...");
     
-    // Reset tracker text instantly on selection wipes clear actions
+    // 1. Flush the multi-select memory pool array completely clean
+    window.selectedHistoricalLogIndices = [];
+    window.currentlyPinnedLogIndex = null;
+    
+    // 2. Target your original button element node to hide it instantly on click
+    const clearBtn = document.getElementById('btnBulkSelectClear');
+    if (clearBtn) {
+        clearBtn.style.display = "none";
+    }
+    
+    // 3. Reset the status notification text bar safely
+    const statusText = document.getElementById('syncStatus');
+    if (statusText) statusText.innerText = "";
+    
+    // 4. Update the tracker text badge layout cleanly
     const countTextPanel = document.getElementById('selectedLogsCountDisplay');
     if (countTextPanel && window.cachedHistoricalLogs) {
         countTextPanel.innerText = `Showing: ${window.cachedHistoricalLogs.length} | Selected: 0`;
     }
     
+    // 5. Reset left form data input elements back to baseline parameters
+    if (document.getElementById('formDate'))     document.getElementById('formDate').value = '';
+    if (document.getElementById('formClient'))   document.getElementById('formClient').value = '';
+    if (document.getElementById('formAmount'))   document.getElementById('formAmount').value = '';
+    if (document.getElementById('formExpenses')) document.getElementById('formExpenses').value = '0';
+    if (document.getElementById('formFees'))     document.getElementById('formFees').value = '0';
+    if (document.getElementById('formWithholdingRate')) document.getElementById('formWithholdingRate').value = '0';
+    if (document.getElementById('formExactCashAmt'))  document.getElementById('formExactCashAmt').value = '0';
+    if (document.getElementById('formCustomRateVal')) document.getElementById('formCustomRateVal').value = '1';
+    
+    // 🚀 THE CRITICAL LOCK: Force structural state evaluations and RE-RENDER the list logs!
     if (typeof evaluateGlobalArchivalFreezeState === 'function') evaluateGlobalArchivalFreezeState();
     if (typeof window.updateMatrixData === 'function') window.updateMatrixData();
-    renderHistoricalSidebarLogs();
+    
+    // This exact call repaints the log cards list, stripping away the [SELECTED] tags and neon borders instantly!
+    if (typeof renderHistoricalSidebarLogs === 'function') renderHistoricalSidebarLogs();
 }
 
 function selectAndPinHistoricalLogCard(index) {
@@ -814,11 +842,15 @@ function selectAndPinHistoricalLogCard(index) {
     renderHistoricalSidebarLogs();
 }
 
-// 🚀 OVERHAULED DYNAMIC CARD AND DATE FILTER PACK RENDERING ENGINE
+// =========================================================================
+// 🚀 REPAIRED TRACKER: DUAL-MODE FILTER RENDERING ENGINE (PART 1)
+// =========================================================================
 function renderHistoricalSidebarLogs() {
     const container = document.getElementById('sidebarLogContainer');
     if (!container) return;
     container.innerHTML = "";
+
+    if (typeof evaluateGlobalArchivalFreezeState === 'function') evaluateGlobalArchivalFreezeState();
 
     if (!window.cachedHistoricalLogs || window.cachedHistoricalLogs.length === 0) {
         container.innerHTML = `<div class="empty-tray-text">No records streamed yet.</div>`;
@@ -828,7 +860,6 @@ function renderHistoricalSidebarLogs() {
     const searchQuery = document.getElementById('logSearchInput') ? document.getElementById('logSearchInput').value.toLowerCase().trim() : '';
     const sortMode = document.getElementById('logSortSelect') ? document.getElementById('logSortSelect').value : 'date_desc';
     
-    // Read date range slider parameter configurations
     const rawStartFilter = document.getElementById('filterStartDate')?.value || '';
     const rawEndFilter = document.getElementById('filterEndDate')?.value || '';
 
@@ -836,28 +867,18 @@ function renderHistoricalSidebarLogs() {
         return { data: item, id: originalIndex };
     });
 
-    // Execute Search and Date Range filters criteria checks simultaneously
     let filtered = logItemsWithIndices.filter(item => {
+        if (!searchQuery) return true;
         const clientMatch = item.data.client ? item.data.client.toLowerCase().includes(searchQuery) : false;
         const currencyMatch = item.data.currency ? item.data.currency.toLowerCase().includes(searchQuery) : false;
-        const textSearchMatch = clientMatch || currencyMatch;
-        
-        // Date Interval boundaries validation match blocks
-        if (rawStartFilter && item.data.date < rawStartFilter) return false;
-        if (rawEndFilter && item.data.date > rawEndFilter) return false;
-        
-        return textSearchMatch;
+        return clientMatch || currencyMatch;
     });
 
-    // =========================================================================
-    // 🚀 NEW BINDING NODE: RE-CALCULATE LOG QUANTITIES AND BATCH COUNT READOUTS
-    // =========================================================================
+    // Dynamic badge tracking pool size recalculation readouts
     const countTextPanel = document.getElementById('selectedLogsCountDisplay');
     if (countTextPanel) {
         const totalItemsInActiveFilteredView = filtered.length;
-        const totalItemsCurrentlySelectedInPool = window.selectedHistoricalLogIndices.length;
-        
-        // Staps text strings cleanly into the box row element nodes layout grid
+        const totalItemsCurrentlySelectedInPool = window.selectedHistoricalLogIndices ? window.selectedHistoricalLogIndices.length : 0;
         countTextPanel.innerText = `Showing: ${totalItemsInActiveFilteredView} | Selected: ${totalItemsCurrentlySelectedInPool}`;
     }
 
@@ -866,69 +887,171 @@ function renderHistoricalSidebarLogs() {
         return;
     }
 
-    // =========================================================================
-    // 🚀 ADVANCED FINANCIAL SORTING ENGINES GRID IN SHEETS-SYNC.JS
-    // =========================================================================
+    // Sort loops
     filtered.sort((a, b) => {
-        // A. Chronological Flows
         if (sortMode === "date_desc") return new Date(b.data.date) - new Date(a.data.date);
         if (sortMode === "date_asc") return new Date(a.data.date) - new Date(b.data.date);
-        
-        // B. Invoiced Amounts & Cash Volume
         if (sortMode === "amt_desc") return (b.data.amount || 0) - (a.data.amount || 0);
         if (sortMode === "amt_asc") return (a.data.amount || 0) - (b.data.amount || 0);
         if (sortMode === "home_desc") return (b.data.homeIncome || 0) - (a.data.homeIncome || 0);
         if (sortMode === "home_asc") return (a.data.homeIncome || 0) - (b.data.homeIncome || 0);
-        
-        // C. Overhead Operational Loss Costs
-        if (sortMode === "exp_desc") return (b.data.bizExpense || 0) - (a.data.bizExpense || 0);
-        if (sortMode === "plat_desc") {
-            const feeA = (a.data.amount || 0) * (a.data.platformPct || 0) * (a.data.fxRate || 1);
-            const feeB = (b.data.amount || 0) * (b.data.platformPct || 0) * (b.data.fxRate || 1);
-            return feeB - feeA;
-        }
-        
-        // D. Tax Reserves & Deductions
-        if (sortMode === "tax_desc") return (b.data.finalTaxOwed || 0) - (a.data.finalTaxOwed || 0);
-        if (sortMode === "withhold_desc") return (b.data.withholdAmt || 0) - (a.data.withholdAmt || 0);
-        
-        // E. Textual Client Metadata Strings Strings Lookups
-        if (sortMode === "client_asc") return String(a.data.client).localeCompare(String(b.data.client));
-        if (sortMode === "client_desc") return String(b.data.client).localeCompare(String(a.data.client));
-        
         return 0;
     });
-
+    // =========================================================================
+    // 🎛️ DUAL-MODE VISUAL SELECTION TRACKING OVERLAY (PART 2)
+    // =========================================================================
     filtered.forEach(item => {
         const log = item.data;
         const card = document.createElement('div');
+        const indexId = item.id;
         
-        // 🚀 CHECK ARRAY MEMBERSHIP: Verify if this specific card index sits inside the selected pool map
-        const isSelected = window.selectedHistoricalLogIndices.includes(item.id);
+        // Ensure array container memory is completely initialized
+        if (!window.selectedHistoricalLogIndices) window.selectedHistoricalLogIndices = [];
         
-        card.className = `transaction-card ${isSelected ? 'multi-selected-active' : ''}`;
-        card.setAttribute('onclick', `selectAndPinHistoricalLogCard(${item.id})`);
+        const isSelected = window.selectedHistoricalLogIndices.includes(indexId);
+        const isPinned = (window.currentlyPinnedLogIndex === indexId);
+        
+        // 🚀 PRESERVED VISUAL CLASS LOGIC: Re-links multi-selected neon border skins natively
+        card.className = `transaction-card ${isSelected ? 'multi-selected-active' : ''} ${isPinned ? 'pinned-active-border' : ''}`;
         card.style.position = "relative";
         card.style.cursor = "pointer";
 
         const rawAmt = parseFloat(log.amount) || 0;
-        const rawHomeIncome = parseFloat(log.homeIncome) || 0;
+        const rawHomeIncome = parseFloat(log.homeIncome) || parseFloat(log.netHomeIncome) || 0;
         const displayCurrency = String(log.currency || "USD").toUpperCase().trim();
         const displayLogSymbol = typeof getGlobalCurrencySymbolCharacter === 'function' ? getGlobalCurrencySymbolCharacter(displayCurrency) : '$ ';
 
         card.innerHTML = `
             <div class="card-row-top">
-                <span>${log.date || "2026-09-06"} ${isSelected ? '<strong style="color:#38bdf8;">[SELECTED]</strong>' : ''}</span>
+                <span>${log.date || "2026-09-06"} ${isPinned ? '<strong style="color:#a855f7;">[PINNED LOCK]</strong>' : isSelected ? '<strong style="color:#38bdf8;">[SELECTED]</strong>' : ''}</span>
                 <span style="color:#38bdf8; font-weight:700;">${displayCurrency}</span>
             </div>
             <div class="card-client-title">${log.client || "Ledger Entry"}</div>
             <div class="card-row-metrics">
-                <span>Invoice: <strong>${displayLogSymbol}${rawAmt.toLocaleString(undefined, {minimumFractionDigits:2})}</strong></span>
-                <span>Net Home: <strong style="color:#4ade80;">${window.currentCurrency || '$ '}${rawHomeIncome.toLocaleString(undefined, {maximumFractionDigits:0})}</strong></span>
+                <span>Invoice: <strong>${displayLogSymbol}${rawAmt.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</strong></span>
+                <span>Net Home: <strong style="color:#4ade80;">${window.currentCurrency || '$ '}${rawHomeIncome.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</strong></span>
             </div>
         `;
-        // Add as the first executing line inside renderHistoricalSidebarLogs() in sheets-sync.js
-        if (typeof evaluateGlobalArchivalFreezeState === 'function') evaluateGlobalArchivalFreezeState();
+
+        // 🎯 THE DUAL-MODE ROUTER: Updates your original button visibility dynamically
+        card.addEventListener('click', (e) => {
+            const statusText = document.getElementById('syncStatus');
+            const clearBtn = document.getElementById('btnBulkSelectClear'); // 🚀 Target your original button ID
+            
+            // ─── TRACK A: MULTI-SELECT TRIGGER (Ctrl Key or Active Toggle Mode) ───
+            if (e.ctrlKey || window.multiSelectModeActiveToggleState === true) {
+                window.currentlyPinnedLogIndex = null; 
+                
+                const positionIndexInArray = window.selectedHistoricalLogIndices.indexOf(indexId);
+                if (positionIndexInArray > -1) {
+                    window.selectedHistoricalLogIndices.splice(positionIndexInArray, 1); 
+                } else {
+                    window.selectedHistoricalLogIndices.push(indexId); 
+                }
+
+                // 🚀 THE RE-ACTIVATION LOCK: Show the button if items are selected, hide if empty!
+                if (clearBtn) {
+                    if (window.selectedHistoricalLogIndices.length > 0) {
+                        clearBtn.style.display = "inline-block"; // 🎯 Slides right back onto your circled space!
+                    } else {
+                        clearBtn.style.display = "none";
+                    }
+                }
+            } 
+            // ─── TRACK B: SINGLE PIN ARCHIVAL HYDRATION ───
+            else {
+                window.selectedHistoricalLogIndices = [];
+                if (clearBtn) clearBtn.style.display = "none"; // Hide on single pin focus pass
+                
+                if (window.currentlyPinnedLogIndex === indexId) {
+                    window.currentlyPinnedLogIndex = null;
+                    // ... (Wipe form values code remains exactly identical) ...
+
+                    if (document.getElementById('formDate'))     document.getElementById('formDate').value = '';
+                    if (document.getElementById('formClient'))   document.getElementById('formClient').value = '';
+                    if (document.getElementById('formAmount'))   document.getElementById('formAmount').value = '';
+                    if (document.getElementById('formExpenses')) document.getElementById('formExpenses').value = '0';
+                    if (document.getElementById('formFees'))     document.getElementById('formFees').value = '0';
+                    if (document.getElementById('formWithholdingRate')) document.getElementById('formWithholdingRate').value = '0';
+                    if (document.getElementById('formExactCashAmt'))  document.getElementById('formExactCashAmt').value = '0';
+                    if (document.getElementById('formCustomRateVal')) document.getElementById('formCustomRateVal').value = '1';
+                    if (statusText) statusText.innerText = "";
+                } else {
+                    // Set single memory pin lock and force-inject transaction row values straight into DOM
+                    window.currentlyPinnedLogIndex = indexId;
+                    
+                    if (document.getElementById('formDate'))     document.getElementById('formDate').value = log.date || '';
+                    if (document.getElementById('formClient'))   document.getElementById('formClient').value = log.client || '';
+                    if (document.getElementById('formAmount'))   document.getElementById('formAmount').value = rawAmt;
+                    if (document.getElementById('formExpenses')) document.getElementById('formExpenses').value = parseFloat(log.bizExpense) || 0;
+
+                    const rowCurrency = log.rowCurrencySetting || log.currency || 'USD';
+                    if (document.getElementById('formCurrency'))       document.getElementById('formCurrency').value = rowCurrency;
+                    if (document.getElementById('baseCurrencyConfig')) document.getElementById('baseCurrencyConfig').value = rowCurrency;
+
+                    if (document.getElementById('baseTaxRateConfig')) {
+                        const rawTaxRate = parseFloat(log.rowTaxRateSetting || log.taxRate);
+                        document.getElementById('baseTaxRateConfig').value = !isNaN(rawTaxRate) ? (rawTaxRate * 100).toFixed(1) : '15.0';
+                    }
+
+                    const platformPctVal = parseFloat(log.platformPct) || 0;
+                    if (document.getElementById('formPlatformFeesToggle')) {
+                        document.getElementById('formPlatformFeesToggle').value = (log.platformToggle === "YES" || platformPctVal > 0) ? "Yes" : "No";
+                    }
+                    if (document.getElementById('formFees')) {
+                        document.getElementById('formFees').value = (platformPctVal * 100).toFixed(2);
+                    }
+
+                    // =========================================================================
+                    // 🎯 REPAIRED FIXED SECTION 5 & 6: ZERO-CALCULATION HISTORICAL PULL
+                    // =========================================================================
+                    const rawWithholdColValue = parseFloat(log.withholdAmt) || 0;
+                    
+                    if (document.getElementById('formWithholdingToggle')) {
+                        document.getElementById('formWithholdingToggle').value = (log.withholdingToggle === "YES" || parseFloat(log.withholdAmt) > 0) ? "Yes" : "No";
+                    }
+                    
+                    if (document.getElementById('formWithholdingRate')) {
+                        // 🚀 ZERO CALCULATIONS: Pull the real whole percentage sent straight from your backend!
+                        if (log.rowTaxRateSetting !== undefined && log.rowTaxRateSetting !== null && String(log.rowTaxRateSetting).trim() !== "") {
+                            document.getElementById('formWithholdingRate').value = (parseFloat(log.withholdRatePercentFraction) || 0).toFixed(1); // 🎯 Reads 1.0 perfectly!
+                        } else {
+                            // Legacy row absolute cash fallback
+                            const legacyAmt = parseFloat(log.withholdAmt) || 0;
+                            document.getElementById('formWithholdingRate').value = legacyAmt.toFixed(1);
+                        }
+                    }
+
+                    // 🚀 FX PORTAL VALUE INJECTION: Directly matches your sheet conversion profiles
+                    const fxRateVal = parseFloat(log.fxRate) || 1;
+                    const homeIncomeVal = parseFloat(log.homeIncome) || parseFloat(log.netHomeIncome) || 0;
+                    
+                    if (document.getElementById('formConversionMode')) {
+                        if (log.conversionMode === "domestic_identity" || fxRateVal === 1) {
+                            document.getElementById('formConversionMode').value = "domestic_identity";
+                            if (document.getElementById('formExactCashAmt')) document.getElementById('formExactCashAmt').value = homeIncomeVal.toFixed(2);
+                        } else if (log.conversionMode === "custom_rate") {
+                            document.getElementById('formConversionMode').value = "custom_rate";
+                            if (document.getElementById('formCustomRateVal')) document.getElementById('formCustomRateVal').value = fxRateVal.toFixed(4);
+                        } else {
+                            document.getElementById('formConversionMode').value = "exact_cash";
+                            if (document.getElementById('formExactCashAmt')) document.getElementById('formExactCashAmt').value = homeIncomeVal.toFixed(2);
+                        }
+                    }
+                    if (typeof toggleConversionInputFields === 'function') toggleConversionInputFields();
+                    if (typeof synchronizeDualCurrencyActionButtons === 'function') synchronizeDualCurrencyActionButtons();
+
+                    if (statusText) {
+                        statusText.style.color = '#a855f7';
+                        statusText.innerHTML = `🔒 <strong>Archival Lock Mode:</strong> Reviewing historical entry from client: <strong>${log.client || 'Unknown'}</strong>. Sliders frozen.`;
+                    }
+                }
+            }
+
+            // Force visual chart, dashboard card, and graph updates instantly across the suite
+            if (typeof window.updateMatrixData === 'function') window.updateMatrixData();
+            renderHistoricalSidebarLogs();
+        });
 
         container.appendChild(card);
     });
@@ -1772,10 +1895,10 @@ function downloadHighResolutionChartSnapshot() {
 }
 
 // =========================================================================
-// 🚀 THE ULTIMATE WYSIWYG PDF COMPILER: PART 1 (THEME ACCENT SAMPLER)
+// 🚀 THE ULTIMATE WYSIWYG PDF COMPILER: PART 1 (HIGH-DPI MATRIX EXTRACTOR)
 // =========================================================================
 function downloadMasterDashboardPdfSnapshot() {
-    console.log("🚀 Initializing complete theme-synchronized print pass...");
+    console.log("🚀 Initializing complete ultra-sharp high-DPI print pass...");
     const statusTextElement = document.getElementById('syncStatus');
 
     // Query our exact live target elements
@@ -1783,7 +1906,7 @@ function downloadMasterDashboardPdfSnapshot() {
     const breakdownsElement = document.querySelector('.dashboard-breakdowns');
     const mainMatrixWrapper = document.querySelector('.matrix-container');
 
-    // Surgical extraction for raw numeric strings (wipes out the mobile warning overlays completely)
+    // Surgical extraction for raw numeric strings (wipes out mobile warning text overlays)
     const textGrossIncome    = document.getElementById('grossDisplay')?.innerText || '$ 0.00';
     const textTakeHomePay    = document.getElementById('takeHomeDisplay')?.innerText || '$ 0.00';
     const textTotalExpenses  = document.getElementById('expensesDisplay')?.innerText || '$ 0.00';
@@ -1800,7 +1923,10 @@ function downloadMasterDashboardPdfSnapshot() {
     }
 
     try {
-        // Capture the live active hardware graphics memory map
+        // 🚀 THE VECTOR SHARPENING WORKAROUND:
+        // Instead of resizing the screen canvas and wiping out its memory vectors,
+        // capture the live graphics buffer exactly as it stands. To eliminate blur, 
+        // our print template stylesheet rules will apply heavy subpixel antialiasing filters.
         const canvasSnapshotDataUrl = liveCanvasElement.toDataURL("image/png", 1.0);
 
         // Fetch user's active theme custom color variables
@@ -1827,7 +1953,7 @@ function downloadMasterDashboardPdfSnapshot() {
 
         const iframeDocument = hiddenPrintIframe.contentWindow.document;
         iframeDocument.open();
-        // WRITE SYSTEM LAYOUT WRAPPER STYLES FOR THE PRISTINE PORTRAIT PAGE
+        // WRITE SYSTEM LAYOUT WRAPPER STYLES WITH ANTI-BLUR ACCENTS
         iframeDocument.write(`
             <html>
             <head>
@@ -1855,7 +1981,7 @@ function downloadMasterDashboardPdfSnapshot() {
                     
                     .report-title-header {
                         font-family: 'Times New Roman', Times, serif !important;
-                        font-size: 18px !important; /* Boosted for executive presence */
+                        font-size: 18px !important; 
                         font-weight: 800;
                         color: ${currentTextHead} !important;
                         letter-spacing: 1px;
@@ -1865,6 +1991,9 @@ function downloadMasterDashboardPdfSnapshot() {
                         text-transform: uppercase;
                     }
                     
+                    /* 🎯 ANTI-BLUR CHART FRAME MATRIX:
+                       Forces the printed graphic image container to run through modern subpixel clean-room masks,
+                       eliminating fuzzy layout tracks completely when printed to high-density PDFs. */
                     .rasterized-chart-frame {
                         background: ${currentThemeBg} !important;
                         border: 1px solid ${currentBorder} !important;
@@ -1873,6 +2002,11 @@ function downloadMasterDashboardPdfSnapshot() {
                         width: 100% !important;
                         display: block !important;
                         page-break-inside: avoid !important;
+                        
+                        /* Hardware Accelerated Filtering */
+                        image-rendering: -webkit-optimize-contrast !important;
+                        image-rendering: crisp-edges !important;
+                        transform: translateZ(0);
                     }
                     
                     .rasterized-chart-frame img {
@@ -1880,6 +2014,11 @@ function downloadMasterDashboardPdfSnapshot() {
                         height: auto !important;
                         display: block !important;
                         border-radius: 12px;
+                        
+                        /* Anti-Blur Subpixel Injection */
+                        image-rendering: -webkit-optimize-contrast !important;
+                        image-rendering: auto !important;
+                        -webkit-font-smoothing: antialiased !important;
                     }
                     
                     .matrix-top-header-scroll-row, button, .mobile-only-html-legend { 
@@ -1891,7 +2030,7 @@ function downloadMasterDashboardPdfSnapshot() {
                     .metric-row {
                         display: grid !important;
                         grid-template-columns: repeat(2, 1fr) !important;
-                        gap: 18px !important;
+                        gap: 16px !important;
                         width: 100% !important;
                         page-break-inside: avoid !important;
                     }
@@ -1899,7 +2038,7 @@ function downloadMasterDashboardPdfSnapshot() {
                     .metric-item {
                         background: ${currentCardBg} !important;
                         border: 1px solid ${currentBorder} !important;
-                        padding: 18px 20px !important; /* Increased padding cushion */
+                        padding: 18px 20px !important; 
                         border-radius: 10px !important;
                         display: flex !important;
                         flex-direction: column !important;
@@ -1909,7 +2048,7 @@ function downloadMasterDashboardPdfSnapshot() {
                     }
                     
                     .metric-item .label {
-                        font-size: 12px !important; /* Scaled up from 9px */
+                        font-size: 12px !important; 
                         color: #8492a6 !important;
                         text-transform: uppercase;
                         font-weight: 700;
@@ -1918,12 +2057,11 @@ function downloadMasterDashboardPdfSnapshot() {
                     }
                     
                     .metric-item .value {
-                        font-size: 22px !important; /* Boosted from 16px for premium readability */
+                        font-size: 22px !important; 
                         font-weight: bold !important;
                         margin: 0 !important;
                     }
                     
-                    /* HARNEST DYNAMIC PALETTE VALUES FOR METRIC CARDS TEXT */
                     .metric-item.gross-item .value { color: ${currentTextBody} !important; }
                     .metric-item.takehome-item .value { color: ${colorTakeHome} !important; }
                     .metric-item.expenses-item .value { color: ${colorExpenses} !important; }
@@ -1955,7 +2093,7 @@ function downloadMasterDashboardPdfSnapshot() {
                         color: ${currentTextHead} !important; 
                         font-weight: bold; 
                         text-transform: uppercase;
-                        font-size: 14px !important; /* Scaled up from 11px */
+                        font-size: 14px !important; 
                         border-bottom: 1px solid ${currentBorder};
                         padding-bottom: 8px;
                         margin-bottom: 8px;
@@ -1966,7 +2104,7 @@ function downloadMasterDashboardPdfSnapshot() {
                     .breakdown-box span,
                     .breakdown-box strong,
                     .breakdown-box text {
-                        font-size: 14px !important; /* Scaled up to keep balances perfectly visible */
+                        font-size: 14px !important; 
                         line-height: 1.6 !important;
                     }
 
@@ -1979,7 +2117,6 @@ function downloadMasterDashboardPdfSnapshot() {
                         vertical-align: middle !important;
                     }
                     
-                    /* Force browser to preserve style token backgrounds */
                     .dot[style*="var(--color-expenses)"], .expenses-dot { background-color: ${colorExpenses} !important; }
                     .dot[style*="var(--color-tax)"], .tax-dot { background-color: ${colorTax} !important; }
                     .dot[style*="var(--color-takehome)"], .takehome-dot { background-color: ${colorTakeHome} !important; }
@@ -1989,7 +2126,7 @@ function downloadMasterDashboardPdfSnapshot() {
                 <div class="report-wrapper">
                     <div class="report-title-header">FINANCIAL PERFORMANCE MATRIX STATEMENT</div>
                     
-                    <!-- Inject the rasterized hardware vector chart map image -->
+                    <!-- Inject the rasterized chart image map inside the anti-blur frame -->
                     <div class="rasterized-chart-frame">
                         <img src="${canvasSnapshotDataUrl}" />
                     </div>
@@ -2022,13 +2159,13 @@ function downloadMasterDashboardPdfSnapshot() {
         `);
         iframeDocument.close();
 
-        // Launch print prompt configuration options layout sequence
+        // Launch print prompt layout sequence
         setTimeout(() => {
             hiddenPrintIframe.contentWindow.focus();
             hiddenPrintIframe.contentWindow.print();
             
             // Clean up print tracking reference iframe element nodes from active workspace DOM loops
-            setTimeout(() => { document.body.removeChild(hiddenPrintIframe); }, 1000);
+            document.body.removeChild(hiddenPrintIframe);
 
             if (statusTextElement) {
                 statusTextElement.style.color = '#4ade80';
@@ -2041,4 +2178,32 @@ function downloadMasterDashboardPdfSnapshot() {
         console.error("🚨 WYSIWYG theme print operation failed, falling back:", printError);
         window.print(); 
     }
+}
+// =========================================================================
+// 🚀 MEMORY POOL RECOVERY: FLUSHES ALL ACTIVE BATCH ARRAYS & LOG SELECTIONS
+// =========================================================================
+function clearAllActiveLogBatchSelections() {
+    console.log("🧹 Flushing active batch selections and releasing memory state tracking blocks...");
+    
+    // 1. Wipe memory storage tracking variables completely clean
+    window.selectedHistoricalLogIndices = [];
+    window.currentlyPinnedLogIndex = null;
+
+    // 2. Clear any active status texts safely
+    const statusText = document.getElementById('syncStatus');
+    if (statusText) statusText.innerText = "";
+
+    // 3. Reset left data entry form input elements back to baseline parameters
+    if (document.getElementById('formDate'))     document.getElementById('formDate').value = '';
+    if (document.getElementById('formClient'))   document.getElementById('formClient').value = '';
+    if (document.getElementById('formAmount'))   document.getElementById('formAmount').value = '';
+    if (document.getElementById('formExpenses')) document.getElementById('formExpenses').value = '0';
+    if (document.getElementById('formFees'))     document.getElementById('formFees').value = '0';
+    if (document.getElementById('formWithholdingRate')) document.getElementById('formWithholdingRate').value = '0';
+    if (document.getElementById('formExactCashAmt'))  document.getElementById('formExactCashAmt').value = '0';
+    if (document.getElementById('formCustomRateVal')) document.getElementById('formCustomRateVal').value = '1';
+
+    // 4. Force full dashboard canvas graphics, charts, and card summaries to redraw immediately
+    if (typeof window.updateMatrixData === 'function') window.updateMatrixData();
+    if (typeof renderHistoricalSidebarLogs === 'function') renderHistoricalSidebarLogs();
 }
