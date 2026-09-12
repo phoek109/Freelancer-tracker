@@ -2666,3 +2666,33 @@ body:has(.sidebar-collapsed-hidden-state) .matrix-container {
     background: #047857 !important;
     color: #ffffff !important;
 }
+/* ========================================================================= */
+/* 🚀 HIGH-FIDELITY IMAGE EXPORT HOVER INTERACTION SHIELDS                  */
+/* ========================================================================= */
+#btnExportChartImage {
+    transition: color 0.2s ease, transform 0.1s ease !important;
+}
+
+#btnExportChartImage:hover {
+    color: var(--text-heading, #38bdf8) !important; /* Glow active theme accent color on hover */
+    filter: drop-shadow(0 0 6px var(--text-heading, #38bdf8));
+}
+
+#btnExportChartImage:active {
+    transform: scale(0.92); /* Instant tactile physical feedback */
+}
+/* ========================================================================= */
+/* 🚀 MASTER REPORT IMAGE EXPORT INTERACTION CORES                           */
+/* ========================================================================= */
+#btnExportFullReport {
+    transition: color 0.2s ease, transform 0.1s ease !important;
+}
+
+#btnExportFullReport:hover {
+    color: #a855f7 !important; /* Premium Vibrant Purple accent color to indicate full document capture */
+    filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.4));
+}
+
+#btnExportFullReport:active {
+    transform: scale(0.92);
+}

@@ -1716,3 +1716,233 @@ function exportCachedLogsToExcelFile() {
         capacitiveTouchCurrentY = 0;
     }, { passive: true });
 })();
+// =========================================================================
+// 🚀 METADATA ENGINE: HIGH-RESOLUTION CANVAS SNAPSHOT EXPORT PASS
+// =========================================================================
+function downloadHighResolutionChartSnapshot() {
+    const canvasElement = document.getElementById('flowChart');
+    const statusTextElement = document.getElementById('syncStatus');
+
+    if (!canvasElement) {
+        console.warn("🛑 Snapshot Aborted: Target vector canvas engine layer missing.");
+        return;
+    }
+
+    try {
+        // 🚀 THE RETINA EXPORT GUARD:
+        // Because our high-density rendering engine scales the canvas internally using 
+        // devicePixelRatioScale, capturing the canvas buffer directly extracts 
+        // the uncompressed, native super-resolution pixel field buffer matrix!
+        
+        // Compile the hardware canvas memory buffer stream straight into a premium PNG data string
+        const serializedImageDataString = canvasElement.toDataURL("image/png", 1.0);
+
+        // Build a virtual anchor handle link node to download the file directly inside the DOM
+        const temporaryVirtualAnchorLink = document.createElement('a');
+        
+        // Create an unique canonical filename string containing your active tab view style name
+        const activeViewModeNameStr = (window.activeMatrixChartStyle || 'matrix').toUpperCase();
+        const dateStampForFile = new Date().toISOString().split('T')[0];
+        const constructedFileName = `Financial_Flow_${activeViewModeNameStr}_Snapshot_${dateStampForFile}.png`;
+
+        temporaryVirtualAnchorLink.href = serializedImageDataString;
+        temporaryVirtualAnchorLink.download = constructedFileName;
+        temporaryVirtualAnchorLink.style.visibility = 'hidden';
+
+        document.body.appendChild(temporaryVirtualAnchorLink);
+        temporaryVirtualAnchorLink.click(); // Trigger instant programmatic background file download pass
+        document.body.removeChild(temporaryVirtualAnchorLink); // Clean up trash references from DOM trees
+
+        console.log(`✔ Snapshot Stream Pass Complete: Exported high-resolution ${activeViewModeNameStr} image layout.`);
+        
+        if (statusTextElement) {
+            statusTextElement.style.color = '#4ade80';
+            statusTextElement.innerText = `✔ ${activeViewModeNameStr} chart captured at maximum resolution!`;
+            setTimeout(() => { statusTextElement.innerText = ""; }, 4000);
+        }
+
+    } catch (snapshotCrashError) {
+        console.error("🚨 Canvas Snapshot Compilation Exception: ", snapshotCrashError);
+        if (statusTextElement) {
+            statusTextElement.style.color = '#f87171';
+            statusTextElement.innerText = "🛑 Image capture blocked by browser security restrictions.";
+            setTimeout(() => { statusTextElement.innerText = ""; }, 4000);
+        }
+    }
+}
+// =========================================================================
+// 🚀 METADATA ENGINE: FULL REPORT HTML/CANVAS MERGED SNAPSHOT CAPTURE Pass
+// =========================================================================
+function downloadMasterDashboardReportSnapshot() {
+    // Target the outermost layout wrapper block containing the charts, metric rows, and text tables
+    const targetMasterContainer = document.querySelector('.matrix-container');
+    const statusTextElement = document.getElementById('syncStatus');
+    const submitButtonEl = document.getElementById('btnExportFullReport');
+
+    if (!targetMasterContainer) {
+        console.warn("🛑 Report Snapshot Aborted: Master wrapper panel container missing.");
+        return;
+    }
+
+    // Toggle button UI to processing state
+    if (submitButtonEl) submitButtonEl.disabled = true;
+    if (statusTextElement) {
+        statusTextElement.style.color = '#eab308';
+        statusTextElement.innerText = "⚡ Compiling master report image, please wait...";
+    }
+
+    // 🚀 THE ULTRA-CLEAR RESOLUTION ENFORCER MATRIX:
+    // We tell html2canvas to forcefully multiply the processing scale by 2.
+    // This injects double pixel density onto DOM fonts, borders, and blocks,
+    // ensuring the resulting PNG download looks incredibly sharp on 4K screens!
+    const html2canvasConfigurationOptions = {
+        scale: 2,
+        useCORS: true,                     // Allows dynamic cross-origin imagery textures to pass safely
+        allowTaint: true,
+        backgroundColor: null,             // Preserves your theme-specific css background configurations
+        logging: false,
+        scrollX: 0,
+        scrollY: -window.scrollY          // Offsets browser viewport scrolling positions to prevent top-clipping
+    };
+
+    html2canvas(targetMasterContainer, html2canvasConfigurationOptions).then(compiledCanvasReportSurface => {
+        try {
+            // Convert the fully rasterized DOM memory map into a high-fidelity image data string
+            const fullReportImageDataString = compiledCanvasReportSurface.toDataURL("image/png", 1.0);
+
+            // Create a virtual anchor handle node to download the file background-style
+            const temporaryVirtualAnchorLink = document.createElement('a');
+            
+            const activeViewModeName = (window.activeMatrixChartStyle || 'matrix').toUpperCase();
+            const fileTimestampStr = new Date().toISOString().split('T')[0];
+            const outputReportFileName = `Master_Financial_Flow_Report_${activeViewModeName}_${fileTimestampStr}.png`;
+
+            temporaryVirtualAnchorLink.href = fullReportImageDataString;
+            temporaryVirtualAnchorLink.download = outputReportFileName;
+            temporaryVirtualAnchorLink.style.visibility = 'hidden';
+
+            document.body.appendChild(temporaryVirtualAnchorLink);
+            temporaryVirtualAnchorLink.click(); // Trigger programmatic background download
+            document.body.removeChild(temporaryVirtualAnchorLink); // Wipe trace pointers from DOM tree
+
+            console.log("✔ Full Report Snapshot Pass Complete: Rendered charts, metrics, and text breakdowns combined.");
+            
+            if (statusTextElement) {
+                statusTextElement.style.color = '#4ade80';
+                statusTextElement.innerText = "✔ Complete financial report snapshot compiled successfully!";
+                setTimeout(() => { statusTextElement.innerText = ""; }, 4000);
+            }
+
+        } catch (compilationError) {
+            console.error("🚨 Full Report Capture Exception: ", compilationError);
+            if (statusTextElement) {
+                statusTextElement.style.color = '#f87171';
+                statusTextElement.innerText = "🛑 Report compilation failed due to rendering constraints.";
+            }
+        } finally {
+            if (submitButtonEl) submitButtonEl.disabled = false;
+        }
+    }).catch(libraryError => {
+        console.error("🚨 html2canvas Engine Crash Log: ", libraryError);
+        if (statusTextElement) {
+            statusTextElement.style.color = '#f87171';
+            statusTextElement.innerText = "🛑 Compiler engine offline. Check script dependencies link path.";
+        }
+        if (submitButtonEl) submitButtonEl.disabled = false;
+    });
+}
+
+// =========================================================================
+// 🚀 REPAIRED ENGINE: UN-TAINTED MASTER PDF COMPILER HUB (FILE:/// SAFE)
+// =========================================================================
+function downloadMasterDashboardPdfSnapshot() {
+    const targetMasterContainer = document.querySelector('.matrix-container');
+    const statusTextElement = document.getElementById('syncStatus');
+    const submitButtonEl = document.getElementById('btnExportFullPdfReport');
+
+    if (!targetMasterContainer) {
+        console.warn("🛑 PDF Export Aborted: Master panel container missing.");
+        return;
+    }
+
+    if (submitButtonEl) submitButtonEl.disabled = true;
+    if (statusTextElement) {
+        statusTextElement.style.color = '#eab308';
+        statusTextElement.innerText = "⚡ Compiling clean PDF document stream, please wait...";
+    }
+
+    // 🎯 LOCAL FILE PROTECTION STRATEGY:
+    // Wiped out 'allowTaint: true' which triggers security blocks on local disks, 
+    // and explicitly disabled 'logging' to speed up compilation cycles.
+    const html2canvasConfigurationOptions = {
+        scale: 2,                          // Crisp 2x pixel optimization scale
+        useCORS: true,                     // Safely loads cloud font tracks cross-origin
+        backgroundColor: null,             // Automatically captures active theme colors
+        scrollX: 0,
+        scrollY: -window.scrollY          
+    };
+
+    html2canvas(targetMasterContainer, html2canvasConfigurationOptions).then(compiledCanvasReportSurface => {
+        try {
+            // Compress the rendered DOM data map into an uncompressed layout texture string
+            const reportImageRawBufferString = compiledCanvasReportSurface.toDataURL("image/png", 1.0);
+
+            const { jsPDF } = window.jspdf;
+            
+            const elementWidthPx = targetMasterContainer.offsetWidth;
+            const elementHeightPx = targetMasterContainer.offsetHeight;
+
+            // Convert logical pixel sizes into clean layout paper width metrics points (pt)
+            const pdfPageWidthPt = elementWidthPx * 0.75;
+            const pdfPageHeightPt = elementHeightPx * 0.75;
+
+            const pdfDocumentInstance = new jsPDF({
+                orientation: pdfPageWidthPt > pdfPageHeightPt ? "landscape" : "portrait",
+                unit: "pt",
+                format: [pdfPageWidthPt, pdfPageHeightPt]
+            });
+
+            // Embed text and canvas pixels into the document frame
+            pdfDocumentInstance.addImage(
+                reportImageRawBufferString, 
+                "PNG", 
+                0, 
+                0, 
+                pdfPageWidthPt, 
+                pdfPageHeightPt, 
+                undefined, 
+                "FAST" 
+            );
+
+            const activeViewModeName = (window.activeMatrixChartStyle || 'matrix').toUpperCase();
+            const fileTimestampStr = new Date().toISOString().split('T')[0];
+            const outputReportFileName = `Financial_Report_${activeViewModeName}_${fileTimestampStr}.pdf`;
+
+            // Trigger instant programmatic file download stream
+            pdfDocumentInstance.save(outputReportFileName);
+
+            console.log("✔ PDF Export Pass Complete via untainted matrix framework.");
+            if (statusTextElement) {
+                statusTextElement.style.color = '#4ade80';
+                statusTextElement.innerText = "✔ Vector PDF report snapshot downloaded successfully!";
+                setTimeout(() => { statusTextElement.innerText = ""; }, 4000);
+            }
+
+        } catch (compilationError) {
+            console.error("🚨 PDF Generation Exception: ", compilationError);
+            if (statusTextElement) {
+                statusTextElement.style.color = '#f87171';
+                statusTextElement.innerText = "🛑 Security sandbox restriction. Run app via server context.";
+            }
+        } finally {
+            if (submitButtonEl) submitButtonEl.disabled = false;
+        }
+    }).catch(libraryError => {
+        console.error("🚨 html2canvas Engine Crash Log: ", libraryError);
+        if (statusTextElement) {
+            statusTextElement.style.color = '#f87171';
+            statusTextElement.innerText = "🛑 Compiler engine failed to initiate layout render.";
+        }
+        if (submitButtonEl) submitButtonEl.disabled = false;
+    });
+}
